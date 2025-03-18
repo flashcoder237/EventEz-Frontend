@@ -4,7 +4,10 @@ import Link from 'next/link';
 import { FaCalendarAlt, FaMapMarkerAlt, FaTicketAlt, FaRegClipboard } from 'react-icons/fa';
 import { Event } from '@/types';
 import { Badge } from '../ui/Badge';
-import { formatDate } from '@/lib/utils';
+import {cn} from '../../lib/utils/utils'
+import {formatDate } from '../../lib/utils/dateUtils'
+
+
 
 interface EventCardProps {
   event: Event;

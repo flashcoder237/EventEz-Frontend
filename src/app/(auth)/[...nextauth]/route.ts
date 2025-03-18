@@ -15,16 +15,16 @@ const handler = NextAuth({
       },
       async authorize(credentials) {
         try {
-          // Appel à l'API Django pour s'authentifier
           const { data } = await axios.post(`${API_URL}/token/`, {
             email: credentials?.email,
             password: credentials?.password,
           });
           
-          // L'API retourne les tokens JWT et les informations utilisateur
           if (data.access && data.refresh) {
-            // Décodage du token pour obtenir les infos utilisateur
-            const userInfo = JSON.parse(atob(data.access.split('.')[1]));
+            // Decode the JWT token safely
+            const userInfo = JSON.parse(
+              Buffer.from(data.access.split('.')[1], 'base64').toString('utf-8')
+            );
             
             return {
               id: userInfo.user_id,
@@ -37,7 +37,13 @@ const handler = NextAuth({
           }
           return null;
         } catch (error) {
-          console.error("Erreur d'authentification:", error);
+          // Plus de détails sur l'erreur
+          if (axios.isAxiosError(error)) {
+          console.error("Authentication Error:", error.response?.data || error.message);
+
+          } else {
+            console.error("Erreur inattendue:", error);
+          }
           return null;
         }
       },
@@ -47,15 +53,44 @@ const handler = NextAuth({
     async jwt({ token, user }) {
       // Ajouter les tokens JWT et le rôle au token de session
       if (user) {
-        token.accessToken = user.accessToken;
-        token.refreshToken = user.refreshToken;
-        token.role = user.role;
+        return {
+          ...token,
+          accessToken: user.accessToken,
+          refreshToken: user.refreshToken,
+          role: user.role,
+          exp: Date.now() + 60 * 60 * 1000 // 1 heure en millisecondes
+        };
       }
-      return token;
+  
+      // Vérifier si le token a expiré
+      const isTokenExpired = Date.now() > (token.exp as number);
+      if (!isTokenExpired) return token;
+  
+      // Renouveler le token
+      try {
+        const response = await axios.post(`${API_URL}/token/refresh/`, {
+          refresh: token.refreshToken
+        });
+  
+        const newAccessToken = response.data.access;
+        
+        return {
+          ...token,
+          accessToken: newAccessToken,
+          exp: Date.now() + 60 * 60 * 1000
+        };
+      } catch (error) {
+        console.error("Refresh Token Error:", error.response?.data || error.message);
+
+        return { ...token, error: "RefreshAccessTokenError" };
+      }
     },
     async session({ session, token }) {
-      // Ajouter les tokens JWT et le rôle à la session utilisateur
-      if (token) {
+      // Gérer les erreurs de refresh token
+      if (token.error === "RefreshAccessTokenError") {
+        // Déconnexion forcée si le refresh token échoue
+        session.user = null;
+      } else {
         session.user.id = token.sub;
         session.user.role = token.role;
         session.accessToken = token.accessToken;

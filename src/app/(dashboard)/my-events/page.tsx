@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs';
 import { FaPlus, FaCalendarAlt, FaEye, FaUsers, FaEdit, FaTrash, FaChartBar } from 'react-icons/fa';
 import { eventsAPI, analyticsAPI } from '@/lib/api';
-import { formatDate } from '@/lib/utils';
+import { formatDate } from '../../../../lib/utils/utils';
 
 // Type pour les paramètres de recherche
 interface SearchParams {

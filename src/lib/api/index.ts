@@ -57,7 +57,9 @@ api.interceptors.response.use(
       }
     }
     
-    return Promise.reject(error);
+    console.error("API Response Error:", error.response?.data || error.message);
+    return Promise.reject(error.response?.data || error);
+
   }
 );
 
