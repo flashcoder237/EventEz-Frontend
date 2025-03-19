@@ -1,7 +1,7 @@
 
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { SessionProvider } from "next-auth/react";
+import { Providers } from "./providers";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -29,12 +29,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <SessionProvider
-        refetchInterval={5 * 60} // Rafraîchir toutes les 5 minutes
-        refetchOnWindowFocus={true} // Rafraîchir au focus de la fenêtre
-        >
-          {children}
-        </SessionProvider>
+       <Providers>{children}</Providers>
       </body>
     </html>
   );

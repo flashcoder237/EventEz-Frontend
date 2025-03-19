@@ -25,3 +25,205 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* app/globals.css - Ajoutez ces styles à votre fichier CSS global */
+
+/* Animations pour les entrées avec fondu */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-out forwards;
+}
+
+.animate-fade-in-delayed {
+  animation: fadeIn 0.6s ease-out 0.2s forwards;
+  opacity: 0;
+}
+
+.animate-fade-in-delayed-more {
+  animation: fadeIn 0.6s ease-out 0.4s forwards;
+  opacity: 0;
+}
+
+/* Animations pour les carrousels */
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideOut {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(-100%); opacity: 0; }
+}
+
+.slide-in {
+  animation: slideIn 0.5s ease-out forwards;
+}
+
+.slide-out {
+  animation: slideOut 0.5s ease-out forwards;
+}
+
+/* Animations de survol pour les cartes d'événements */
+.event-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.event-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Animations pour les boutons */
+.btn-pulse {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(var(--color-primary), 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(var(--color-primary), 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(var(--color-primary), 0);
+  }
+}
+
+/* Transitions pour les éléments de navigation */
+.nav-item {
+  position: relative;
+  transition: color 0.3s ease;
+}
+
+.nav-item::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: var(--color-primary);
+  transition: width 0.3s ease;
+}
+
+.nav-item:hover::after,
+.nav-item.active::after {
+  width: 100%;
+}
+
+/* Animations pour les sections statistiques */
+@keyframes countUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stat-item {
+  opacity: 0;
+}
+
+.stat-item.visible {
+  animation: countUp 0.8s forwards;
+}
+
+/* Animation pour le bouton CTA principal */
+.cta-button {
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: all 0.6s ease;
+}
+
+.cta-button:hover::before {
+  left: 100%;
+}
+
+
+:root {
+  --color-primary: 109, 40, 217; /* Violet en RGB */
+  --color-primary-dark: 91, 33, 182;
+  --color-primary-light: 139, 92, 246;
+  
+  --color-secondary: 236, 72, 153; /* Rose en RGB */
+  --color-secondary-dark: 219, 39, 119;
+  --color-secondary-light: 244, 114, 182;
+  
+  --color-background: 255, 255, 255;
+  --color-foreground: 17, 24, 39;
+  
+  --gradient-primary: linear-gradient(to right, #6d28d9, #ec4899);
+  --gradient-primary-hover: linear-gradient(to right, #5b21b6, #db2777);
+}
+
+/* Style personnalisé pour les boutons avec dégradé */
+.btn-gradient {
+  background-image: var(--gradient-primary);
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.btn-gradient:hover {
+  background-image: var(--gradient-primary-hover);
+  box-shadow: 0 4px 12px rgba(109, 40, 217, 0.25);
+}
+
+/* Style personnalisé pour le texte avec dégradé */
+.text-gradient {
+  background-image: var(--gradient-primary);
+  background-clip: text;
+  color: transparent;
+}
+
+/* Animations pour les badges */
+.badge-primary {
+  background-color: rgba(109, 40, 217, 0.1);
+  color: #6d28d9;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-weight: 500;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.badge-secondary {
+  background-color: rgba(236, 72, 153, 0.1);
+  color: #ec4899;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-weight: 500;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+/* Ajustements pour garantir la lisibilité */
+.text-on-dark {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.text-on-light {
+  color: rgba(17, 24, 39, 0.9);
+}

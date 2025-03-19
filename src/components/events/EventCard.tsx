@@ -6,6 +6,7 @@ import { Event } from '@/types';
 import { Badge } from '../ui/Badge';
 import {cn} from '../../lib/utils/utils'
 import {formatDate } from '../../lib/utils/dateUtils'
+import {getImageUrl } from '../../lib/utils/imageUtils'
 
 
 
@@ -19,15 +20,19 @@ export default function EventCard({ event }: EventCardProps) {
       <div className="relative h-48 w-full">
         {event.banner_image ? (
           <Image
-            src={`${process.env.NEXT_PUBLIC_MEDIA_URL}/${event.banner_image}`}
+            src={`${event.banner_image}`}
+            // src={`${process.env.NEXT_PUBLIC_MEDIA_URL}/${event.banner_image}`}
             alt={event.title}
             fill
             className="object-cover"
           />
         ) : (
-          <div className="bg-primary/20 h-full flex items-center justify-center">
-            <FaCalendarAlt className="h-16 w-16 text-primary/40" />
-          </div>
+          <Image
+            src='/placeholder-image.png'
+            alt="default event placeholder"
+            fill
+            className="object-cover"
+          />
         )}
         
         {event.is_featured && (

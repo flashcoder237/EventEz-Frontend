@@ -57,7 +57,10 @@ api.interceptors.response.use(
       }
     }
     
-    console.error("API Response Error:", error.response?.data || error.message);
+    console.error("API Response Error:", error.response?.data || error.message || "Unknown error occurred");
+    console.error("Full error response:", error);
+
+
     return Promise.reject(error.response?.data || error);
 
   }
