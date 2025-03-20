@@ -213,10 +213,10 @@ export default async function HomePage() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/0 to-black/40 opacity-60 group-hover:opacity-80 transition-opacity z-10"></div>
                 
                 <Image 
-                  src={event.banner_url || "/images/placeholder-image.png"}
+                  src={event.banner_image || "/images/placeholder-image.png"}
                   alt={event.title}
                   fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-110"
+                  className="object-cover transition-transform duration-700 group-hover:scale-x-110 "
                 />
                 
                 {/* Badge de catégorie */}
@@ -256,9 +256,9 @@ export default async function HomePage() {
                 
                 <div className="flex items-center text-gray-500 mb-3">
                   <MapPin className="h-4 w-4 mr-2 flex-shrink-0 text-violet-600" />
-                  <span className="text-sm truncate">{event.location}</span>
+                  <span className="text-sm truncate">{event.location_city}, {event.location_country}</span>
                 </div>
-                
+                <p className="text-sm text-gray-700 line-clamp-2 mb-4">{event.short_description || event.description}</p>
                 <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                   <span className="font-bold text-pink-500 text-lg">
                     {event.price ? `${event.price} XAF` : 'Gratuit'}
@@ -368,8 +368,9 @@ export default async function HomePage() {
                       
                       <div className="flex items-center text-gray-500 mb-3">
                         <MapPin className="h-4 w-4 mr-2 flex-shrink-0 text-primary" />
-                        <span className="text-sm truncate">{event.location}</span>
+                        <span className="text-sm truncate">{event.location_city}, {event.location_country}</span>
                       </div>
+                      <p className="text-sm text-gray-700 line-clamp-2 mb-4">{event.short_description || event.description}</p>
                       
                       <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                         <span className="font-bold text-primary text-lg">

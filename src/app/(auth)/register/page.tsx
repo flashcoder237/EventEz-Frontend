@@ -1,13 +1,14 @@
-// app/(auth)/register/page.tsx
 'use client';
+
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { FaUser, FaEnvelope, FaLock, FaPhone, FaExclamationCircle } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaLock, FaPhone, FaExclamationCircle, FaArrowLeft } from 'react-icons/fa';
 import { authAPI } from '@/lib/api';
 
 export default function RegisterPage() {

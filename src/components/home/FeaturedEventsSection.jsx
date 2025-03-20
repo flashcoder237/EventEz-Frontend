@@ -66,7 +66,7 @@ export default function FeaturedEventsSection({ events = [] }) {
                       href={`/events/${event.id}`}
                       className="block flex-1 group"
                     >
-                      <div className="bg-gray-800 rounded-xl overflow-hidden h-full hover:bg-gray-750 transition-all duration-300 transform hover:-translate-y-1 shadow-md hover:shadow-xl">
+                      <div className="bg-gray-800 rounded-xl overflow-hidden hover:bg-gray-750 transition-all duration-300 transform hover:-translate-y-1 shadow-md hover:shadow-xl">
                         <div className="relative">
                           {/* Badge de date */}
                           <div className="absolute bottom-0 left-0 z-20 m-4">
@@ -83,10 +83,11 @@ export default function FeaturedEventsSection({ events = [] }) {
                           {/* Image avec overlay */}
                           <div className="aspect-video relative">
                             <Image 
-                              src={event.banner_url || `/images/event-featured-${((slideIndex * 3 + index) % 3) + 1}.jpg`}
+                              src={event.banner_image || "/images/placeholder-image.png"}
+                              // src={event.banner_image || `/images/event-featured-${((slideIndex * 3 + index) % 3) + 1}.jpg`}
                               alt={event.title}
                               fill
-                              className="object-cover transition-transform duration-500 group-hover:scale-105"
+                              className="object-cover transition-transform duration-500 group-hover:scale-x-105 w-10"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/20 to-transparent"></div>
                           </div>
