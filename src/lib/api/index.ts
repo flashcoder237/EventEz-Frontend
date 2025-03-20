@@ -223,10 +223,10 @@ export const analyticsAPI = {
 
 // Fonction helper à implémenter pour mettre à jour la session
 const updateSession = async (newSession: any) => {
-  // Cette implémentation dépendra de votre gestion de session
-  // Pour Next-Auth, cela pourrait nécessiter un traitement spécifique
-  console.log('Session mise à jour:', newSession);
-  // À implémenter selon votre logique de gestion de session
+  // Avec Next-Auth
+  const event = new Event('visibilitychange');
+  document.dispatchEvent(event);
+  // Cela déclenchera une vérification de session dans Next-Auth
 };
 
 export default api;
