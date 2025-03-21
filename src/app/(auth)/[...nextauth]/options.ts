@@ -44,18 +44,18 @@ export const authOptions: NextAuthOptions = {
               };
             }
             
-            console.error('Unexpected token response structure:', data);
+            console.error('Structure de token inattendue:', data);
             return null;
           } catch (error) {
             // Gestion détaillée des erreurs
             if (axios.isAxiosError(error)) {
-              console.error('Authentication error:', {
+              console.error('Erreur d\'authentification:', {
                 status: error.response?.status,
                 data: error.response?.data,
                 message: error.message
               });
             } else {
-              console.error('Unexpected error during authentication:', error);
+              console.error('Erreur inattendue durant l\'authentification:', error);
             }
             
             return null;
@@ -66,7 +66,7 @@ export const authOptions: NextAuthOptions = {
     callbacks: {
       async jwt({ token, user }) {
         if (user) {
-          // Initial sign in
+          // Connexion initiale
           return {
             ...token,
             id: user.id,
@@ -75,17 +75,16 @@ export const authOptions: NextAuthOptions = {
             role: user.role,
             accessToken: user.accessToken,
             refreshToken: user.refreshToken,
-            exp: Date.now() + 60 * 60 * 1000 // 1 hour
+            exp: Date.now() + 60 * 60 * 1000 // 1 heure
           };
         }
   
-        // On subsequent calls, token already contains the data we need
-        // Check if token needs refresh
+        // Vérification de l'expiration du token
         if (token.exp && Date.now() < token.exp) {
           return token;
         }
   
-        // Token has expired, try to refresh it
+        // Le token a expiré, essayons de le rafraîchir
         try {
           const response = await axios.post(`${API_URL}/token/refresh/`, {
             refresh: token.refreshToken
@@ -97,22 +96,22 @@ export const authOptions: NextAuthOptions = {
             exp: Date.now() + 60 * 60 * 1000
           };
         } catch (error) {
-          console.error('Error refreshing token:', error);
+          console.error('Erreur lors du rafraîchissement du token:', error);
           return { ...token, error: 'RefreshAccessTokenError' };
         }
       },
       async session({ session, token }) {
-        // Pass token values to client session
+        // Transférer les valeurs du token à la session client
         if (session.user) {
-          session.user.id = token.id;
-          session.user.name = token.name;
-          session.user.email = token.email;
-          session.user.role = token.role;
+          session.user.id = token.id as string;
+          session.user.name = token.name as string;
+          session.user.email = token.email as string;
+          session.user.role = token.role as 'user' | 'organizer' | 'admin';
         }
         
-        session.accessToken = token.accessToken;
-        session.refreshToken = token.refreshToken;
-        session.error = token.error;
+        session.accessToken = token.accessToken as string;
+        session.refreshToken = token.refreshToken as string;
+        session.error = token.error as string | undefined;
         
         return session;
       }
@@ -124,8 +123,8 @@ export const authOptions: NextAuthOptions = {
     },
     session: {
       strategy: 'jwt',
-      maxAge: 60 * 60, // 1 hour
+      maxAge: 60 * 60, // 1 heure
     },
     secret: process.env.NEXTAUTH_SECRET,
     debug: process.env.NODE_ENV === 'development',
-  };
+  };    

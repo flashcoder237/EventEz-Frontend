@@ -10,16 +10,44 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 15000, // Timeout de 15 secondes
 });
 
 // Intercepteur pour ajouter le token d'authentification
 api.interceptors.request.use(async (config) => {
-  const session = await getSession();
-  if (session?.accessToken) {
-    config.headers.Authorization = `Bearer ${session.accessToken}`;
+  try {
+    const session = await getSession();
+    if (session?.accessToken) {
+      config.headers.Authorization = `Bearer ${session.accessToken}`;
+    }
+    return config;
+  } catch (error) {
+    console.error("Erreur lors de l'ajout du token d'authentification:", error);
+    return config;
   }
-  return config;
 });
+
+// Variable pour éviter les boucles infinies de rafraîchissement
+let isRefreshing = false;
+let failedQueue: Array<{
+  resolve: (value: unknown) => void;
+  reject: (reason?: any) => void;
+  config: any;
+}> = [];
+
+// Fonction pour traiter la file d'attente des requêtes échouées
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach(({ resolve, reject, config }) => {
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+      resolve(api(config));
+    } else {
+      reject(error);
+    }
+  });
+  
+  failedQueue = [];
+};
 
 // Intercepteur pour gérer les erreurs et le rafraîchissement du token
 api.interceptors.response.use(
@@ -29,40 +57,65 @@ api.interceptors.response.use(
     
     // Si l'erreur est 401 (non autorisé) et que nous n'avons pas déjà tenté de rafraîchir le token
     if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject, config: originalRequest });
+        });
+      }
+      
       originalRequest._retry = true;
+      isRefreshing = true;
       
       try {
         // Tentative de rafraîchissement du token
         const session = await getSession();
-        if (session?.refreshToken) {
-          const refreshResponse = await axios.post(`${API_URL}/token/refresh/`, {
-            refresh: session.refreshToken,
-          });
-          
-          // Mise à jour du token dans la session
-          // Note: vous devrez implémenter cette fonction selon votre gestion de session
-          await updateSession({
-            ...session,
-            accessToken: refreshResponse.data.access,
-          });
-          
-          // Réessayer la requête originale avec le nouveau token
-          originalRequest.headers.Authorization = `Bearer ${refreshResponse.data.access}`;
-          return api(originalRequest);
+        if (!session?.refreshToken) {
+          throw new Error('Aucun token de rafraîchissement disponible');
         }
+        
+        const refreshResponse = await axios.post(`${API_URL}/token/refresh/`, {
+          refresh: session.refreshToken,
+        });
+        
+        if (!refreshResponse.data.access) {
+          throw new Error('Échec du rafraîchissement du token');
+        }
+        
+        // Forcer une vérification de session pour mettre à jour le token dans NextAuth
+        // Cela déclenchera un appel au callback de session dans NextAuth
+        const event = new Event('visibilitychange');
+        document.dispatchEvent(event);
+        
+        // Mettre à jour l'en-tête d'autorisation pour la requête originale
+        originalRequest.headers.Authorization = `Bearer ${refreshResponse.data.access}`;
+        
+        // Traiter la file d'attente avec le nouveau token
+        processQueue(null, refreshResponse.data.access);
+        isRefreshing = false;
+        
+        // Réessayer la requête originale avec le nouveau token
+        return api(originalRequest);
       } catch (refreshError) {
-        // En cas d'échec du rafraîchissement, déconnexion
+        // En cas d'échec du rafraîchissement, traiter la file d'attente avec l'erreur
+        processQueue(refreshError, null);
+        isRefreshing = false;
+        
+        // Déconnexion de l'utilisateur
         await signOut({ redirect: true, callbackUrl: '/login' });
         return Promise.reject(refreshError);
       }
     }
     
-    console.error("API Response Error:", error.response?.data || error.message || "Unknown error occurred");
-    console.error("Full error response:", error);
+    // Log détaillé des erreurs API pour faciliter le débogage
+    if (error.response) {
+      console.error(`Erreur API ${error.response.status}:`, error.response.data);
+    } else if (error.request) {
+      console.error("Erreur de requête (pas de réponse):", error.request);
+    } else {
+      console.error("Erreur lors de la configuration de la requête:", error.message);
+    }
 
-
-    return Promise.reject(error.response?.data || error);
-
+    return Promise.reject(error);
   }
 );
 
@@ -91,6 +144,14 @@ export const eventsAPI = {
     return api.post('/events/', eventData);
   },
   updateEvent: async (id: string, eventData: any) => {
+    // Vérifier si les données sont un FormData pour l'upload d'images
+    if (eventData instanceof FormData) {
+      return api.put(`/events/${id}/`, eventData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+    }
     return api.put(`/events/${id}/`, eventData);
   },
   deleteEvent: async (id: string) => {
@@ -101,6 +162,12 @@ export const eventsAPI = {
   },
   getTags: async () => {
     return api.get('/tags/');
+  },
+  getTicketTypes: async (eventId: string) => {
+    return api.get('/ticket-types/', { params: { event: eventId } });
+  },
+  getFormFields: async (eventId: string) => {
+    return api.get('/form-fields/', { params: { event: eventId } });
   },
   uploadImages: async (eventId: string, formData: FormData) => {
     return api.post(`/events/${eventId}/upload_images/`, formData, {
@@ -113,17 +180,17 @@ export const eventsAPI = {
 
 // API d'inscriptions
 export const registrationsAPI = {
-  getRegistrations: async () => {
-    return api.get('/registrations/');
+  getRegistrations: async (params?: any) => {
+    return api.get('/registrations/', { params });
+  },
+  getRegistration: async (id: string) => {
+    return api.get(`/registrations/${id}/`);
   },
   getMyRegistrations: async () => {
     return api.get('/registrations/my_registrations/');
   },
   createRegistration: async (registrationData: any) => {
     return api.post('/registrations/', registrationData);
-  },
-  getTicketTypes: async (eventId: string) => {
-    return api.get('/ticket-types/', { params: { event: eventId } });
   },
   validateDiscount: async (discountId: string, code: string) => {
     return api.post(`/discounts/${discountId}/validate/`, { code });
@@ -219,14 +286,6 @@ export const analyticsAPI = {
   exportReport: async (reportId: string, format: string) => {
     return api.get(`/analytics/reports/${reportId}/export/`, { params: { format } });
   },
-};
-
-// Fonction helper à implémenter pour mettre à jour la session
-const updateSession = async (newSession: any) => {
-  // Avec Next-Auth
-  const event = new Event('visibilitychange');
-  document.dispatchEvent(event);
-  // Cela déclenchera une vérification de session dans Next-Auth
 };
 
 export default api;

@@ -1,13 +1,6 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   images: {
-    domains: [
-      'localhost',
-      '127.0.0.1',
-      'localhost:8000',
-      'eventez-backend.com', // Votre domaine de production
-    ],
     remotePatterns: [
       {
         protocol: 'http',
@@ -17,10 +10,21 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'eventez-backend.com', // Votre domaine de production
+        hostname: 'eventez-backend.com', // Domaine de production
         pathname: '/media/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.amazonaws.com', // Pour les images sur S3
+        pathname: '/**',
       }
-    ]
+    ],
+    // Images par défaut pour le développement
+    domains: [
+      'localhost',
+      '127.0.0.1',
+      'eventez-backend.com',
+    ],
   },
   // Configuration webpack si nécessaire
   webpack: (config, { isServer }) => {
@@ -30,7 +34,23 @@ const nextConfig: NextConfig = {
   // Variables d'environnement côté client
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
+    NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+  },
+  // Configuration des redirections
+  async redirects() {
+    return [
+      {
+        source: '/dashboard',
+        destination: '/dashboard/my-events',
+        permanent: true,
+      },
+      {
+        source: '/admin',
+        destination: '/admin/dashboard',
+        permanent: true,
+      },
+    ];
   }
 };
 
-export default nextConfig;
+module.exports = nextConfig;

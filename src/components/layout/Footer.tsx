@@ -38,7 +38,7 @@ export default function Footer() {
               <h4 className="font-semibold mb-4">Contact</h4>
               <ul className="space-y-2">
                 <li className="text-gray-400">Email: contact@eventez.cm</li>
-                <li className="text-gray-400">Téléphone: +237 6XX XXX XXX</li>
+                <li className="text-gray-400">Téléphone: +237 652 761 931</li>
                 <li className="text-gray-400">Adresse: Douala, Cameroun</li>
               </ul>
               <div className="flex space-x-4 mt-4">

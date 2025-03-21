@@ -1,4 +1,3 @@
-// components/layout/DashboardLayout.tsx
 import { ReactNode } from 'react';
 import Header from './Header';
 import Footer from './Footer';
@@ -8,13 +7,17 @@ interface DashboardLayoutProps {
   children: ReactNode;
 }
 
+/**
+ * Layout pour toutes les pages dashboard
+ * Inclut le header, le sidebar et le footer
+ */
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
       <div className="flex flex-1">
         <DashboardSidebar />
-        <main className="flex-1 bg-gray-50">
+        <main className="flex-1 bg-gray-50 p-4 overflow-auto">
           {children}
         </main>
       </div>

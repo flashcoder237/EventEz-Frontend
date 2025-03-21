@@ -1,14 +1,24 @@
 'use client';
 
 import { SessionProvider } from "next-auth/react";
+import { ReactNode } from "react";
 
-export function Providers({ 
-  children 
-}: { 
-  children: React.ReactNode 
-}) {
+type ProvidersProps = {
+  children: ReactNode;
+};
+
+/**
+ * Fournisseurs de contexte pour l'application
+ * - SessionProvider pour l'authentification avec NextAuth
+ */
+export function Providers({ children }: ProvidersProps) {
   return (
-    <SessionProvider refetchInterval={0} refetchOnWindowFocus={false}>
+    <SessionProvider 
+      // Désactiver les requêtes de rafraîchissement automatique
+      // car nous gérons le rafraîchissement manuellement dans l'API
+      refetchInterval={0} 
+      refetchOnWindowFocus={false}
+    >
       {children}
     </SessionProvider>
   );

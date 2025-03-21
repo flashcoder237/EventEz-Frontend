@@ -2,6 +2,9 @@ import "next-auth";
 import { JWT } from "next-auth/jwt";
 
 declare module "next-auth" {
+  /**
+   * Extension du type Session de NextAuth
+   */
   interface Session {
     accessToken?: string;
     refreshToken?: string;
@@ -14,6 +17,9 @@ declare module "next-auth" {
     error?: string;
   }
 
+  /**
+   * Extension du type User de NextAuth
+   */
   interface User {
     id: string;
     name: string;
@@ -25,6 +31,9 @@ declare module "next-auth" {
 }
 
 declare module "next-auth/jwt" {
+  /**
+   * Extension du type JWT de NextAuth
+   */
   interface JWT {
     id?: string;
     name?: string;
