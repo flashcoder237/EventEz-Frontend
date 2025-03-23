@@ -4,16 +4,30 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { signIn } from 'next-auth/react';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs';
 import { FaExclamationCircle, FaArrowLeft, FaUser, FaEnvelope, FaLock, FaPhone, FaBuilding, FaIdCard } from 'react-icons/fa';
 import { authAPI } from '@/lib/api';
+import { signIn, useSession } from 'next-auth/react';
 
 export default function RegisterOrganizerPage() {
   const router = useRouter();
+  const { data: session, status } = useSession({
+    required: false,
+    onUnauthenticated() {
+      // C'est normal d'être non authentifié sur la page de connexion
+    },
+  });
+  const router = useRouter();
+  
+  // Rediriger si déjà connecté
+  useEffect(() => {
+    if (status === 'authenticated' && session) {
+      router.push('/');
+    }
+  }, [session, status, router]);
   
   const [organizerType, setOrganizerType] = useState<'individual' | 'organization'>('individual');
   const [currentStep, setCurrentStep] = useState(1);

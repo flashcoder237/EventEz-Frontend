@@ -1,16 +1,22 @@
 // app/(auth)/login/page.tsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { signIn } from 'next-auth/react';
+import { signIn,useSession  } from 'next-auth/react';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { FaEnvelope, FaLock, FaExclamationCircle } from 'react-icons/fa';
 
 export default function LoginPage() {
+  const { data: session, status } = useSession({
+    required: false,
+    onUnauthenticated() {
+      // C'est normal d'être non authentifié sur la page de connexion
+    },
+  });  
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('redirect') || '/';
@@ -19,6 +25,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,6 +39,7 @@ export default function LoginPage() {
     setError(null);
     
     try {
+      // Utilisez la version correcte de signIn avec le paramètre redirect: false
       const result = await signIn('credentials', {
         redirect: false,
         email,
@@ -49,6 +57,13 @@ export default function LoginPage() {
       setIsLoading(false);
     }
   };
+
+    // Rediriger si déjà connecté
+    useEffect(() => {
+      if (status === 'authenticated' && session) {
+        router.push('/');
+      }
+    }, [session, status, router]);
   
   return (
     <div className="min-h-screen flex flex-col md:flex-row">

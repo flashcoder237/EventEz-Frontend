@@ -1,7 +1,7 @@
 // components/home/FeaturedEventsSection.jsx
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState,useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronRight, ChevronLeft, Calendar, MapPin, Users, Heart } from 'lucide-react';
@@ -17,6 +17,20 @@ export default function FeaturedEventsSection({ events = [] }) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const containerRef = useRef(null);
   const slideCount = Math.ceil(events.length / 3);
+  
+  // Créer un tableau de nombres aléatoires au chargement du composant
+  // Cela garantit que les mêmes nombres sont utilisés côté serveur et client
+  const [randomLikes, setRandomLikes] = useState([]);
+  const [randomParticipants, setRandomParticipants] = useState([]);
+  
+  useEffect(() => {
+    // Générer les nombres aléatoires au montage du composant
+    const likes = events.map(() => Math.floor(Math.random() * 50) + 10);
+    const participants = events.map(() => Math.floor(Math.random() * 100) + 20);
+    
+    setRandomLikes(likes);
+    setRandomParticipants(participants);
+  }, [events.length]);
   
   const handleNextSlide = () => {
     if (currentSlide < slideCount - 1) {
@@ -59,13 +73,17 @@ export default function FeaturedEventsSection({ events = [] }) {
               style={{ transform: `translateX(-${currentSlide * 100}%)` }}
             >
               {Array.from({ length: slideCount }).map((_, slideIndex) => (
-                <div key={slideIndex} className="min-w-full flex flex-col md:flex-row gap-6">
-                  {events.slice(slideIndex * 3, (slideIndex + 1) * 3).map((event, index) => (
-                    <Link 
-                      key={event.id}
-                      href={`/events/${event.id}`}
-                      className="block flex-1 group"
-                    >
+            <div key={slideIndex} className="min-w-full flex flex-col md:flex-row gap-6">
+              {events.slice(slideIndex * 3, (slideIndex + 1) * 3).map((event, index) => {
+                // Calculer l'index global pour accéder aux tableaux de nombres aléatoires
+                const globalIndex = slideIndex * 3 + index;
+                
+                return (
+                  <Link 
+                    key={event.id}
+                    href={`/events/${event.id}`}
+                    className="block flex-1 group"
+                  >
                       <div className="bg-gray-800 rounded-xl overflow-hidden hover:bg-gray-750 transition-all duration-300 transform hover:-translate-y-1 shadow-md hover:shadow-xl">
                         <div className="relative">
                           {/* Badge de date */}
@@ -96,7 +114,7 @@ export default function FeaturedEventsSection({ events = [] }) {
                           <div className="absolute top-3 right-3">
                             <span className="flex items-center gap-1 bg-white/10 backdrop-blur-sm text-white px-2 py-1 rounded-full text-xs">
                               <Heart className="h-3 w-3 text-primary" fill="currentColor" />
-                              <span>{(Math.floor(Math.random() * 50) + 10)}</span>
+                              <span>{randomLikes[globalIndex] || 25}</span>
                             </span>
                           </div>
                         </div>
@@ -114,7 +132,7 @@ export default function FeaturedEventsSection({ events = [] }) {
                             
                             <div className="flex items-center gap-2 text-gray-300">
                               <Users className="h-4 w-4 flex-shrink-0 text-primary" />
-                              <span className="text-sm">{Math.floor(Math.random() * 100) + 20} participants</span>
+                              <span className="text-sm">{randomParticipants[globalIndex] || 50} participants</span>
                             </div>
                           </div>
                           
@@ -133,12 +151,13 @@ export default function FeaturedEventsSection({ events = [] }) {
                           </div>
                         </div>
                       </div>
-                    </Link>
-                  ))}
-                </div>
-              ))}
+                      </Link>
+                );
+              })}
             </div>
-          </div>
+          ))}
+        </div>
+      </div>
 
           {/* Navigation buttons */}
           <button 

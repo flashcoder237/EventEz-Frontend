@@ -2,13 +2,14 @@
 import { redirect } from 'next/navigation';
 import { getServerSession } from 'next-auth/next';
 import DashboardLayout from '@/components/layout/DashboardLayout';
+import { authOptions } from '@/app/api/auth/[...nextauth]/options'; 
 
 export default async function DashboardRootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getServerSession();
+  const session = await getServerSession(authOptions);
   
   // Vérification de l'authentification côté serveur
   if (!session || !session.user) {

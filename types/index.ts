@@ -47,3 +47,32 @@ export interface OrganizerRegistration extends UserRegistration {
   company_name?: string;
   registration_number?: string;
 }
+
+export interface AnalyticsDashboardSummary {
+  event_summary: {
+    total_events: number;
+    upcoming_events: number;
+    ongoing_events: number;
+    avg_fill_rate: number;
+    event_types?: any[];
+    categories?: any[];
+  };
+  revenue_summary: {
+    total_revenue: number;
+    avg_transaction: number;
+    payment_count?: number;
+    revenue_by_method?: any[];
+  };
+  registration_summary: {
+    summary: {
+      total_registrations: number;
+      confirmed_registrations?: number;
+      conversion_rate: number;
+    };
+    registration_types?: any[];
+    trends?: {
+      interval: string;
+      data: any[];
+    };
+  };
+}

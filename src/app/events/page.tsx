@@ -3,9 +3,10 @@ import { Suspense } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import EventGrid from '@/components/events/EventGrid';
 import EventFilters from '@/components/events/EventFilters';
-import { Button } from '@/components/ui/Button';
-import { FaSort, FaFilter } from 'react-icons/fa';
+import { FaFilter } from 'react-icons/fa';
 import { eventsAPI } from '@/lib/api';
+import SortSelect from '@/components/events/SortSelect';
+import PaginationButtons from '@/components/common/PaginationButtons';
 
 // Types pour les paramètres de recherche
 interface SearchParams {
@@ -20,11 +21,14 @@ interface SearchParams {
 // Cette fonction s'exécute côté serveur pour obtenir les données
 async function getEventsData(searchParams: SearchParams) {
   try {
-    // Obtenir les événements avec les filtres
+    // Obtenir les événements avec les filtres et la pagination
     const eventsResponse = await eventsAPI.getEvents({
       ...searchParams,
       status: 'validated',
-      limit: 9
+      limit: 5,
+      // Nous envoyons à la fois page et offset pour s'assurer que l'API reçoit ce qu'elle attend
+      page: Number(searchParams.page || 1),
+      offset: (Number(searchParams.page || 1) - 1) * 5
     });
     
     // Obtenir les catégories pour les filtres
@@ -59,6 +63,29 @@ export default async function EventsPage({ searchParams }: { searchParams: Searc
   
   const currentSort = searchParams.ordering || 'start_date';
   
+  // Create a function to generate the URL for pagination and sorting
+  const createQueryString = (params: Record<string, string>) => {
+    const urlParams = new URLSearchParams();
+    
+    // Add search parameters
+    if (searchParams.search) urlParams.set('search', searchParams.search);
+    if (searchParams.category) urlParams.set('category', searchParams.category);
+    if (searchParams.event_type) urlParams.set('event_type', searchParams.event_type);
+    if (searchParams.city) urlParams.set('city', searchParams.city);
+    if (searchParams.ordering) urlParams.set('ordering', searchParams.ordering);
+    
+    // Override with new params
+    Object.entries(params).forEach(([key, value]) => {
+      if (value) {
+        urlParams.set(key, value);
+      } else {
+        urlParams.delete(key);
+      }
+    });
+    
+    return urlParams.toString();
+  };
+  
   return (
     <MainLayout>
       {/* Header */}
@@ -81,26 +108,11 @@ export default async function EventsPage({ searchParams }: { searchParams: Searc
             {totalEvents} événement{totalEvents !== 1 ? 's' : ''} trouvé{totalEvents !== 1 ? 's' : ''}
           </p>
           
-          <div className="flex items-center">
-            <FaSort className="text-gray-500 mr-2" />
-            <select
-              className="border-gray-300 rounded-md focus:ring-primary focus:border-primary text-sm"
-              defaultValue={currentSort}
-              onChange={(e) => {
-                // Redirection avec le nouveau tri
-                window.location.href = `?${new URLSearchParams({
-                  ...searchParams,
-                  ordering: e.target.value
-                }).toString()}`;
-              }}
-            >
-              {sortOptions.map(option => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
+          <SortSelect 
+            options={sortOptions}
+            currentValue={currentSort}
+            searchParams={searchParams}
+          />
         </div>
         
         {/* Grille d'événements */}
@@ -109,31 +121,14 @@ export default async function EventsPage({ searchParams }: { searchParams: Searc
         </Suspense>
         
         {/* Pagination */}
-        {totalEvents > 9 && (
+        {totalEvents > 5 && (
           <div className="mt-12 flex justify-center">
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                disabled={!searchParams.page || searchParams.page === '1'}
-                href={`?${new URLSearchParams({
-                  ...searchParams,
-                  page: String(Number(searchParams.page || 1) - 1)
-                }).toString()}`}
-              >
-                Précédent
-              </Button>
-              
-              <Button
-                variant="outline"
-                disabled={totalEvents <= Number(searchParams.page || 1) * 9}
-                href={`?${new URLSearchParams({
-                  ...searchParams,
-                  page: String(Number(searchParams.page || 1) + 1)
-                }).toString()}`}
-              >
-                Suivant
-              </Button>
-            </div>
+            <PaginationButtons
+              currentPage={Number(searchParams.page || 1)}
+              totalItems={totalEvents}
+              itemsPerPage={5}
+              searchParams={searchParams}
+            />
           </div>
         )}
       </div>

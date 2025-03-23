@@ -2,7 +2,7 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/app/api/auth/[...nextauth]/options';
 import { redirect } from 'next/navigation';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs';
 import { FaPlus, FaCalendarAlt, FaEye, FaUsers, FaEdit, FaTrash, FaChartBar } from 'react-icons/fa';
 import { eventsAPI, analyticsAPI } from '@/lib/api';
-import { formatDate } from '../../../../lib/utils/utils';
+import { formatDate } from '@/lib/utils';
 
 // Type pour les paramètres de recherche
 interface SearchParams {
@@ -58,7 +58,7 @@ export default async function MyEventsPage({ searchParams }: { searchParams: Sea
     redirect('/login?redirect=/dashboard/my-events');
   }
   
-  if (session.user.role !== 'organizer') {
+  if (session.user.role !== 'organizer' && session.user.role !== 'admin') {
     redirect('/');
   }
   
@@ -81,7 +81,7 @@ export default async function MyEventsPage({ searchParams }: { searchParams: Sea
   const currentStatus = searchParams.status || 'all';
   
   return (
-    <DashboardLayout>
+    <div>
       <div className="p-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
           <div>
@@ -357,6 +357,6 @@ export default async function MyEventsPage({ searchParams }: { searchParams: Sea
           </Tabs>
         </div>
       </div>
-    </DashboardLayout>
+    </div>
   );
 }

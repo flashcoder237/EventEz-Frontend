@@ -1,7 +1,7 @@
 // components/dashboard/DashboardStats.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { analyticsAPI } from '@/lib/api';
@@ -12,16 +12,42 @@ import { FaCalendarAlt, FaUsers, FaMoneyBillWave, FaChartLine } from 'react-icon
 export default function DashboardStats() {
   const [stats, setStats] = useState<AnalyticsDashboardSummary | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [period, setPeriod] = useState<'week' | 'month' | 'year'>('month');
   
   useEffect(() => {
-    const fetchStats = async () => {
+    const { data: session, status } = useSession({
+      required: true,
+      onUnauthenticated() {
+        // Ne pas charger les notifications si l'utilisateur n'est pas connecté
+      },
+    });
+
+const fetchStats = async () => {
+      if (!session || !session.accessToken) {
+        console.error('Session is invalid or access token is missing');
+        return;
+      }
       setLoading(true);
+      setError(null);
       try {
-        const response = await analyticsAPI.getDashboardSummary({ period });
+        const response = await analyticsAPI.getDashboardSummary({ 
+          period,
+          // Ajoutez explicitement l'ID de l'organisateur
+          organizer_id: session?.user?.id 
+        });
         setStats(response.data);
-      } catch (error) {
-        console.error('Error fetching dashboard stats:', error);
+      } catch (error: any) {
+        console.error('Erreur de chargement des statistiques:', error);
+        
+        // Log détaillé de l'erreur
+        if (error.response) {
+          console.error('Détails de l\'erreur:', error.response.data);
+          console.error('Statut:', error.response.status);
+          console.error('Headers:', error.response.headers);
+        }
+    
+        setError(error.response?.data?.detail || 'Une erreur est survenue lors du chargement des statistiques');
       } finally {
         setLoading(false);
       }
@@ -36,6 +62,18 @@ export default function DashboardStats() {
         {[...Array(4)].map((_, index) => (
           <div key={index} className="h-32 bg-white rounded-lg shadow-sm animate-pulse"></div>
         ))}
+      </div>
+    );
+  }
+  
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+        <h3 className="text-lg font-medium text-red-800 mb-4">Erreur de chargement</h3>
+        <p className="text-red-600 mb-6">{error}</p>
+        <Button onClick={() => window.location.reload()}>
+          Réessayer
+        </Button>
       </div>
     );
   }

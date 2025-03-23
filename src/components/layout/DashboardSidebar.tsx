@@ -7,14 +7,34 @@ import { useSession } from 'next-auth/react';
 import { FaCalendarAlt, FaChartLine, FaUsers, FaCreditCard, FaCog, FaPlus } from 'react-icons/fa';
 
 export default function DashboardSidebar() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession({
+    required: true,
+    onUnauthenticated() {
+      // Cette page étant protégée, nous pouvons laisser le middleware gérer la redirection
+    },
+  });
   const pathname = usePathname();
 
   const isActive = (path: string) => {
     return pathname === path;
   };
 
-  if (!session || session.user.role !== 'organizer') {
+  if (status === 'loading' || !session) {
+    return (
+      <aside className="bg-white border-r border-gray-200 w-64 min-h-screen sticky top-0 pt-4">
+        <div className="animate-pulse p-6">
+          <div className="h-6 bg-gray-200 rounded w-2/3 mb-4"></div>
+          <div className="space-y-3">
+            <div className="h-4 bg-gray-200 rounded w-full"></div>
+            <div className="h-4 bg-gray-200 rounded w-full"></div>
+            <div className="h-4 bg-gray-200 rounded w-full"></div>
+          </div>
+        </div>
+      </aside>
+    );
+  }
+
+  if (!session || (session.user.role !== 'organizer' && session.user.role !== 'admin')) {
     return null;
   }
 

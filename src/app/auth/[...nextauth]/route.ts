@@ -1,8 +1,8 @@
 import NextAuth from 'next-auth';
 import { authOptions } from './options';
 
-// Exporter le gestionnaire NextAuth avec les options
+// Créer et exporter le handler NextAuth
 const handler = NextAuth(authOptions);
 
-// Exporter les méthodes HTTP nécessaires
+// Exporter les méthodes nécessaires pour l'API Route
 export { handler as GET, handler as POST };

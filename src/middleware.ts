@@ -4,15 +4,33 @@ import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 
 export async function middleware(request: NextRequest) {
-  // Récupérer le token JWT
+  // Routes publiques qui ne nécessitent pas d'authentification
+  const publicRoutes = [
+    '/',
+    '/events',
+    '/events/categories',
+    '/about',
+    '/contact'
+  ];
+  
+  // Vérifier si la route actuelle est une route publique ou commence par /events/ (détail d'un événement)
+  const isPublicRoute = publicRoutes.includes(request.nextUrl.pathname) || 
+                        request.nextUrl.pathname.startsWith('/events/') ||
+                        request.nextUrl.pathname.startsWith('/api/events') ||
+                        request.nextUrl.pathname.startsWith('/_next') ||
+                        request.nextUrl.pathname.startsWith('/images');
+  
+  if (isPublicRoute) {
+    return NextResponse.next();
+  }
+  
+  // Pour les autres routes (qui nécessitent une authentification)
   const token = await getToken({ 
     req: request, 
     secret: process.env.NEXTAUTH_SECRET
   });
   
-  // Création de l'URL de redirection de base
   const loginUrl = new URL('/login', request.url);
-  const homeUrl = new URL('/', request.url);
   
   // Ajouter le paramètre de redirection si nécessaire
   if (request.nextUrl.pathname.startsWith('/dashboard')) {
@@ -28,25 +46,15 @@ export async function middleware(request: NextRequest) {
     
     // Vérifier les rôles autorisés
     if (token.role !== 'organizer' && token.role !== 'admin') {
-      return NextResponse.redirect(homeUrl);
+      return NextResponse.redirect(new URL('/', request.url));
     }
   }
   
-  // Protection des routes d'administration
-  if (request.nextUrl.pathname.startsWith('/admin')) {
-    // Vérifier si l'utilisateur est authentifié et a le rôle d'admin
-    if (!token || token.role !== 'admin') {
-      return NextResponse.redirect(homeUrl);
-    }
-  }
-  
-  // Rediriger les utilisateurs déjà connectés depuis les pages d'auth
+  // Routes pour l'authentification
   if ((request.nextUrl.pathname.startsWith('/login') || 
        request.nextUrl.pathname.startsWith('/register')) && token) {
-    // Trouver le paramètre de redirection ou rediriger vers l'accueil
     const redirectParam = request.nextUrl.searchParams.get('redirect');
-    const redirectUrl = redirectParam ? new URL(redirectParam, request.url) : homeUrl;
-    return NextResponse.redirect(redirectUrl);
+    return NextResponse.redirect(new URL(redirectParam || '/', request.url));
   }
   
   return NextResponse.next();
@@ -55,10 +63,6 @@ export async function middleware(request: NextRequest) {
 // Configuration des chemins à protéger
 export const config = {
   matcher: [
-    '/dashboard/:path*', 
-    '/admin/:path*',
-    '/login',
-    '/register',
-    '/register-organizer'
+    '/((?!api/auth|_next/static|_next/image|favicon.ico).*)',
   ],
 };

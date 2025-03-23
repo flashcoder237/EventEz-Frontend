@@ -7,13 +7,26 @@ import { notificationsAPI } from '@/lib/api';
 import { Notification } from '@/types';
 import { Button } from '../ui/Button';
 import { FaBell, FaCheck } from 'react-icons/fa';
+import { useSession } from 'next-auth/react'; // Ajoutez cette ligne si nécessaire
 
 export default function NotificationDropdown() {
+  const { data: session, status } = useSession({
+    required: true,
+    onUnauthenticated() {
+      // Ne pas charger les notifications si l'utilisateur n'est pas connecté
+    },
+  });
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchNotifications = async () => {
+      // Ne charger les notifications que si l'utilisateur est connecté
+      if (status !== 'authenticated' || !session) {
+        setLoading(false);
+        return;
+      }
+      
       try {
         const response = await notificationsAPI.getNotifications();
         setNotifications(response.data.results || []);
@@ -25,7 +38,7 @@ export default function NotificationDropdown() {
     };
 
     fetchNotifications();
-  }, []);
+  }, [session, status]);
 
   const markAsRead = async (id: string) => {
     try {

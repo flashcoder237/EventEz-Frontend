@@ -5,7 +5,7 @@ import MainLayout from '@/components/layout/MainLayout';
 import EventRegistrationForm from '@/components/events/EventRegistrationForm';
 import { eventsAPI } from '@/lib/api';
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/app/api/auth/[...nextauth]/options';
 
 // Cette fonction s'exécute côté serveur pour obtenir les données
 async function getRegistrationData(id: string) {

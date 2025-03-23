@@ -7,10 +7,51 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
 import { Menu, X, ChevronDown, User } from 'lucide-react';
 import { useState } from 'react';
+import { signIn, signOut, useSession } from 'next-auth/react';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  
+  const { data: session, status } = useSession({
+    required: false,
+    onUnauthenticated() {
+      // Ne rien faire ici, c'est normal pour les visiteurs non authentifiés
+    },
+  });
+  const canAccessDashboard = session?.user?.role === 'organizer' || session?.user?.role === 'admin';
+  const userActions = () => {
+    if (status === 'loading') {
+      return (
+        <div className="animate-pulse h-10 w-20 bg-gray-200 rounded"></div>
+      );
+    }
+    
+    if (session && session.user) {
+      return (
+        <div className="flex items-center space-x-4">
+          {canAccessDashboard && (
+              <Link href="/dashboard/my-events" className="text-violet-600 hover:text-violet-800 font-medium transition-colors">
+                Tableau de bord
+              </Link>
+            )}
+            
+          <Button onClick={() => signOut()} className="bg-gradient-to-r from-violet-600 to-pink-500 hover:from-violet-700 hover:to-pink-600 text-white border-0">
+            Déconnexion
+          </Button>
+        </div>
+      );
+    }
+    
+    return (
+      <div className="flex items-center space-x-4">
+        <Link href="/login" className="text-gray-700 hover:text-violet-600 font-medium transition-colors">
+          Connexion
+        </Link>
+        <Button href="/register" className="bg-gradient-to-r from-violet-600 to-pink-500 hover:from-violet-700 hover:to-pink-600 text-white border-0">
+          S'inscrire
+        </Button>
+      </div>
+    );
+  };
   return (
     <header className="bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm">
       <div className="container mx-auto px-4">
@@ -72,14 +113,7 @@ export default function Header() {
           </nav>
           
           {/* Actions - Desktop */}
-          <div className="hidden md:flex items-center space-x-4">
-            <Link href="/login" className="text-gray-700 hover:text-violet-600 font-medium transition-colors">
-              Connexion
-            </Link>
-            <Button href="/register" className="bg-gradient-to-r from-violet-600 to-pink-500 hover:from-violet-700 hover:to-pink-600 text-white border-0">
-              S'inscrire
-            </Button>
-          </div>
+          {userActions()}
           
           {/* Menu button - Mobile */}
           <button 
@@ -159,22 +193,7 @@ export default function Header() {
             >
               Contact
             </Link>
-            <div className="pt-4 border-t border-gray-100 flex flex-col space-y-3">
-              <Link 
-                href="/login" 
-                className="text-center py-2 text-gray-700 hover:text-violet-600 font-medium transition-colors border border-gray-200 rounded-md"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Connexion
-              </Link>
-              <Button 
-                href="/register" 
-                className="bg-gradient-to-r from-violet-600 to-pink-500 hover:from-violet-700 hover:to-pink-600 text-white border-0"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                S'inscrire
-              </Button>
-            </div>
+            {userActions()}
           </div>
         </div>
       )}

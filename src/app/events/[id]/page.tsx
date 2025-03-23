@@ -35,43 +35,48 @@ async function getEventData(id: string) {
   try {
     // Obtenir les détails de l'événement
     const eventResponse = await eventsAPI.getEvent(id);
+    const event = eventResponse.data;
     
-    // Obtenir les types de billets si c'est un événement avec billetterie
+    // Vérifier si l'événement est validé et n'est pas terminé
+    const eventHasPassed = new Date(event.end_date) < new Date();
+    const registrationDeadlinePassed = event.registration_deadline 
+      ? new Date(event.registration_deadline) < new Date() 
+      : false;
+    
+    // Obtenir les données nécessaires selon le type d'événement
     let ticketTypes = [];
-    if (eventResponse.data.event_type === 'billetterie') {
+    let formFields = [];
+    let feedbacks = [];
+    
+    if (event.event_type === 'billetterie') {
       try {
         const ticketTypesResponse = await eventsAPI.getTicketTypes(id);
-        ticketTypes = ticketTypesResponse.data.results || [];
+        ticketTypes = ticketTypesResponse.data?.results || [];
       } catch (ticketError) {
         console.error('Erreur lors de la récupération des types de billets:', ticketError);
-        // Continue with empty ticketTypes array
+        // Continuer avec un tableau vide de ticketTypes
       }
-    }
-    
-    // Obtenir les champs de formulaire si c'est un événement avec inscription personnalisée
-    let formFields = [];
-    if (eventResponse.data.event_type === 'inscription') {
+    } else {
       try {
         const formFieldsResponse = await eventsAPI.getFormFields(id);
-        formFields = formFieldsResponse.data.results || [];
+        formFields = formFieldsResponse.data?.results || [];
       } catch (formError) {
         console.error('Erreur lors de la récupération des champs de formulaire:', formError);
-        // Continue with empty formFields array
+        // Continuer avec un tableau vide de formFields
       }
     }
     
     // Obtenir les avis
-    let feedbacks = [];
     try {
       const feedbacksResponse = await feedbackAPI.getFeedbacks(id);
-      feedbacks = feedbacksResponse.data.results || [];
+      feedbacks = feedbacksResponse.data?.results || [];
     } catch (feedbackError) {
       console.error('Erreur lors de la récupération des avis:', feedbackError);
-      // Continue with empty feedbacks array
+      // Continuer avec un tableau vide de feedbacks
     }
     
     return {
-      event: eventResponse.data,
+      event,
       ticketTypes,
       formFields,
       feedbacks

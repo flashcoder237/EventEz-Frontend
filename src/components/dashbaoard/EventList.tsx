@@ -9,16 +9,27 @@ import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { eventsAPI } from '@/lib/api';
 import { formatDate } from '@/lib/utils';
+import { useSession } from 'next-auth/react';
 import { FaCalendarAlt, FaEdit, FaEye, FaCopy, FaTrash, FaUsers, FaChartLine } from 'react-icons/fa';
 
 export default function EventList() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'all' | 'upcoming' | 'past'>('all');
-  
+  const { data: session, status } = useSession({
+    required: true,
+    onUnauthenticated() {
+      // La page du tableau de bord est protégée par le middleware, 
+      // donc cette fonction ne devrait jamais être appelée
+    },
+  });
   useEffect(() => {
+    // Ne charger les données que si l'utilisateur est connecté
+    if (status !== 'authenticated' || !session) {
+      return;
+    }
+    
     const fetchEvents = async () => {
-      setLoading(true);
       try {
         const response = await eventsAPI.getEvents({ organizer: 'me' });
         setEvents(response.data.results || []);
@@ -30,7 +41,16 @@ export default function EventList() {
     };
     
     fetchEvents();
-  }, []);
+  }, [session, status]);
+
+  // Si en cours de chargement ou pas de session, afficher un état de chargement
+  if (status === 'loading' || !session) {
+    return (
+      <div className="space-y-4">
+        {/* Affichage de chargement... */}
+      </div>
+    );
+  }
   
   const filteredEvents = events.filter(event => {
     const eventDate = new Date(event.start_date);

@@ -24,11 +24,16 @@ interface EventDetailProps {
 
 export default function EventDetail({ 
   event, 
-  ticketTypes = [], 
+  ticketTypes = [], // Fournir un tableau vide par défaut
   formFields = [], 
   feedbacks = [] 
 }: EventDetailProps) {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession({
+    required: false,
+    onUnauthenticated() {
+      // Pas besoin de rediriger ici, l'événement peut être consulté par tous
+    },
+  });
   const [activeTab, setActiveTab] = useState('details');
   const [liked, setLiked] = useState(false);
   const [shareTooltip, setShareTooltip] = useState(false);
@@ -37,9 +42,10 @@ export default function EventDetail({
   const isBilletterie = event.event_type === 'billetterie';
   const isExpired = useMemo(() => new Date(event.end_date) < new Date(), [event.end_date]);
   const daysRemaining = useMemo(() => getDaysUntil(event.registration_deadline || event.start_date), 
-    [event.registration_deadline, event.start_date]);
+  [event.registration_deadline, event.start_date]);
   
   // Calculer le délai d'inscription restant
+  const canLeaveReview = session?.user && !isExpired;
   const registrationDeadline = useMemo(() => {
     const now = new Date();
     const deadline = event.registration_deadline 
@@ -449,7 +455,7 @@ export default function EventDetail({
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold">Avis et commentaires</h2>
                 
-                {session && !isExpired && (
+                {status !== 'loading' && session?.user && !isExpired && (
                   <Button 
                     variant="outline" 
                     size="sm"
