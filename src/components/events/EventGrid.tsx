@@ -68,7 +68,7 @@ export default function EventGrid({ events, loading = false }: EventGridProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" ref={gridRef}>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6  px-4 md:px-8 lg:px-16" ref={gridRef}>
       {events.map((event, index) => {
         // Debug log pour chaque événement
         console.log(`Rendering event ${index}:`, event.id, event.title);

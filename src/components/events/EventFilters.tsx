@@ -6,7 +6,8 @@ import { Input } from '../ui/Input';
 import { Select } from '../ui/Select';
 import { Button } from '../ui/Button';
 import { Category } from '@/types';
-import { Search, Filter, X, ChevronUp, ChevronDown } from 'lucide-react';
+import { Search, Filter, X, ChevronDown } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface EventFiltersProps {
   categories: Category[];
@@ -20,23 +21,24 @@ export default function EventFilters({ categories }: EventFiltersProps) {
   const [category, setCategory] = useState(searchParams.get('category') || '');
   const [eventType, setEventType] = useState(searchParams.get('event_type') || '');
   const [city, setCity] = useState(searchParams.get('city') || '');
-  const [showFilters, setShowFilters] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
-  
-  // Surveiller le défilement pour les styles visuels
+  const [isMobile, setIsMobile] = useState(false);
+
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 100);
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
     };
     
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
-  
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    
+    applyFilters();
+  };
+  
+  const applyFilters = () => {
     const params = new URLSearchParams();
     if (searchTerm) params.set('search', searchTerm);
     if (category) params.set('category', category);
@@ -60,185 +62,203 @@ export default function EventFilters({ categories }: EventFiltersProps) {
     eventType,
     city
   ].filter(Boolean).length;
-  
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchTerm || category || eventType || city) {
+        applyFilters();
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm, category, eventType, city]);
+
   return (
-    <div className={`transition-all duration-300 ${
-      isScrolled ? 'shadow-md' : ''
-    }`}>
-      <button 
-        className={`md:hidden w-full py-2 px-4 flex justify-between items-center border-b ${
-          collapsed ? 'bg-gray-50' : 'bg-white'
-        }`}
-        onClick={() => setCollapsed(!collapsed)}
-      >
-        <span className="font-medium flex items-center">
-          <Filter size={16} className="mr-2" />
-          Filtres
-          {activeFiltersCount > 0 && (
-            <span className="ml-2 bg-primary text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-              {activeFiltersCount}
-            </span>
-          )}
-        </span>
-        {collapsed ? <ChevronDown size={20} /> : <ChevronUp size={20} />}
-      </button>
-      
-      <div className={`bg-white p-4 transition-all duration-300 overflow-hidden ${
-        collapsed ? 'max-h-0 p-0 opacity-0' : 'max-h-[1000px] opacity-100'
-      }`}>
-        <form onSubmit={handleSearch}>
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Input
-                  type="text"
-                  placeholder="Rechercher un événement..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-                <Search className="absolute left-3 top-3 text-gray-400" size={16} />
-              </div>
-            </div>
-            
-            <div className="md:w-auto">
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full md:w-auto"
-                onClick={() => setShowFilters(!showFilters)}
-              >
-                {showFilters ? (
-                  <>
-                    <X className="mr-2" size={16} />
-                    Masquer les filtres
-                  </>
-                ) : (
-                  <>
-                    <Filter className="mr-2" size={16} />
-                    Filtres {activeFiltersCount > 0 && `(${activeFiltersCount})`}
-                  </>
-                )}
-              </Button>
-            </div>
-            
-            <div className="md:w-auto">
-              <Button type="submit" className="w-full md:w-auto bg-primary">
-                Rechercher
-              </Button>
-            </div>
+    <div className="bg-white rounded-lg border border-gray-200 shadow-xs">
+      {/* Mobile Version */}
+      {isMobile ? (
+        <div className="p-4">
+          <div className="relative mb-4">
+            <Input
+              type="text"
+              placeholder="Rechercher..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 pr-4 py-2.5 rounded-lg"
+            />
+            <Search className="absolute left-3 top-3 text-gray-400" size={18} />
           </div>
           
-          {showFilters && (
-            <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Select
-                options={[
-                  { value: '', label: 'Toutes les catégories' },
-                  ...categories.map(cat => ({ value: cat.id.toString(), label: cat.name }))
-                ]}
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                label="Catégorie"
-              />
+          <div className="flex items-center justify-between mb-4">
+            <Button
+              variant="outline"
+              className="flex items-center gap-2"
+              onClick={() => setIsMobile(false)}
+            >
+              <Filter size={16} />
+              <span>Filtres</span>
+              {activeFiltersCount > 0 && (
+                <span className="bg-indigo-100 text-indigo-800 rounded-full px-2 py-0.5 text-xs">
+                  {activeFiltersCount}
+                </span>
+              )}
+            </Button>
+            
+            {activeFiltersCount > 0 && (
+              <button
+                onClick={clearFilters}
+                className="text-sm text-indigo-600 flex items-center gap-1"
+              >
+                <X size={14} />
+                <span>Effacer</span>
+              </button>
+            )}
+          </div>
+        </div>
+      ) : (
+        /* Desktop Version - Modern UI */
+        <div className="p-4">
+          <form onSubmit={handleSearch} className="space-y-4">
+            <div className="flex flex-col md:flex-row gap-4 items-end">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 w-full">
+                <div className="relative">
+                  <Input
+                    type="text"
+                    placeholder="Rechercher un événement..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                  <Search className="absolute left-3 top-3 text-gray-400" size={18} />
+                </div>
+                
+                <Select
+                  options={[
+                    { value: '', label: 'Toutes catégories' },
+                    ...categories.map(cat => ({ 
+                      value: cat.id.toString(), 
+                      label: cat.name 
+                    }))
+                  ]}
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  placeholder="Catégorie"
+                />
+                
+                <Select
+                  options={[
+                    { value: '', label: 'Tous types' },
+                    { value: 'billetterie', label: 'Billetterie' },
+                    { value: 'inscription', label: 'Inscription' }
+                  ]}
+                  value={eventType}
+                  onChange={(e) => setEventType(e.target.value)}
+                  placeholder="Type"
+                />
+                
+                <Input
+                  type="text"
+                  placeholder="Ville"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                />
+              </div>
               
-              <Select
-                options={[
-                  { value: '', label: 'Tous les types' },
-                  { value: 'billetterie', label: 'Billetterie' },
-                  { value: 'inscription', label: 'Inscription personnalisée' }
-                ]}
-                value={eventType}
-                onChange={(e) => setEventType(e.target.value)}
-                label="Type d'événement"
-              />
-              
-              <Input
-                type="text"
-                placeholder="Ville"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                label="Ville"
-              />
-              
-              <div className="md:col-span-3 flex justify-end">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="text-sm"
-                  onClick={clearFilters}
-                >
-                  Réinitialiser les filtres
+              <div className="flex gap-2">
+                {activeFiltersCount > 0 && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="text-indigo-600 hover:bg-indigo-50 flex items-center gap-1"
+                    onClick={clearFilters}
+                  >
+                    <X size={16} />
+                    <span>Réinitialiser</span>
+                  </Button>
+                )}
+                <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                  Appliquer
                 </Button>
               </div>
             </div>
-          )}
+          </form>
           
-          {/* Filtres actifs */}
-          {activeFiltersCount > 0 && !showFilters && (
-            <div className="mt-4 flex flex-wrap gap-2">
-              {searchTerm && (
-                <div className="bg-gray-100 rounded-full px-3 py-1 text-sm flex items-center">
-                  <span className="mr-1">Recherche:</span>
-                  <span className="font-medium">{searchTerm}</span>
-                  <button 
-                    type="button"
-                    onClick={() => setSearchTerm('')}
-                    className="ml-2 text-gray-500 hover:text-gray-700"
+          {/* Active Filters - Desktop */}
+          {activeFiltersCount > 0 && (
+            <div className="mt-4 pt-4 border-t border-gray-100">
+              <div className="flex flex-wrap gap-2">
+                {searchTerm && (
+                  <motion.div 
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="bg-indigo-50 rounded-full px-3 py-1.5 text-sm flex items-center"
                   >
-                    <X size={14} />
-                  </button>
-                </div>
-              )}
-              
-              {category && (
-                <div className="bg-gray-100 rounded-full px-3 py-1 text-sm flex items-center">
-                  <span className="mr-1">Catégorie:</span>
-                  <span className="font-medium">
-                    {categories.find(c => c.id.toString() === category)?.name || category}
-                  </span>
-                  <button 
-                    type="button"
-                    onClick={() => setCategory('')}
-                    className="ml-2 text-gray-500 hover:text-gray-700"
+                    <span className="text-indigo-800">"{searchTerm}"</span>
+                    <button 
+                      onClick={() => setSearchTerm('')}
+                      className="ml-2 text-indigo-400 hover:text-indigo-600"
+                    >
+                      <X size={14} />
+                    </button>
+                  </motion.div>
+                )}
+                
+                {category && (
+                  <motion.div 
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="bg-indigo-50 rounded-full px-3 py-1.5 text-sm flex items-center"
                   >
-                    <X size={14} />
-                  </button>
-                </div>
-              )}
-              
-              {eventType && (
-                <div className="bg-gray-100 rounded-full px-3 py-1 text-sm flex items-center">
-                  <span className="mr-1">Type:</span>
-                  <span className="font-medium">
-                    {eventType === 'billetterie' ? 'Billetterie' : 'Inscription'}
-                  </span>
-                  <button 
-                    type="button"
-                    onClick={() => setEventType('')}
-                    className="ml-2 text-gray-500 hover:text-gray-700"
+                    <span className="text-indigo-800">
+                      {categories.find(c => c.id.toString() === category)?.name || category}
+                    </span>
+                    <button 
+                      onClick={() => setCategory('')}
+                      className="ml-2 text-indigo-400 hover:text-indigo-600"
+                    >
+                      <X size={14} />
+                    </button>
+                  </motion.div>
+                )}
+                
+                {eventType && (
+                  <motion.div 
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="bg-indigo-50 rounded-full px-3 py-1.5 text-sm flex items-center"
                   >
-                    <X size={14} />
-                  </button>
-                </div>
-              )}
-              
-              {city && (
-                <div className="bg-gray-100 rounded-full px-3 py-1 text-sm flex items-center">
-                  <span className="mr-1">Ville:</span>
-                  <span className="font-medium">{city}</span>
-                  <button 
-                    type="button"
-                    onClick={() => setCity('')}
-                    className="ml-2 text-gray-500 hover:text-gray-700"
+                    <span className="text-indigo-800">
+                      {eventType === 'billetterie' ? 'Billetterie' : 'Inscription'}
+                    </span>
+                    <button 
+                      onClick={() => setEventType('')}
+                      className="ml-2 text-indigo-400 hover:text-indigo-600"
+                    >
+                      <X size={14} />
+                    </button>
+                  </motion.div>
+                )}
+                
+                {city && (
+                  <motion.div 
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="bg-indigo-50 rounded-full px-3 py-1.5 text-sm flex items-center"
                   >
-                    <X size={14} />
-                  </button>
-                </div>
-              )}
+                    <span className="text-indigo-800">{city}</span>
+                    <button 
+                      onClick={() => setCity('')}
+                      className="ml-2 text-indigo-400 hover:text-indigo-600"
+                    >
+                      <X size={14} />
+                    </button>
+                  </motion.div>
+                )}
+              </div>
             </div>
           )}
-        </form>
-      </div>
+        </div>
+      )}
     </div>
   );
 }

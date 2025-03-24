@@ -68,10 +68,10 @@ export default async function EventsPage({ searchParams }: { searchParams: Searc
   return (
     <MainLayout>
       {/* Header */}
-      <div className="bg-gradient-to-r from-purple-800 to-indigo-700 text-white py-12">
+      <div className="bg-gradient-to-r from-purple-800 to-indigo-700 text-white py-12 text-center">
         <div className="container mx-auto px-4">
           <h1 className="text-3xl font-bold mb-4">Explorez les événements</h1>
-          <p className="text-lg mb-0">
+          <p className="text-lg mb-0 font-thin">
             Découvrez tous les événements disponibles sur notre plateforme
           </p>
         </div>

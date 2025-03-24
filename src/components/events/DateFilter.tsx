@@ -11,31 +11,25 @@ interface DateFilterProps {
   onDateFilterChange: (startDate: string, endDate: string) => void;
 }
 
-// Utilisation d'export nommé pour s'assurer que l'import fonctionne correctement
 export function DateFilter({ onDateFilterChange }: DateFilterProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [activeFilter, setActiveFilter] = useState<string>('all');
 
-  // Pour formater les dates pour l'API
   const formatDateForAPI = (date: Date): string => {
     return format(date, 'yyyy-MM-dd');
   };
 
   useEffect(() => {
-    // Vérifier s'il y a déjà des filtres de date dans l'URL
     const startDate = searchParams.get('start_date');
     const endDate = searchParams.get('end_date');
 
     if (startDate && endDate) {
-      // Déterminer quel filtre est actif en fonction des dates
       const today = formatDateForAPI(new Date());
       
       if (startDate === today && endDate === today) {
         setActiveFilter('today');
       } else {
-        // Essayer de déterminer si c'est cette semaine, ce mois, etc.
-        // Pour simplifier, on met juste 'custom' pour tout filtre non standard
         setActiveFilter('custom');
       }
     } else {
@@ -54,9 +48,8 @@ export function DateFilter({ onDateFilterChange }: DateFilterProps) {
         endDate = formatDateForAPI(today);
         break;
       case 'tomorrow':
-        const tomorrow = addDays(today, 1);
-        startDate = formatDateForAPI(tomorrow);
-        endDate = formatDateForAPI(tomorrow);
+        startDate = formatDateForAPI(addDays(today, 1));
+        endDate = formatDateForAPI(addDays(today, 1));
         break;
       case 'thisWeek':
         startDate = formatDateForAPI(startOfWeek(today, { weekStartsOn: 1 }));
@@ -66,85 +59,58 @@ export function DateFilter({ onDateFilterChange }: DateFilterProps) {
         startDate = formatDateForAPI(startOfMonth(today));
         endDate = formatDateForAPI(endOfMonth(today));
         break;
-      case 'all':
       default:
-        // Pas de filtre de date
         startDate = null;
         endDate = null;
         break;
     }
 
     setActiveFilter(filter);
-    
-    if (startDate && endDate) {
-      onDateFilterChange(startDate, endDate);
-    } else {
-      onDateFilterChange('', '');
-    }
+    onDateFilterChange(startDate || '', endDate || '');
   };
 
+  const filters = [
+    { id: 'all', label: 'Toutes les dates' },
+    { id: 'today', label: 'Aujourd\'hui' },
+    { id: 'tomorrow', label: 'Demain' },
+    { id: 'thisWeek', label: 'Cette semaine' },
+    { id: 'thisMonth', label: 'Ce mois' }
+  ];
+
   return (
-    <div className="bg-white rounded-lg p-2 mb-2">
-      <div className="flex items-center mb-2">
-        <CalendarIcon className="h-5 w-5 text-primary mr-2" />
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4">
+      <div className="flex items-center mb-4">
+        <CalendarIcon className="h-5 w-5 text-indigo-600 mr-2" />
         <h3 className="font-medium text-gray-800">Filtrer par date</h3>
       </div>
       
-      <div className="flex flex-wrap gap-2 mt-2">
-        <Button 
-          size="sm"
-          variant={activeFilter === 'all' ? 'default' : 'outline'}
-          onClick={() => applyDateFilter('all')}
-          className={activeFilter === 'all' ? 'bg-primary' : ''}
-        >
-          Tous
-        </Button>
-        
-        <Button 
-          size="sm"
-          variant={activeFilter === 'today' ? 'default' : 'outline'}
-          onClick={() => applyDateFilter('today')}
-          className={activeFilter === 'today' ? 'bg-primary' : ''}
-        >
-          Aujourd'hui
-        </Button>
-        
-        <Button 
-          size="sm"
-          variant={activeFilter === 'tomorrow' ? 'default' : 'outline'}
-          onClick={() => applyDateFilter('tomorrow')}
-          className={activeFilter === 'tomorrow' ? 'bg-primary' : ''}
-        >
-          Demain
-        </Button>
-        
-        <Button 
-          size="sm"
-          variant={activeFilter === 'thisWeek' ? 'default' : 'outline'}
-          onClick={() => applyDateFilter('thisWeek')}
-          className={activeFilter === 'thisWeek' ? 'bg-primary' : ''}
-        >
-          Cette semaine
-        </Button>
-        
-        <Button 
-          size="sm"
-          variant={activeFilter === 'thisMonth' ? 'default' : 'outline'}
-          onClick={() => applyDateFilter('thisMonth')}
-          className={activeFilter === 'thisMonth' ? 'bg-primary' : ''}
-        >
-          Ce mois
-        </Button>
+      <div className="flex flex-wrap gap-2">
+        {filters.map((filter) => (
+          <Button
+            key={filter.id}
+            size="sm"
+            variant={activeFilter === filter.id ? 'default' : 'outline'}
+            onClick={() => applyDateFilter(filter.id)}
+            className={`text-sm rounded-lg transition-all ${
+              activeFilter === filter.id 
+                ? 'bg-indigo-600 hover:bg-indigo-700 text-white' 
+                : 'text-gray-700 hover:bg-gray-50 border-gray-200'
+            }`}
+          >
+            {filter.label}
+          </Button>
+        ))}
       </div>
       
       {activeFilter === 'custom' && (
-        <div className="mt-2 text-xs text-gray-500 italic">
-          Filtre personnalisé appliqué
+        <div className="mt-3 text-sm text-indigo-600 font-medium flex items-center">
+          <span className="bg-indigo-100 rounded-full px-3 py-1">
+            Filtre personnalisé appliqué
+          </span>
         </div>
       )}
     </div>
   );
 }
 
-// Export par défaut pour compatibilité avec les deux styles d'import
 export default DateFilter;

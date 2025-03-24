@@ -56,7 +56,7 @@ export default function EventListView({ events, loading = false }: EventListView
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 px-4 md:px-8 lg:px-16">
       <AnimatePresence>
         {events.map((event, index) => (
           <motion.div
@@ -64,11 +64,11 @@ export default function EventListView({ events, loading = false }: EventListView
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: Math.min(0.05 * index, 0.3) }}
-            className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-100 overflow-hidden"
+            className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-100 overflow-hidden "
           >
             <Link href={`/events/${event.id}`} className="flex flex-col sm:flex-row">
               {/* Image de l'événement */}
-              <div className="relative w-full sm:w-48 h-32 sm:h-auto flex-shrink-0 overflow-hidden">
+              <div className="relative w-full sm:w-48 h-32 sm:h-auto flex-shrink-0 overflow-hidden ">
                 {event.banner_image ? (
                   <Image
                     src={event.banner_image}
