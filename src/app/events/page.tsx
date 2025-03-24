@@ -1,12 +1,11 @@
 // app/events/page.tsx
 import { Suspense } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
-import EventGrid from '@/components/events/EventGrid';
-import EventFilters from '@/components/events/EventFilters';
-import { FaFilter } from 'react-icons/fa';
-import { eventsAPI,categoriesAPI } from '@/lib/api';
+import { eventsAPI, categoriesAPI } from '@/lib/api';
 import SortSelect from '@/components/events/SortSelect';
-import PaginationButtons from '@/components/common/PaginationButtons';
+import InfiniteScrollEvents from '@/components/events/InfiniteScrollEvents';
+import { DateFilter } from '@/components/events/DateFilter';
+import ClientSideFilterWrapper from '@/components/events/ClientSideFilterWrapper'
 
 // Types pour les paramètres de recherche
 interface SearchParams {
@@ -15,25 +14,22 @@ interface SearchParams {
   event_type?: string;
   city?: string;
   ordering?: string;
-  page?: string;
+  start_date?: string;
+  end_date?: string;
 }
 
 // Cette fonction s'exécute côté serveur pour obtenir les données
 async function getEventsData(searchParams: SearchParams) {
-   
   try {
-    // Résoudre la page et l'offset correctement
-    const page = Number(searchParams.page || 1);
-    const offset = (page - 1) * 5;
-
+    // Obtenir les événements avec les filtres
     const eventsResponse = await eventsAPI.getEvents({
       ...searchParams,
       status: 'validated',
-      limit: 5,
-      page,
-      offset
+      limit: 9,
+      offset: 0
     });
-
+    
+    // Obtenir les catégories pour les filtres
     const categoriesResponse = await categoriesAPI.getCategories();
 
     return {
@@ -51,23 +47,9 @@ async function getEventsData(searchParams: SearchParams) {
   }
 }
 
-
 export default async function EventsPage({ searchParams }: { searchParams: SearchParams }) {
-  const params = await searchParams;  // Attendre les searchParams
-
-  // Extraire uniquement les paramètres valides
-  const { page, status, category, organizer, search, start_date } = params;
-  
-  // Construire un objet de paramètres avec seulement les valeurs définies
-  const queryParams = {};
-  if (page) queryParams.page = page;
-  if (status) queryParams.status = status;
-  if (category) queryParams.category = category;
-  if (organizer) queryParams.organizer = organizer;
-  if (search) queryParams.search = search;
-  if (start_date) queryParams.start_date = start_date;
-  
-  const { events, totalEvents, categories } = await getEventsData(queryParams);
+  // Obtenir les données côté serveur
+  const { events, totalEvents, categories } = await getEventsData(searchParams);
   
   // Options de tri
   const sortOptions = [
@@ -78,31 +60,10 @@ export default async function EventsPage({ searchParams }: { searchParams: Searc
     { value: '-registration_count', label: 'Par popularité' }
   ];
   
-  const currentSort = (await searchParams).ordering || 'start_date';
-
+  const currentSort = searchParams.ordering || 'start_date';
   
-  // Create a function to generate the URL for pagination and sorting
-  const createQueryString = (params: Record<string, string>) => {
-    const urlParams = new URLSearchParams();
-    
-    // Add search parameters
-    if (searchParams.search) urlParams.set('search', searchParams.search);
-    if (searchParams.category) urlParams.set('category', searchParams.category);
-    if (searchParams.event_type) urlParams.set('event_type', searchParams.event_type);
-    if (searchParams.city) urlParams.set('city', searchParams.city);
-    if (searchParams.ordering) urlParams.set('ordering', searchParams.ordering);
-    
-    // Override with new params
-    Object.entries(params).forEach(([key, value]) => {
-      if (value) {
-        urlParams.set(key, value);
-      } else {
-        urlParams.delete(key);
-      }
-    });
-    
-    return urlParams.toString();
-  };
+  // Créer un client ID pour le côté client
+  const clientFilterId = Math.random().toString(36).substring(7);
   
   return (
     <MainLayout>
@@ -116,40 +77,27 @@ export default async function EventsPage({ searchParams }: { searchParams: Searc
         </div>
       </div>
       
-      <div className="container mx-auto px-4 py-8">
-        {/* Filtres */}
-        <EventFilters categories={categories} />
+      <div className="container mx-auto px-4 py-8 relative">
+      <ClientSideFilterWrapper 
+        initialFilterFloating={true}
+        clientFilterId={clientFilterId}
+        categories={categories}
+        sortOptions={sortOptions}
+        currentSort={currentSort}
+        searchParams={searchParams}
+        totalEvents={totalEvents}
+      />
         
-        {/* Options de tri et résultats */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-          <p className="text-gray-600 mb-4 md:mb-0">
-            {totalEvents} événement{totalEvents !== 1 ? 's' : ''} trouvé{totalEvents !== 1 ? 's' : ''}
-          </p>
-          
-          <SortSelect 
-            options={sortOptions}
-            currentValue={currentSort}
+        {/* Grille d'événements avec scroll infini */}
+        <Suspense fallback={<div>Chargement des événements...</div>}>
+          <InfiniteScrollEvents 
+            initialEvents={events} 
+            totalEvents={totalEvents}
             searchParams={searchParams}
           />
-        </div>
-        
-        {/* Grille d'événements */}
-        <Suspense fallback={<EventGrid events={[]} loading={true} />}>
-          <EventGrid events={events} />
         </Suspense>
-        
-        {/* Pagination */}
-        {totalEvents > 5 && (
-          <div className="mt-12 flex justify-center">
-            <PaginationButtons
-              currentPage={Number((await searchParams).page || 1)}
-              totalItems={totalEvents}
-              itemsPerPage={5}
-              searchParams={searchParams}
-            />
-          </div>
-        )}
       </div>
     </MainLayout>
   );
 }
+

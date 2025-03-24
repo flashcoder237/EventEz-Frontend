@@ -28,6 +28,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   
+  
   // Chargez les informations enregistrées au chargement de la page
   useEffect(() => {
     const savedEmail = localStorage.getItem('eventez_email');
