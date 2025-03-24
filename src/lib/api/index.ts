@@ -1,8 +1,11 @@
-// lib/api/index.ts
+// src/lib/api/index.ts
 import axios from 'axios';
 import { getSession, signOut } from 'next-auth/react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+
+// Vérification de l'environnement d'exécution
+const isClient = typeof window !== 'undefined';
 
 // Créer une instance axios avec la configuration de base
 const api = axios.create({
@@ -15,17 +18,16 @@ const api = axios.create({
 
 // Intercepteur pour ajouter le token d'authentification
 api.interceptors.request.use(async (config) => {
+  // Ne pas essayer d'utiliser getSession côté serveur
+  if (!isClient) {
+    return config;
+  }
+  
   try {
     const session = await getSession();
     
-    console.log('Session complète:', session);
-    console.log('Access Token:', session?.accessToken);
-    console.log('User ID:', session?.user?.id);
-
     if (session?.accessToken) {
       config.headers.Authorization = `Bearer ${session.accessToken}`;
-    } else {
-      console.warn('Pas de token disponible');
     }
     
     return config;
@@ -37,14 +39,10 @@ api.interceptors.request.use(async (config) => {
 
 // Variable pour éviter les boucles infinies de rafraîchissement
 let isRefreshing = false;
-let failedQueue: Array<{
-  resolve: (value: unknown) => void;
-  reject: (reason?: any) => void;
-  config: any;
-}> = [];
+let failedQueue = [];
 
 // Fonction pour traiter la file d'attente des requêtes échouées
-const processQueue = (error: any, token: string | null = null) => {
+const processQueue = (error, token = null) => {
   failedQueue.forEach(({ resolve, reject, config }) => {
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -61,21 +59,67 @@ const processQueue = (error: any, token: string | null = null) => {
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const originalRequest = error.config;
-    
-    // Si l'erreur est due à une réponse non JSON
-    if (error.message && error.message.includes('JSON')) {
-      console.error('Erreur de parsing JSON dans la réponse API:', error);
-      
-      // Pour les routes de ticket-types, retourner un résultat vide mais valide
-      if (originalRequest.url.includes('ticket-types')) {
-        return Promise.resolve({ data: { results: [] } });
-      }
+    // Si on n'est pas côté client, on retourne simplement l'erreur
+    if (!isClient) {
+      return Promise.reject(error);
     }
+    
+    const originalRequest = error.config;
     
     // Si l'erreur est 401 (non autorisé) et que nous n'avons pas déjà tenté de rafraîchir le token
     if (error.response?.status === 401 && !originalRequest._retry) {
-      // Code existant pour le refresh token
+      if (isRefreshing) {
+        // Si un rafraîchissement est déjà en cours, ajouter cette requête à la file d'attente
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject, config: originalRequest });
+        });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        const session = await getSession();
+        
+        if (!session?.refreshToken) {
+          // Si pas de refresh token, déconnecter l'utilisateur
+          if (isClient) {
+            await signOut({ redirect: false });
+          }
+          return Promise.reject(error);
+        }
+        
+        // Tentative de rafraîchissement du token
+        const response = await axios.post(`${API_URL}/token/refresh/`, {
+          refresh: session.refreshToken
+        });
+        
+        if (response.data.access) {
+          // Mettre à jour le header d'autorisation pour la requête originale
+          originalRequest.headers.Authorization = `Bearer ${response.data.access}`;
+          
+          // Traiter les requêtes en attente avec le nouveau token
+          processQueue(null, response.data.access);
+          
+          isRefreshing = false;
+          return api(originalRequest);
+        } else {
+          processQueue(error, null);
+          if (isClient) {
+            await signOut({ redirect: false });
+          }
+          return Promise.reject(error);
+        }
+      } catch (refreshError) {
+        processQueue(refreshError, null);
+        
+        if (isClient) {
+          await signOut({ redirect: false });
+        }
+        
+        isRefreshing = false;
+        return Promise.reject(refreshError);
+      }
     }
     
     // Log détaillé des erreurs API pour faciliter le débogage
@@ -90,6 +134,7 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
 // Fonction d'authentification
 export const authAPI = {
   login: async (email: string, password: string) => {
@@ -103,7 +148,8 @@ export const authAPI = {
   },
 };
 
-// API des événements
+// Wrapper pour les méthodes de l'API Events qui gère le comportement serveur/client
+// API des événements (extension)
 export const eventsAPI = {
   getEvents: async (params?: any) => {
     return api.get('/events/', { params });
@@ -117,7 +163,7 @@ export const eventsAPI = {
   updateEvent: async (id: string, eventData: any) => {
     // Vérifier si les données sont un FormData pour l'upload d'images
     if (eventData instanceof FormData) {
-      return api.put(`/events/${id}/`, eventData, {
+      return api.patch(`/events/${id}/`, eventData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -134,115 +180,106 @@ export const eventsAPI = {
   getTags: async () => {
     return api.get('/tags/');
   },
-// Dans eventsAPI
   getTicketTypes: async (eventId: string) => {
     try {
       const response = await api.get('/ticket-types/', { 
         params: { event: eventId },
-        // Ajouter un timeout plus long
         timeout: 30000
       });
       return response;
     } catch (error) {
       console.error("Erreur lors de la récupération des types de billets:", error);
-      // Retourner une réponse formatée pour éviter les erreurs de parsing
       return { data: { results: [] } };
     }
+  },
+  createTicketType: async (ticketData: any) => {
+    return api.post('/ticket-types/', ticketData);
+  },
+  updateTicketType: async (id: number, ticketData: any) => {
+    return api.put(`/ticket-types/${id}/`, ticketData);
+  },
+  deleteTicketType: async (id: number) => {
+    return api.delete(`/ticket-types/${id}/`);
   },
   getFormFields: async (eventId: string) => {
     return api.get('/form-fields/', { params: { event: eventId } });
   },
+  createFormField: async (fieldData: any) => {
+    return api.post('/form-fields/', fieldData);
+  },
+  updateFormField: async (id: number, fieldData: any) => {
+    return api.put(`/form-fields/${id}/`, fieldData);
+  },
+  deleteFormField: async (id: number) => {
+    return api.delete(`/form-fields/${id}/`);
+  },
   uploadImages: async (eventId: string, formData: FormData) => {
-    return api.post(`/events/${eventId}/upload_images/`, formData, {
+    return api.post(`/events/${id}/upload_images/`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     });
   },
-};
-
-// API d'inscriptions
-export const registrationsAPI = {
-  getRegistrations: async (params?: any) => {
-    return api.get('/registrations/', { params });
+  publishEvent: async (id: string) => {
+    return api.post(`/events/${id}/publish/`);
   },
-  getRegistration: async (id: string) => {
-    return api.get(`/registrations/${id}/`);
+  cancelEvent: async (id: string, reason: string) => {
+    return api.post(`/events/${id}/cancel/`, { reason });
   },
-  getMyRegistrations: async () => {
-    return api.get('/registrations/my_registrations/');
+  duplicateEvent: async (id: string) => {
+    return api.post(`/events/${id}/duplicate/`);
   },
-  createRegistration: async (registrationData: any) => {
-    return api.post('/registrations/', registrationData);
+  validateEventDetails: async (eventData: any) => {
+    return api.post('/events/validate/', eventData);
   },
-  validateDiscount: async (discountId: string, code: string) => {
-    return api.post(`/discounts/${discountId}/validate/`, { code });
+  getFeaturedEvents: async (params?: any) => {
+    return api.get('/events/featured/', { params });
   },
-  generateQrCodes: async (registrationId: string) => {
-    return api.post(`/registrations/${registrationId}/generate_qr_codes/`);
+  requestFeature: async (id: string, message: string) => {
+    return api.post(`/events/${id}/request_feature/`, { message });
   },
 };
 
-// API des paiements
-export const paymentsAPI = {
-  createPayment: async (paymentData: any) => {
-    return api.post('/payments/', paymentData);
-  },
-  processMtnPayment: async (paymentId: string) => {
-    return api.post(`/payments/${paymentId}/process_mtn_money/`);
-  },
-  processOrangePayment: async (paymentId: string) => {
-    return api.post(`/payments/${paymentId}/process_orange_money/`);
-  },
-  calculateUsageFees: async (paymentId: string) => {
-    return api.post(`/payments/${paymentId}/calculate_usage_fees/`);
-  },
-  requestRefund: async (refundData: any) => {
-    return api.post('/refunds/', refundData);
-  },
-  getInvoices: async () => {
-    return api.get('/invoices/');
-  },
-  downloadInvoice: async (invoiceId: string) => {
-    return api.get(`/invoices/${invoiceId}/download_pdf/`);
-  },
-};
-
-// API de feedback
-export const feedbackAPI = {
-  getFeedbacks: async (eventId: string) => {
-    return api.get('/feedbacks/', { params: { event: eventId } });
-  },
-  createFeedback: async (feedbackData: any) => {
-    return api.post('/feedbacks/', feedbackData);
-  },
-  flagEvent: async (flagData: any) => {
-    return api.post('/flags/', flagData);
-  },
-  validateEvent: async (validationData: any) => {
-    return api.post('/validations/', validationData);
-  },
-  getEventStats: async (eventId: string) => {
-    return api.get('/validations/event_stats/', { params: { event: eventId } });
-  },
-};
-
-// API de notifications
-export const notificationsAPI = {
-  getNotifications: async () => {
-    return api.get('/notifications/');
-  },
-  markAsRead: async (notificationId: string) => {
-    return api.post(`/notifications/${notificationId}/mark_as_read/`);
-  },
-  markAllAsRead: async () => {
-    return api.post('/notifications/mark_all_as_read/');
-  },
-};
-
-// API d'analytics
+// API d'analytiques avec gestion serveur/client
 export const analyticsAPI = {
   getDashboardSummary: async (params?: any) => {
+    // if (!isClient) {
+    //   // Rechercher le token dans la requête si nécessaire
+    //   // Note: Dans une implémentation réelle, vous devriez transmettre un token server-side
+    //   // Utiliser cookies ou headers pour cela
+    //   const queryParams = new URLSearchParams();
+    //   if (params) {
+    //     Object.entries(params).forEach(([key, value]) => {
+    //       if (value !== undefined && value !== null) {
+    //         queryParams.append(key, String(value));
+    //       }
+    //     });
+    //   }
+      
+    //   // Pour les appels côté serveur, retourner des données par défaut
+    //   // Dans une implémentation complète, utilisez un fetch authentifié
+    //   return { 
+    //     data: {
+    //       event_summary: {
+    //         total_events: 0,
+    //         upcoming_events: 0,
+    //         ongoing_events: 0,
+    //         completed_events: 0,
+    //         avg_fill_rate: 0
+    //       },
+    //       revenue_summary: {
+    //         total_revenue: 0,
+    //         avg_transaction: 0
+    //       },
+    //       registration_summary: {
+    //         summary: {
+    //           total_registrations: 0,
+    //           conversion_rate: 0
+    //         }
+    //       }
+    //     }
+    //   };
+    // }
     return api.get('/analytics/analytics/dashboard_summary/', { params });
   },
   getEventAnalytics: async (eventId: string) => {
@@ -270,5 +307,202 @@ export const analyticsAPI = {
     return api.get(`/analytics/reports/${reportId}/export/`, { params: { format } });
   },
 };
+
+
+// API de feedback avec gestion serveur/client
+export const feedbackAPI = {
+  getFeedbacks: async (eventId: string) => {
+    if (!isClient) {
+      const url = `${API_URL}/feedbacks/?event=${eventId}`;
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          console.error(`Erreur API: ${response.status}`);
+          return { data: { results: [] } };
+        }
+        return { data: await response.json() };
+      } catch (error) {
+        console.error('Erreur lors de la récupération des feedbacks:', error);
+        return { data: { results: [] } };
+      }
+    }
+    return api.get('/feedbacks/', { params: { event: eventId } });
+  },
+  createFeedback: async (feedbackData: any) => {
+    return api.post('/feedbacks/', feedbackData);
+  },
+  flagEvent: async (flagData: any) => {
+    return api.post('/flags/', flagData);
+  },
+  validateEvent: async (validationData: any) => {
+    return api.post('/validations/', validationData);
+  },
+  getEventStats: async (eventId: string) => {
+    if (!isClient) {
+      const url = `${API_URL}/validations/event_stats/?event=${eventId}`;
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          return { data: {} };
+        }
+        return { data: await response.json() };
+      } catch (error) {
+        console.error('Erreur lors de la récupération des statistiques:', error);
+        return { data: {} };
+      }
+    }
+    return api.get('/validations/event_stats/', { params: { event: eventId } });
+  },
+};
+
+// API de notifications (mise à jour)
+export const notificationsAPI = {
+  getNotifications: async (params?: any) => {
+    return api.get('/notifications/', { params });
+  },
+  markAsRead: async (notificationId: string) => {
+    return api.post(`/notifications/${notificationId}/mark_as_read/`);
+  },
+  markAllAsRead: async () => {
+    return api.post('/notifications/mark_all_as_read/');
+  },
+  deleteNotification: async (notificationId: string) => {
+    return api.delete(`/notifications/${notificationId}/`);
+  },
+  deleteMultiple: async (notificationIds: string[]) => {
+    return api.post('/notifications/delete_multiple/', { notification_ids: notificationIds });
+  },
+  sendNotification: async (notificationData: any) => {
+    return api.post('/notifications/send/', notificationData);
+  },
+  scheduleNotification: async (notificationData: any) => {
+    return api.post('/notifications/schedule/', notificationData);
+  },
+  cancelScheduledNotification: async (notificationId: string) => {
+    return api.post(`/notifications/${notificationId}/cancel_scheduled/`);
+  },
+  getNotificationTemplates: async () => {
+    return api.get('/notifications/templates/');
+  },
+  getScheduledNotifications: async () => {
+    return api.get('/notifications/scheduled/');
+  },
+  getNotificationStatistics: async (params?: any) => {
+    return api.get('/notifications/statistics/', { params });
+  },
+};
+
+// API de gestion des utilisateurs
+export const usersAPI = {
+  getUserProfile: async () => {
+    return api.get('/users/me/');
+  },
+  updateUserProfile: async (userData: any) => {
+    return api.patch('/users/me/', userData);
+  },
+  updateProfileImage: async (formData: FormData) => {
+    return api.patch('/users/me/upload_profile_image/', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+  changePassword: async (passwordData: { current_password: string; new_password: string }) => {
+    return api.post('/users/change_password/', passwordData);
+  },
+  updateNotificationSettings: async (settingsData: any) => {
+    return api.patch('/users/notification_settings/', settingsData);
+  },
+  getUserAnalytics: async () => {
+    return api.get('/users/analytics/');
+  },
+};
+
+// API d'inscriptions (extension)
+export const registrationsAPI = {
+  getRegistrations: async (params?: any) => {
+    return api.get('/registrations/', { params });
+  },
+  getRegistration: async (id: string) => {
+    return api.get(`/registrations/${id}/`);
+  },
+  getMyRegistrations: async () => {
+    return api.get('/registrations/my_registrations/');
+  },
+  createRegistration: async (registrationData: any) => {
+    return api.post('/registrations/', registrationData);
+  },
+  updateRegistration: async (id: string, registrationData: any) => {
+    return api.patch(`/registrations/${id}/`, registrationData);
+  },
+  cancelRegistration: async (id: string) => {
+    return api.post(`/registrations/${id}/cancel/`);
+  },
+  validateDiscount: async (discountId: string, code: string) => {
+    return api.post(`/discounts/${discountId}/validate/`, { code });
+  },
+  generateQrCodes: async (registrationId: string) => {
+    return api.post(`/registrations/${registrationId}/generate_qr_codes/`);
+  },
+  checkIn: async (registrationId: string) => {
+    return api.post(`/registrations/${registrationId}/check_in/`);
+  },
+  bulkCheckIn: async (registrationIds: string[]) => {
+    return api.post('/registrations/bulk_check_in/', { registration_ids: registrationIds });
+  },
+  bulkGenerateTickets: async (registrationIds: string[]) => {
+    return api.post('/registrations/bulk_generate_tickets/', { registration_ids: registrationIds });
+  },
+  exportRegistrations: async (params?: any) => {
+    return api.get('/registrations/export/', { 
+      params,
+      responseType: 'blob'
+    });
+  },
+  sendEmailToRegistrants: async (data: {
+    registration_ids: string[];
+    subject: string;
+    message: string;
+    include_tickets?: boolean;
+  }) => {
+    return api.post('/registrations/send_email/', data);
+  },
+  getRegistrationStats: async (eventId: string) => {
+    return api.get('/registrations/stats/', { params: { event_id: eventId } });
+  },
+  getRegistrationsByUser: async (userId: string) => {
+    return api.get('/registrations/by_user/', { params: { user_id: userId } });
+  },
+  searchRegistrations: async (query: string) => {
+    return api.get('/registrations/search/', { params: { query } });
+  },
+  resendConfirmation: async (registrationId: string) => {
+    return api.post(`/registrations/${registrationId}/resend_confirmation/`);
+  },
+  verifyTicket: async (ticketCode: string) => {
+    return api.post('/registrations/verify_ticket/', { code: ticketCode });
+  }
+};
+
+// Types pour les statistiques d'inscriptions
+export interface RegistrationStats {
+  total_registrations: number;
+  confirmed_registrations: number;
+  pending_registrations: number;
+  cancelled_registrations: number;
+  checked_in_count: number;
+  check_in_percentage: number;
+  registration_by_day: Array<{
+    date: string;
+    count: number;
+  }>;
+  registration_by_ticket_type?: Array<{
+    ticket_type: string;
+    count: number;
+    percentage: number;
+  }>;
+  revenue: number;
+  average_revenue_per_registration: number;
+}
 
 export default api;

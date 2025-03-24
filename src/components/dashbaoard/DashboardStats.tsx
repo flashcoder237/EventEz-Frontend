@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { analyticsAPI } from '@/lib/api';
@@ -15,27 +16,31 @@ export default function DashboardStats() {
   const [error, setError] = useState<string | null>(null);
   const [period, setPeriod] = useState<'week' | 'month' | 'year'>('month');
   
-  useEffect(() => {
-    const { data: session, status } = useSession({
-      required: true,
-      onUnauthenticated() {
-        // Ne pas charger les notifications si l'utilisateur n'est pas connecté
-      },
-    });
+  // Obtenir la session utilisateur
+  const { data: session, status } = useSession({
+    required: true,
+    onUnauthenticated() {
+      // Rediriger vers la page de connexion si non authentifié
+      window.location.href = '/login?redirect=/dashboard';
+    },
+  });
 
-const fetchStats = async () => {
-      if (!session || !session.accessToken) {
-        console.error('Session is invalid or access token is missing');
-        return;
-      }
+  useEffect(() => {
+    // Ne charger les données que si l'utilisateur est authentifié
+    if (status !== 'authenticated' || !session) {
+      return;
+    }
+    
+    const fetchStats = async () => {
       setLoading(true);
       setError(null);
       try {
+        // S'assurer que l'ID de l'organisateur est inclus dans la requête
         const response = await analyticsAPI.getDashboardSummary({ 
           period,
-          // Ajoutez explicitement l'ID de l'organisateur
-          organizer_id: session?.user?.id 
+          organizer_id: session.user.id
         });
+        
         setStats(response.data);
       } catch (error: any) {
         console.error('Erreur de chargement des statistiques:', error);
@@ -54,7 +59,7 @@ const fetchStats = async () => {
     };
     
     fetchStats();
-  }, [period]);
+  }, [period, session, status]);
   
   if (loading) {
     return (

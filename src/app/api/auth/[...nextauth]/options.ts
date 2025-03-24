@@ -4,13 +4,20 @@ import axios from 'axios';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
+// Durées de session en secondes
+const SESSION_DURATIONS = {
+  DEFAULT: 60 * 60, // 1 heure 
+  REMEMBER_ME: 30 * 24 * 60 * 60, // 30 jours
+};
+
 export const authOptions: NextAuthOptions = {
     providers: [
       CredentialsProvider({
         name: 'Credentials',
         credentials: {
           email: { label: "Email", type: "email" },
-          password: { label: "Mot de passe", type: "password" }
+          password: { label: "Mot de passe", type: "password" },
+          rememberMe: { label: "Se souvenir de moi", type: "boolean" }
         },
         async authorize(credentials) {
           if (!credentials?.email || !credentials?.password) {
@@ -40,6 +47,7 @@ export const authOptions: NextAuthOptions = {
                 role: decodedPayload.role || 'user',
                 accessToken: data.access,
                 refreshToken: data.refresh,
+                rememberMe: credentials.rememberMe === 'true',
               };
             }
             
@@ -64,6 +72,11 @@ export const authOptions: NextAuthOptions = {
     callbacks: {
       async jwt({ token, user }) {
         if (user) {
+          // Durée d'expiration basée sur "Se souvenir de moi"
+          const duration = user.rememberMe 
+            ? SESSION_DURATIONS.REMEMBER_ME 
+            : SESSION_DURATIONS.DEFAULT;
+          
           return {
             ...token,
             id: user.id,
@@ -72,7 +85,9 @@ export const authOptions: NextAuthOptions = {
             role: user.role,
             accessToken: user.accessToken,
             refreshToken: user.refreshToken,
-            exp: Date.now() + 60 * 60 * 1000 // 1 heure
+            exp: Date.now() + 60 * 60 * 1000, // Expiration du token d'accès (toujours 1h)
+            sessionExpiry: Date.now() + (duration * 1000), // Expiration de la session complète
+            rememberMe: user.rememberMe,
           };
         }
   
@@ -91,7 +106,8 @@ export const authOptions: NextAuthOptions = {
           return {
             ...token,
             accessToken: response.data.access,
-            exp: Date.now() + 60 * 60 * 1000
+            exp: Date.now() + 60 * 60 * 1000, // Nouvel accès pour 1h
+            // Conserve la date d'expiration de session existante
           };
         } catch (error) {
           console.error('Erreur lors du rafraîchissement du token:', error);
@@ -99,6 +115,11 @@ export const authOptions: NextAuthOptions = {
         }
       },
       async session({ session, token }) {
+        // Vérification de l'expiration de la session complète
+        if (token.sessionExpiry && Date.now() > token.sessionExpiry) {
+          throw new Error('Session expired');
+        }
+        
         if (session.user) {
           session.user.id = token.id as string;
           session.user.name = token.name as string;
@@ -109,6 +130,7 @@ export const authOptions: NextAuthOptions = {
         session.accessToken = token.accessToken as string;
         session.refreshToken = token.refreshToken as string;
         session.error = token.error as string | undefined;
+        session.rememberMe = token.rememberMe as boolean;
         
         return session;
       }
@@ -120,7 +142,8 @@ export const authOptions: NextAuthOptions = {
     },
     session: {
       strategy: 'jwt',
-      maxAge: 60 * 60, // 1 heure
+      // maxAge sera défini dynamiquement en fonction de rememberMe
+      maxAge: SESSION_DURATIONS.REMEMBER_ME, // Valeur maximale possible
     },
     secret: process.env.NEXTAUTH_SECRET,
     debug: process.env.NODE_ENV === 'development',

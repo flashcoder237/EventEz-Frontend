@@ -5,10 +5,11 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { signIn,useSession  } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { FaEnvelope, FaLock, FaExclamationCircle } from 'react-icons/fa';
+import { setCookie, getCookie } from 'cookies-next';
 
 export default function LoginPage() {
   const { data: session, status } = useSession({
@@ -25,7 +26,19 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   
+  // Chargez les informations enregistrées au chargement de la page
+  useEffect(() => {
+    const savedEmail = localStorage.getItem('eventez_email');
+    const savedRememberMe = localStorage.getItem('eventez_remember_me') === 'true';
+    
+    if (savedEmail) {
+      setEmail(savedEmail);
+    }
+    
+    setRememberMe(savedRememberMe);
+  }, []);
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,12 +51,31 @@ export default function LoginPage() {
     setIsLoading(true);
     setError(null);
     
+    // Enregistrez l'email et l'option "se souvenir de moi" si activée
+    if (rememberMe) {
+      localStorage.setItem('eventez_email', email);
+      localStorage.setItem('eventez_remember_me', 'true');
+      
+      // Créer un cookie pour la session persistante
+      setCookie('eventez_session', 'true', { 
+        maxAge: 30 * 24 * 60 * 60, // 30 jours en secondes
+        path: '/' 
+      });
+    } else {
+      // Supprimez les données enregistrées si l'option n'est pas cochée
+      localStorage.removeItem('eventez_email');
+      localStorage.removeItem('eventez_remember_me');
+      setCookie('eventez_session', '', { maxAge: 0, path: '/' });
+    }
+    
     try {
-      // Utilisez la version correcte de signIn avec le paramètre redirect: false
+      // Ajout du paramètre rememberMe pour NextAuth
       const result = await signIn('credentials', {
         redirect: false,
         email,
         password,
+        callbackUrl,
+        rememberMe: rememberMe.toString(),
       });
       
       if (result?.error) {
@@ -58,12 +90,24 @@ export default function LoginPage() {
     }
   };
 
-    // Rediriger si déjà connecté
-    useEffect(() => {
-      if (status === 'authenticated' && session) {
-        router.push('/');
+  // Rediriger si déjà connecté
+  useEffect(() => {
+    // Vérifiez si l'utilisateur a choisi "se souvenir de moi" précédemment
+    const hasSavedSession = getCookie('eventez_session') === 'true';
+    
+    if (status === 'authenticated' && session) {
+      router.push('/');
+    } else if (hasSavedSession && status === 'unauthenticated') {
+      // Si l'utilisateur a choisi "se souvenir de moi" mais n'est pas connecté,
+      // tentez une reconnexion automatique avec les identifiants sauvegardés
+      const savedEmail = localStorage.getItem('eventez_email');
+      if (savedEmail) {
+        // Vous ne pouvez pas récupérer le mot de passe stocké pour des raisons de sécurité,
+        // donc cette reconnexion automatique nécessiterait une implémentation côté serveur
+        // avec des jetons de rafraîchissement. Voir la note dans les commentaires.
       }
-    }, [session, status, router]);
+    }
+  }, [session, status, router]);
   
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
@@ -153,7 +197,7 @@ export default function LoginPage() {
               </p>
             </div>
             
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6" autoComplete="on">
               {error && (
                 <div className="bg-red-50 border border-red-200 text-red-600 rounded-md p-3 flex items-center text-sm">
                   <FaExclamationCircle className="mr-2 flex-shrink-0" />
@@ -165,21 +209,25 @@ export default function LoginPage() {
                 <Input
                   label="Email"
                   type="email"
+                  name="email" 
                   placeholder="votre@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   icon={<FaEnvelope className="text-gray-400" />}
                   required
+                  autoComplete="username email"
                 />
                 
                 <Input
                   label="Mot de passe"
                   type="password"
+                  name="password"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   icon={<FaLock className="text-gray-400" />}
                   required
+                  autoComplete="current-password"
                 />
               </div>
               
@@ -189,6 +237,8 @@ export default function LoginPage() {
                     id="remember-me"
                     name="remember-me"
                     type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
                     className="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary"
                   />
                   <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
