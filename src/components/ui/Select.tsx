@@ -1,15 +1,18 @@
 // components/ui/Select.tsx
-import React from 'react';
-import { cn } from '../../lib/utils/utils';
+import React from "react";
+import { cn } from "../../lib/utils/utils";
 
 export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
   error?: string;
-  options: Array<{ value: string; label: string }>;
+  options: string | string[]; // Accepte une chaîne de caractères ou un tableau de chaînes
 }
 
 const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
   ({ className, label, error, options, ...props }, ref) => {
+    // Convertir la chaîne d'options en tableau si nécessaire
+    const parsedOptions = typeof options === "string" ? options.split(",") : options;
+
     return (
       <div className="space-y-2">
         {label && (
@@ -26,9 +29,12 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           ref={ref}
           {...props}
         >
-          {options.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
+          <option value="" disabled selected>
+            Sélectionnez une option
+          </option>
+          {parsedOptions.map((option, index) => (
+            <option key={index} value={option}>
+              {option}
             </option>
           ))}
         </select>

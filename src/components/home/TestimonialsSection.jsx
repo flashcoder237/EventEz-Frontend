@@ -80,7 +80,7 @@ export default function TestimonialsSection() {
   const maxSlide = Math.ceil(testimonials.length / slidesPerView) - 1;
 
   return (
-    <section className="py-20 bg-gradient-to-r from-violet-700 to-pink-600 text-white">
+    <section className="py-20">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <span className="text-white/80 font-semibold text-sm uppercase tracking-wider">Témoignages</span>

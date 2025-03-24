@@ -1,4 +1,4 @@
-// Types pour les événements
+// events.ts
 export interface Event {
     id: string;
     title: string;
@@ -130,11 +130,12 @@ export interface FormField {
   required: boolean;
   placeholder: string;
   help_text: string;
-  options: string;
+  options: string | string[];
   order: number;
   created_at?: string;
   updated_at?: string;
 }
+
 
 export interface FormFieldCreate {
   event: string;
@@ -188,4 +189,23 @@ export interface EventPreview {
   ticket_types?: TicketType[];
   form_fields?: FormField[];
   banner_image_preview?: string;
+}
+
+export interface EventSearchParams {
+  search?: string;
+  category?: string;
+  event_type?: string;
+  city?: string;
+  status?: string;
+  ordering?: string;
+  limit?: number;
+  offset?: number;
+  page?: number;
+}
+
+export interface PaginatedResponse<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
 }

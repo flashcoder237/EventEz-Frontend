@@ -1,78 +1,123 @@
+// lib/utils/date-utils.ts
+
 /**
- * Formate une chaîne de date en format plus lisible
- * @param dateString - La chaîne de date à formater
- * @param format - Format optionnel (par défaut 'readable')
- * @returns Chaîne de date formatée
+ * Format a date to a localized French string
+ * @param date Date or date string to format
+ * @param options Intl.DateTimeFormatOptions to customize formatting
+ * @returns Formatted date string
  */
-export function formatDate(dateString: string, format: 'readable' | 'short' | 'long' | 'yyyy-MM-dd' | 'HH:mm' = 'readable'): string {
-  // Gérer les entrées invalides
-  if (!dateString) return 'Date invalide';
-  
-  const date = new Date(dateString);
-  
-  // Gérer les dates invalides
-  if (isNaN(date.getTime())) {
-    return 'Date invalide';
-  }
+export function formatDate(
+  date: Date | string, 
+  options: Intl.DateTimeFormatOptions = {}
+): string {
+  const defaultOptions: Intl.DateTimeFormatOptions = {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  };
 
-  // Formats personnalisés
-  if (format === 'yyyy-MM-dd') {
-    return date.toISOString().split('T')[0];
-  }
+  const mergedOptions = { ...defaultOptions, ...options };
   
-  if (format === 'HH:mm') {
-    return date.toTimeString().slice(0, 5);
-  }
-
-  // Localisation en français
-  const options: Intl.DateTimeFormatOptions = {
-    'readable': { 
-      day: 'numeric', 
-      month: 'long', 
-      year: 'numeric' 
-    },
-    'short': { 
-      day: 'numeric', 
-      month: 'short', 
-      year: 'numeric' 
-    },
-    'long': { 
-      weekday: 'long', 
-      day: 'numeric', 
-      month: 'long', 
-      year: 'numeric' 
-    }
-  }[format] || { day: 'numeric', month: 'long', year: 'numeric' };
-
-  return new Intl.DateTimeFormat('fr-FR', options).format(date);
+  return new Date(date).toLocaleDateString('fr-FR', mergedOptions);
 }
 
 /**
-* Vérifie si une date est dans le futur
-* @param dateString - La date à vérifier
-* @returns true si la date est dans le futur, false sinon
-*/
-export function isDateInFuture(dateString: string): boolean {
-const date = new Date(dateString);
-const now = new Date();
-return date > now;
+ * Calculate the number of days until a given date
+ * @param targetDate The date to calculate days until
+ * @returns Number of days until the target date
+ */
+export function getDaysUntil(targetDate: Date | string): number {
+  const today = new Date();
+  const target = new Date(targetDate);
+  
+  // Calculate the difference in milliseconds
+  const diffMs = target.getTime() - today.getTime();
+  
+  // Convert milliseconds to days
+  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  
+  return Math.max(0, diffDays);
 }
 
 /**
-* Calcule les jours restants jusqu'à une date
-* @param dateString - La date cible
-* @returns Nombre de jours restants
-*/
-export function getDaysUntil(dateString: string): number {
-const targetDate = new Date(dateString);
-const now = new Date();
+ * Calculate the duration between two dates
+ * @param startDate Start date
+ * @param endDate End date
+ * @returns Human-readable duration string
+ */
+export function calculateEventDuration(
+  startDate: Date | string, 
+  endDate: Date | string
+): string {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  
+  const diffMs = end.getTime() - start.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  
+  if (diffDays > 0 && diffHours > 0) {
+    return `${diffDays} jour${diffDays > 1 ? 's' : ''} et ${diffHours} heure${diffHours > 1 ? 's' : ''}`;
+  } else if (diffDays > 0) {
+    return `${diffDays} jour${diffDays > 1 ? 's' : ''}`;
+  } else if (diffHours > 0) {
+    return `${diffHours} heure${diffHours > 1 ? 's' : ''}`;
+  }
+  
+  return 'Moins d\'une heure';
+}
 
-// Réinitialiser l'heure pour une comparaison précise des jours
-now.setHours(0, 0, 0, 0);
-targetDate.setHours(0, 0, 0, 0);
+/**
+ * Check if an event is upcoming, ongoing, or past
+ * @param startDate Event start date
+ * @param endDate Event end date
+ * @returns 'upcoming' | 'ongoing' | 'past'
+ */
+export function getEventStatus(
+  startDate: Date | string, 
+  endDate: Date | string
+): 'upcoming' | 'ongoing' | 'past' {
+  const now = new Date();
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  
+  if (now < start) return 'upcoming';
+  if (now >= start && now <= end) return 'ongoing';
+  return 'past';
+}
 
-const timeDiff = targetDate.getTime() - now.getTime();
-const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+/**
+ * Format price with FCFA currency
+ * @param price Number to format
+ * @returns Formatted price string
+ */
+export function formatPrice(price: number): string {
+  return `${price.toLocaleString()} FCFA`;
+}
 
-return daysDiff > 0 ? daysDiff : 0;
+/**
+ * Generate a readable time range for an event
+ * @param startDate Start date of the event
+ * @param endDate End date of the event
+ * @returns Formatted time range string
+ */
+export function formatEventTimeRange(
+  startDate: Date | string, 
+  endDate: Date | string
+): string {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  
+  const startFormat = start.toLocaleTimeString('fr-FR', {
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+  
+  const endFormat = end.toLocaleTimeString('fr-FR', {
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+  
+  return `${startFormat} - ${endFormat}`;
 }

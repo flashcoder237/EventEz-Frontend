@@ -1,8 +1,14 @@
-'use client';
 // components/events/SortSelect.tsx
-import { FaSort } from 'react-icons/fa';
-import { useRouter } from 'next/navigation';
+'use client';
 
+import { useRouter } from 'next/navigation';
+import { 
+  ArrowUpDown, 
+  ArrowUp, 
+  ArrowDown 
+} from 'lucide-react';
+
+// Types for sort options and component props
 interface SortOption {
   value: string;
   label: string;
@@ -11,36 +17,56 @@ interface SortOption {
 interface SortSelectProps {
   options: SortOption[];
   currentValue: string;
-  searchParams: Record<string, string>;
+  searchParams: { [key: string]: string };
 }
 
-export default function SortSelect({ options, currentValue, searchParams }: SortSelectProps) {
+export default function SortSelect({ 
+  options, 
+  currentValue, 
+  searchParams 
+}: SortSelectProps) {
   const router = useRouter();
 
-  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  // Handle sort change
+  const handleSortChange = (sortValue: string) => {
     const params = new URLSearchParams();
     
-    // Ajouter les paramètres existants
+    // Copy existing search params
     Object.entries(searchParams).forEach(([key, value]) => {
-      if (value) params.set(key, value);
+      if (key !== 'ordering') {
+        params.set(key, value);
+      }
     });
     
-    // Mettre à jour le tri
-    params.set('ordering', e.target.value);
+    if (sortValue) {
+      params.set('ordering', sortValue);
+    }
     
-    // Rediriger vers la nouvelle URL
-    router.push(`?${params.toString()}`);
+    // Remove page parameter when changing sort
+    params.delete('page');
+    
+    router.push(`/events?${params.toString()}`);
+  };
+
+  // Determine sort icon based on current sort value
+  const getSortIcon = (value: string) => {
+    if (currentValue === value) {
+      return <ArrowUp className="h-4 w-4 text-primary" />;
+    } else if (currentValue === `-${value}`) {
+      return <ArrowDown className="h-4 w-4 text-primary" />;
+    }
+    return <ArrowUpDown className="h-4 w-4 text-gray-400" />;
   };
 
   return (
-    <div className="flex items-center">
-      <FaSort className="text-gray-500 mr-2" />
-      <select
-        className="border-gray-300 rounded-md focus:ring-primary focus:border-primary text-sm"
-        defaultValue={currentValue}
-        onChange={handleChange}
+    <div className="flex items-center space-x-2">
+      <label className="text-sm text-gray-600 mr-2">Trier par</label>
+      <select 
+        value={currentValue}
+        onChange={(e) => handleSortChange(e.target.value)}
+        className="p-2 border border-gray-300 rounded-md text-sm focus:ring-primary focus:border-primary"
       >
-        {options.map(option => (
+        {options.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
           </option>

@@ -146,10 +146,109 @@ export const authAPI = {
   registerOrganizer: async (organizerData: any) => {
     return api.post('/register/organizer/', organizerData);
   },
+  refreshToken: async (refreshToken: string) => {
+    return api.post('/token/refresh/', { refresh: refreshToken });
+  },
 };
 
-// Wrapper pour les méthodes de l'API Events qui gère le comportement serveur/client
-// API des événements (extension)
+// API des utilisateurs
+export const usersAPI = {
+  getUsers: async (params?: any) => {
+    return api.get('/users/', { params });
+  },
+  getUser: async (id: number) => {
+    return api.get(`/users/${id}/`);
+  },
+  createUser: async (userData: any) => {
+    return api.post('/users/', userData);
+  },
+  updateUser: async (id: number, userData: any) => {
+    return api.put(`/users/${id}/`, userData);
+  },
+  patchUser: async (id: number, userData: any) => {
+    return api.patch(`/users/${id}/`, userData);
+  },
+  deleteUser: async (id: number) => {
+    return api.delete(`/users/${id}/`);
+  },
+  getUserProfile: async () => {
+    return api.get('/users/me/');
+  },
+  updateUserProfile: async (userData: any) => {
+    return api.patch('/users/me/', userData);
+  },
+  updateProfile: async (userData: any) => {
+    return api.put('/users/update_profile/', userData);
+  },
+  becomeOrganizer: async (organizerData?: any) => {
+    return api.post('/users/become_organizer/', organizerData || {});
+  },
+  updateProfileImage: async (formData: FormData) => {
+    return api.patch('/users/me/upload_profile_image/', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+  changePassword: async (passwordData: { current_password: string; new_password: string }) => {
+    return api.post('/users/change_password/', passwordData);
+  },
+  updateNotificationSettings: async (settingsData: any) => {
+    return api.patch('/users/notification_settings/', settingsData);
+  },
+  getUserAnalytics: async () => {
+    return api.get('/users/analytics/');
+  },
+};
+
+// API des catégories d'événements
+export const categoriesAPI = {
+  getCategories: async (params?: any) => {
+    return api.get('/categories/', { params });
+  },
+  getCategory: async (id: number) => {
+    return api.get(`/categories/${id}/`);
+  },
+  createCategory: async (categoryData: any) => {
+    return api.post('/categories/', categoryData);
+  },
+  updateCategory: async (id: number, categoryData: any) => {
+    return api.put(`/categories/${id}/`, categoryData);
+  },
+  patchCategory: async (id: number, categoryData: any) => {
+    return api.patch(`/categories/${id}/`, categoryData);
+  },
+  deleteCategory: async (id: number) => {
+    return api.delete(`/categories/${id}/`);
+  },
+  getCategoryEvents: async (id: number) => {
+    return api.get(`/categories/${id}/events/`);
+  },
+};
+
+// API des tags d'événements
+export const tagsAPI = {
+  getTags: async (params?: any) => {
+    return api.get('/tags/', { params });
+  },
+  getTag: async (id: number) => {
+    return api.get(`/tags/${id}/`);
+  },
+  createTag: async (tagData: any) => {
+    return api.post('/tags/', tagData);
+  },
+  updateTag: async (id: number, tagData: any) => {
+    return api.put(`/tags/${id}/`, tagData);
+  },
+  patchTag: async (id: number, tagData: any) => {
+    return api.patch(`/tags/${id}/`, tagData);
+  },
+  deleteTag: async (id: number) => {
+    return api.delete(`/tags/${id}/`);
+  },
+};
+
+// API des événements
 export const eventsAPI = {
   getEvents: async (params?: any) => {
     return api.get('/events/', { params });
@@ -171,36 +270,26 @@ export const eventsAPI = {
     }
     return api.put(`/events/${id}/`, eventData);
   },
+  patchEvent: async (id: string, eventData: any) => {
+    return api.patch(`/events/${id}/`, eventData);
+  },
   deleteEvent: async (id: string) => {
     return api.delete(`/events/${id}/`);
   },
-  getCategories: async () => {
-    return api.get('/categories/');
+  getFeaturedEvents: async (params?: any) => {
+    return api.get('/events/featured/', { params });
   },
-  getTags: async () => {
-    return api.get('/tags/');
+  getMyEvents: async () => {
+    return api.get('/events/my_events/');
   },
-  getTicketTypes: async (eventId: string) => {
-    try {
-      const response = await api.get('/ticket-types/', { 
-        params: { event: eventId },
-        timeout: 30000
-      });
-      return response;
-    } catch (error) {
-      console.error("Erreur lors de la récupération des types de billets:", error);
-      return { data: { results: [] } };
-    }
+  uploadImages: async (id: string, formData: FormData) => {
+    return api.post(`/events/${id}/upload_images/`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
   },
-  createTicketType: async (ticketData: any) => {
-    return api.post('/ticket-types/', ticketData);
-  },
-  updateTicketType: async (id: number, ticketData: any) => {
-    return api.put(`/ticket-types/${id}/`, ticketData);
-  },
-  deleteTicketType: async (id: number) => {
-    return api.delete(`/ticket-types/${id}/`);
-  },
+  // Form Fields
   getFormFields: async (eventId: string) => {
     return api.get('/form-fields/', { params: { event: eventId } });
   },
@@ -213,12 +302,8 @@ export const eventsAPI = {
   deleteFormField: async (id: number) => {
     return api.delete(`/form-fields/${id}/`);
   },
-  uploadImages: async (eventId: string, formData: FormData) => {
-    return api.post(`/events/${id}/upload_images/`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+  updateFormFields: async (id: string, fieldsData: any) => {
+    return api.post(`/events/${id}/update_form_fields/`, fieldsData);
   },
   publishEvent: async (id: string) => {
     return api.post(`/events/${id}/publish/`);
@@ -232,193 +317,93 @@ export const eventsAPI = {
   validateEventDetails: async (eventData: any) => {
     return api.post('/events/validate/', eventData);
   },
-  getFeaturedEvents: async (params?: any) => {
-    return api.get('/events/featured/', { params });
-  },
   requestFeature: async (id: string, message: string) => {
     return api.post(`/events/${id}/request_feature/`, { message });
   },
 };
 
-// API d'analytiques avec gestion serveur/client
-export const analyticsAPI = {
-  getDashboardSummary: async (params?: any) => {
-    // if (!isClient) {
-    //   // Rechercher le token dans la requête si nécessaire
-    //   // Note: Dans une implémentation réelle, vous devriez transmettre un token server-side
-    //   // Utiliser cookies ou headers pour cela
-    //   const queryParams = new URLSearchParams();
-    //   if (params) {
-    //     Object.entries(params).forEach(([key, value]) => {
-    //       if (value !== undefined && value !== null) {
-    //         queryParams.append(key, String(value));
-    //       }
-    //     });
-    //   }
-      
-    //   // Pour les appels côté serveur, retourner des données par défaut
-    //   // Dans une implémentation complète, utilisez un fetch authentifié
-    //   return { 
-    //     data: {
-    //       event_summary: {
-    //         total_events: 0,
-    //         upcoming_events: 0,
-    //         ongoing_events: 0,
-    //         completed_events: 0,
-    //         avg_fill_rate: 0
-    //       },
-    //       revenue_summary: {
-    //         total_revenue: 0,
-    //         avg_transaction: 0
-    //       },
-    //       registration_summary: {
-    //         summary: {
-    //           total_registrations: 0,
-    //           conversion_rate: 0
-    //         }
-    //       }
-    //     }
-    //   };
-    // }
-    return api.get('/analytics/analytics/dashboard_summary/', { params });
-  },
-  getEventAnalytics: async (eventId: string) => {
-    return api.get('/analytics/analytics/events/', { params: { event_id: eventId } });
-  },
-  getRevenueAnalytics: async (params?: any) => {
-    return api.get('/analytics/analytics/revenue/', { params });
-  },
-  getUserAnalytics: async (params?: any) => {
-    return api.get('/analytics/analytics/users/', { params });
-  },
-  getRegistrationAnalytics: async (params?: any) => {
-    return api.get('/analytics/analytics/registrations/', { params });
-  },
-  generateReport: async (reportData: any) => {
-    return api.post('/analytics/reports/generate/', reportData);
-  },
-  getReports: async () => {
-    return api.get('/analytics/reports/');
-  },
-  getReport: async (reportId: string) => {
-    return api.get(`/analytics/reports/${reportId}/`);
-  },
-  exportReport: async (reportId: string, format: string) => {
-    return api.get(`/analytics/reports/${reportId}/export/`, { params: { format } });
-  },
-};
-
-
-// API de feedback avec gestion serveur/client
-export const feedbackAPI = {
-  getFeedbacks: async (eventId: string) => {
-    if (!isClient) {
-      const url = `${API_URL}/feedbacks/?event=${eventId}`;
-      try {
-        const response = await fetch(url);
-        if (!response.ok) {
-          console.error(`Erreur API: ${response.status}`);
-          return { data: { results: [] } };
-        }
-        return { data: await response.json() };
-      } catch (error) {
-        console.error('Erreur lors de la récupération des feedbacks:', error);
-        return { data: { results: [] } };
-      }
+// API des types de billets
+export const ticketTypesAPI = {
+  getTicketTypes: async (params?: any) => {
+    try {
+      const response = await api.get('/ticket-types/', { 
+        params,
+        timeout: 30000
+      });
+      return response;
+    } catch (error) {
+      console.error("Erreur lors de la récupération des types de billets:", error);
+      return { data: { results: [] } };
     }
-    return api.get('/feedbacks/', { params: { event: eventId } });
   },
-  createFeedback: async (feedbackData: any) => {
-    return api.post('/feedbacks/', feedbackData);
+  getTicketType: async (id: number) => {
+    return api.get(`/ticket-types/${id}/`);
   },
-  flagEvent: async (flagData: any) => {
-    return api.post('/flags/', flagData);
+  createTicketType: async (ticketTypeData: any) => {
+    return api.post('/ticket-types/', ticketTypeData);
   },
-  validateEvent: async (validationData: any) => {
-    return api.post('/validations/', validationData);
+  updateTicketType: async (id: number, ticketTypeData: any) => {
+    return api.put(`/ticket-types/${id}/`, ticketTypeData);
   },
-  getEventStats: async (eventId: string) => {
-    if (!isClient) {
-      const url = `${API_URL}/validations/event_stats/?event=${eventId}`;
-      try {
-        const response = await fetch(url);
-        if (!response.ok) {
-          return { data: {} };
-        }
-        return { data: await response.json() };
-      } catch (error) {
-        console.error('Erreur lors de la récupération des statistiques:', error);
-        return { data: {} };
-      }
-    }
-    return api.get('/validations/event_stats/', { params: { event: eventId } });
+  patchTicketType: async (id: number, ticketTypeData: any) => {
+    return api.patch(`/ticket-types/${id}/`, ticketTypeData);
+  },
+  deleteTicketType: async (id: number) => {
+    return api.delete(`/ticket-types/${id}/`);
   },
 };
 
-// API de notifications (mise à jour)
-export const notificationsAPI = {
-  getNotifications: async (params?: any) => {
-    return api.get('/notifications/', { params });
+// API des achats de billets
+export const ticketPurchasesAPI = {
+  getTicketPurchases: async (params?: any) => {
+    return api.get('/ticket-purchases/', { params });
   },
-  markAsRead: async (notificationId: string) => {
-    return api.post(`/notifications/${notificationId}/mark_as_read/`);
+  getTicketPurchase: async (id: number) => {
+    return api.get(`/ticket-purchases/${id}/`);
   },
-  markAllAsRead: async () => {
-    return api.post('/notifications/mark_all_as_read/');
+  createTicketPurchase: async (purchaseData: any) => {
+    return api.post('/ticket-purchases/', purchaseData);
   },
-  deleteNotification: async (notificationId: string) => {
-    return api.delete(`/notifications/${notificationId}/`);
+  updateTicketPurchase: async (id: number, purchaseData: any) => {
+    return api.put(`/ticket-purchases/${id}/`, purchaseData);
   },
-  deleteMultiple: async (notificationIds: string[]) => {
-    return api.post('/notifications/delete_multiple/', { notification_ids: notificationIds });
+  patchTicketPurchase: async (id: number, purchaseData: any) => {
+    return api.patch(`/ticket-purchases/${id}/`, purchaseData);
   },
-  sendNotification: async (notificationData: any) => {
-    return api.post('/notifications/send/', notificationData);
+  deleteTicketPurchase: async (id: number) => {
+    return api.delete(`/ticket-purchases/${id}/`);
   },
-  scheduleNotification: async (notificationData: any) => {
-    return api.post('/notifications/schedule/', notificationData);
-  },
-  cancelScheduledNotification: async (notificationId: string) => {
-    return api.post(`/notifications/${notificationId}/cancel_scheduled/`);
-  },
-  getNotificationTemplates: async () => {
-    return api.get('/notifications/templates/');
-  },
-  getScheduledNotifications: async () => {
-    return api.get('/notifications/scheduled/');
-  },
-  getNotificationStatistics: async (params?: any) => {
-    return api.get('/notifications/statistics/', { params });
+  checkIn: async (id: number) => {
+    return api.post(`/ticket-purchases/${id}/check_in/`);
   },
 };
 
-// API de gestion des utilisateurs
-export const usersAPI = {
-  getUserProfile: async () => {
-    return api.get('/users/me/');
+// API des codes de réduction
+export const discountsAPI = {
+  getDiscounts: async (params?: any) => {
+    return api.get('/discounts/', { params });
   },
-  updateUserProfile: async (userData: any) => {
-    return api.patch('/users/me/', userData);
+  getDiscount: async (id: number) => {
+    return api.get(`/discounts/${id}/`);
   },
-  updateProfileImage: async (formData: FormData) => {
-    return api.patch('/users/me/upload_profile_image/', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+  createDiscount: async (discountData: any) => {
+    return api.post('/discounts/', discountData);
   },
-  changePassword: async (passwordData: { current_password: string; new_password: string }) => {
-    return api.post('/users/change_password/', passwordData);
+  updateDiscount: async (id: number, discountData: any) => {
+    return api.put(`/discounts/${id}/`, discountData);
   },
-  updateNotificationSettings: async (settingsData: any) => {
-    return api.patch('/users/notification_settings/', settingsData);
+  patchDiscount: async (id: number, discountData: any) => {
+    return api.patch(`/discounts/${id}/`, discountData);
   },
-  getUserAnalytics: async () => {
-    return api.get('/users/analytics/');
+  deleteDiscount: async (id: number) => {
+    return api.delete(`/discounts/${id}/`);
+  },
+  validateDiscount: async (id: number, code: string) => {
+    return api.post(`/discounts/${id}/validate/`, { code });
   },
 };
 
-// API d'inscriptions (extension)
+// API des inscriptions
 export const registrationsAPI = {
   getRegistrations: async (params?: any) => {
     return api.get('/registrations/', { params });
@@ -426,26 +411,26 @@ export const registrationsAPI = {
   getRegistration: async (id: string) => {
     return api.get(`/registrations/${id}/`);
   },
-  getMyRegistrations: async () => {
-    return api.get('/registrations/my_registrations/');
-  },
   createRegistration: async (registrationData: any) => {
     return api.post('/registrations/', registrationData);
   },
   updateRegistration: async (id: string, registrationData: any) => {
+    return api.put(`/registrations/${id}/`, registrationData);
+  },
+  patchRegistration: async (id: string, registrationData: any) => {
     return api.patch(`/registrations/${id}/`, registrationData);
+  },
+  deleteRegistration: async (id: string) => {
+    return api.delete(`/registrations/${id}/`);
+  },
+  getMyRegistrations: async () => {
+    return api.get('/registrations/my_registrations/');
+  },
+  generateQrCodes: async (id: string) => {
+    return api.post(`/registrations/${id}/generate_qr_codes/`);
   },
   cancelRegistration: async (id: string) => {
     return api.post(`/registrations/${id}/cancel/`);
-  },
-  validateDiscount: async (discountId: string, code: string) => {
-    return api.post(`/discounts/${discountId}/validate/`, { code });
-  },
-  generateQrCodes: async (registrationId: string) => {
-    return api.post(`/registrations/${registrationId}/generate_qr_codes/`);
-  },
-  checkIn: async (registrationId: string) => {
-    return api.post(`/registrations/${registrationId}/check_in/`);
   },
   bulkCheckIn: async (registrationIds: string[]) => {
     return api.post('/registrations/bulk_check_in/', { registration_ids: registrationIds });
@@ -482,6 +467,348 @@ export const registrationsAPI = {
   verifyTicket: async (ticketCode: string) => {
     return api.post('/registrations/verify_ticket/', { code: ticketCode });
   }
+};
+
+// API des commentaires sur les événements
+export const feedbacksAPI = {
+  getFeedbacks: async (params?: any) => {
+    if (!isClient) {
+      const url = `${API_URL}/feedbacks/`;
+      try {
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        if (!response.ok) {
+          console.error(`Erreur API: ${response.status}`);
+          return { data: { results: [] } };
+        }
+        return { data: await response.json() };
+      } catch (error) {
+        console.error('Erreur lors de la récupération des feedbacks:', error);
+        return { data: { results: [] } };
+      }
+    }
+    return api.get('/feedbacks/', { params });
+  },
+  getFeedback: async (id: number) => {
+    return api.get(`/feedbacks/${id}/`);
+  },
+  createFeedback: async (feedbackData: any) => {
+    return api.post('/feedbacks/', feedbackData);
+  },
+  updateFeedback: async (id: number, feedbackData: any) => {
+    return api.put(`/feedbacks/${id}/`, feedbackData);
+  },
+  patchFeedback: async (id: number, feedbackData: any) => {
+    return api.patch(`/feedbacks/${id}/`, feedbackData);
+  },
+  deleteFeedback: async (id: number) => {
+    return api.delete(`/feedbacks/${id}/`);
+  },
+  getMyFeedback: async () => {
+    return api.get('/feedbacks/my_feedback/');
+  },
+};
+
+// API des signalements d'événements
+export const flagsAPI = {
+  getFlags: async (params?: any) => {
+    return api.get('/flags/', { params });
+  },
+  getFlag: async (id: number) => {
+    return api.get(`/flags/${id}/`);
+  },
+  createFlag: async (flagData: any) => {
+    return api.post('/flags/', flagData);
+  },
+  updateFlag: async (id: number, flagData: any) => {
+    return api.put(`/flags/${id}/`, flagData);
+  },
+  patchFlag: async (id: number, flagData: any) => {
+    return api.patch(`/flags/${id}/`, flagData);
+  },
+  deleteFlag: async (id: number) => {
+    return api.delete(`/flags/${id}/`);
+  },
+  resolveFlag: async (id: number, resolutionData: any) => {
+    return api.post(`/flags/${id}/resolve/`, resolutionData);
+  },
+  getUnresolvedFlags: async () => {
+    return api.get('/flags/unresolved/');
+  },
+};
+
+// API des validations d'événements
+export const validationsAPI = {
+  getValidations: async (params?: any) => {
+    return api.get('/validations/', { params });
+  },
+  getValidation: async (id: number) => {
+    return api.get(`/validations/${id}/`);
+  },
+  createValidation: async (validationData: any) => {
+    return api.post('/validations/', validationData);
+  },
+  updateValidation: async (id: number, validationData: any) => {
+    return api.put(`/validations/${id}/`, validationData);
+  },
+  patchValidation: async (id: number, validationData: any) => {
+    return api.patch(`/validations/${id}/`, validationData);
+  },
+  deleteValidation: async (id: number) => {
+    return api.delete(`/validations/${id}/`);
+  },
+  getEventStats: async (eventId: string) => {
+    if (!isClient) {
+      const url = `${API_URL}/validations/event_stats/?event=${eventId}`;
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          return { data: {} };
+        }
+        return { data: await response.json() };
+      } catch (error) {
+        console.error('Erreur lors de la récupération des statistiques:', error);
+        return { data: {} };
+      }
+    }
+    return api.get('/validations/event_stats/', { params: { event: eventId } });
+  },
+};
+
+// API des notifications
+export const notificationsAPI = {
+  getNotifications: async (params?: any) => {
+    return api.get('/notifications/', { params });
+  },
+  getNotification: async (id: string) => {
+    return api.get(`/notifications/${id}/`);
+  },
+  createNotification: async (notificationData: any) => {
+    return api.post('/notifications/', notificationData);
+  },
+  updateNotification: async (id: string, notificationData: any) => {
+    return api.put(`/notifications/${id}/`, notificationData);
+  },
+  patchNotification: async (id: string, notificationData: any) => {
+    return api.patch(`/notifications/${id}/`, notificationData);
+  },
+  deleteNotification: async (id: string) => {
+    return api.delete(`/notifications/${id}/`);
+  },
+  markAsRead: async (id: string) => {
+    return api.post(`/notifications/${id}/mark_as_read/`);
+  },
+  markAllAsRead: async () => {
+    return api.post('/notifications/mark_all_as_read/');
+  },
+  deleteMultiple: async (notificationIds: string[]) => {
+    return api.post('/notifications/delete_multiple/', { notification_ids: notificationIds });
+  },
+  sendNotification: async (notificationData: any) => {
+    return api.post('/notifications/send/', notificationData);
+  },
+  scheduleNotification: async (notificationData: any) => {
+    return api.post('/notifications/schedule/', notificationData);
+  },
+  cancelScheduledNotification: async (notificationId: string) => {
+    return api.post(`/notifications/${notificationId}/cancel_scheduled/`);
+  },
+  getScheduledNotifications: async () => {
+    return api.get('/notifications/scheduled/');
+  },
+  getNotificationStatistics: async (params?: any) => {
+    return api.get('/notifications/statistics/', { params });
+  },
+};
+
+// API des modèles de notifications
+export const notificationTemplatesAPI = {
+  getNotificationTemplates: async (params?: any) => {
+    return api.get('/notification-templates/', { params });
+  },
+  getNotificationTemplate: async (id: number) => {
+    return api.get(`/notification-templates/${id}/`);
+  },
+  createNotificationTemplate: async (templateData: any) => {
+    return api.post('/notification-templates/', templateData);
+  },
+  updateNotificationTemplate: async (id: number, templateData: any) => {
+    return api.put(`/notification-templates/${id}/`, templateData);
+  },
+  patchNotificationTemplate: async (id: number, templateData: any) => {
+    return api.patch(`/notification-templates/${id}/`, templateData);
+  },
+  deleteNotificationTemplate: async (id: number) => {
+    return api.delete(`/notification-templates/${id}/`);
+  },
+};
+
+// API des paiements
+export const paymentsAPI = {
+  getPayments: async (params?: any) => {
+    return api.get('/payments/', { params });
+  },
+  getPayment: async (id: string) => {
+    return api.get(`/payments/${id}/`);
+  },
+  createPayment: async (paymentData: any) => {
+    return api.post('/payments/', paymentData);
+  },
+  updatePayment: async (id: string, paymentData: any) => {
+    return api.put(`/payments/${id}/`, paymentData);
+  },
+  patchPayment: async (id: string, paymentData: any) => {
+    return api.patch(`/payments/${id}/`, paymentData);
+  },
+  deletePayment: async (id: string) => {
+    return api.delete(`/payments/${id}/`);
+  },
+  calculateUsageFees: async (id: string) => {
+    return api.post(`/payments/${id}/calculate_usage_fees/`);
+  },
+  processMtnMoney: async (id: string, paymentData?: any) => {
+    return api.post(`/payments/${id}/process_mtn_money/`, paymentData || {});
+  },
+  processOrangeMoney: async (id: string, paymentData?: any) => {
+    return api.post(`/payments/${id}/process_orange_money/`, paymentData || {});
+  },
+};
+
+// API des remboursements
+export const refundsAPI = {
+  getRefunds: async (params?: any) => {
+    return api.get('/refunds/', { params });
+  },
+  getRefund: async (id: number) => {
+    return api.get(`/refunds/${id}/`);
+  },
+  createRefund: async (refundData: any) => {
+    return api.post('/refunds/', refundData);
+  },
+  updateRefund: async (id: number, refundData: any) => {
+    return api.put(`/refunds/${id}/`, refundData);
+  },
+  patchRefund: async (id: number, refundData: any) => {
+    return api.patch(`/refunds/${id}/`, refundData);
+  },
+  deleteRefund: async (id: number) => {
+    return api.delete(`/refunds/${id}/`);
+  },
+  processRefund: async (id: number, refundData?: any) => {
+    return api.post(`/refunds/${id}/process_refund/`, refundData || {});
+  },
+};
+
+// API des factures
+export const invoicesAPI = {
+  getInvoices: async (params?: any) => {
+    return api.get('/invoices/', { params });
+  },
+  getInvoice: async (id: number) => {
+    return api.get(`/invoices/${id}/`);
+  },
+  downloadPdf: async (id: number) => {
+    return api.get(`/invoices/${id}/download_pdf/`);
+  },
+};
+
+// API des analyses
+export const analyticsAPI = {
+  // Résumés et analyses
+  getDashboardSummary: async (params?: any) => {
+    return api.get('/analytics/analytics/dashboard_summary/', { params });
+  },
+  getEventAnalytics: async (params?: any) => {
+    return api.get('/analytics/analytics/events/', { params });
+  },
+  getEventRegistrationsAnalytics: async (params?: any) => {
+    return api.get('/analytics/analytics/event_registrations/', { params });
+  },
+  predictAttendance: async (params?: any) => {
+    return api.get('/analytics/analytics/predict_attendance/', { params });
+  },
+  getRegistrationAnalytics: async (params?: any) => {
+    return api.get('/analytics/analytics/registrations/', { params });
+  },
+  getRevenueAnalytics: async (params?: any) => {
+    return api.get('/analytics/analytics/revenue/', { params });
+  },
+  getUserAnalytics: async (params?: any) => {
+    return api.get('/analytics/analytics/users/', { params });
+  },
+  
+  // Tableaux de bord
+  getDashboards: async (params?: any) => {
+    return api.get('/analytics/dashboards/', { params });
+  },
+  getDashboard: async (id: number) => {
+    return api.get(`/analytics/dashboards/${id}/`);
+  },
+  createDashboard: async (dashboardData: any) => {
+    return api.post('/analytics/dashboards/', dashboardData);
+  },
+  updateDashboard: async (id: number, dashboardData: any) => {
+    return api.put(`/analytics/dashboards/${id}/`, dashboardData);
+  },
+  patchDashboard: async (id: number, dashboardData: any) => {
+    return api.patch(`/analytics/dashboards/${id}/`, dashboardData);
+  },
+  deleteDashboard: async (id: number) => {
+    return api.delete(`/analytics/dashboards/${id}/`);
+  },
+  getDashboardWidgets: async (id: number) => {
+    return api.get(`/analytics/dashboards/${id}/widgets/`);
+  },
+  
+  // Widgets
+  getDashboardWidgetsAll: async (params?: any) => {
+    return api.get('/analytics/dashboard-widgets/', { params });
+  },
+  getDashboardWidget: async (id: number) => {
+    return api.get(`/analytics/dashboard-widgets/${id}/`);
+  },
+  createDashboardWidget: async (widgetData: any) => {
+    return api.post('/analytics/dashboard-widgets/', widgetData);
+  },
+  updateDashboardWidget: async (id: number, widgetData: any) => {
+    return api.put(`/analytics/dashboard-widgets/${id}/`, widgetData);
+  },
+  patchDashboardWidget: async (id: number, widgetData: any) => {
+    return api.patch(`/analytics/dashboard-widgets/${id}/`, widgetData);
+  },
+  deleteDashboardWidget: async (id: number) => {
+    return api.delete(`/analytics/dashboard-widgets/${id}/`);
+  },
+  
+  // Rapports
+  getReports: async (params?: any) => {
+    return api.get('/analytics/reports/', { params });
+  },
+  getReport: async (id: number) => {
+    return api.get(`/analytics/reports/${id}/`);
+  },
+  createReport: async (reportData: any) => {
+    return api.post('/analytics/reports/', reportData);
+  },
+  updateReport: async (id: number, reportData: any) => {
+    return api.put(`/analytics/reports/${id}/`, reportData);
+  },
+  patchReport: async (id: number, reportData: any) => {
+    return api.patch(`/analytics/reports/${id}/`, reportData);
+  },
+  deleteReport: async (id: number) => {
+    return api.delete(`/analytics/reports/${id}/`);
+  },
+  exportReport: async (id: number, format: string) => {
+    return api.get(`/analytics/reports/${id}/export/`, { params: { format } });
+  },
+  generateReport: async (reportData: any) => {
+    return api.post('/analytics/reports/generate/', reportData);
+  },
 };
 
 // Types pour les statistiques d'inscriptions

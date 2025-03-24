@@ -17,6 +17,11 @@ const nextConfig = {
         protocol: 'https',
         hostname: '**.amazonaws.com', // Pour les images sur S3
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com', // Pour les images sur S3
+        pathname: '/**',
       }
     ],
     // Images par défaut pour le développement
@@ -50,7 +55,10 @@ const nextConfig = {
         permanent: true,
       },
     ];
-  }
+  },
+  experimental: {
+    turbo: true, // Active Turbopack
+  },
 };
 
 module.exports = nextConfig;

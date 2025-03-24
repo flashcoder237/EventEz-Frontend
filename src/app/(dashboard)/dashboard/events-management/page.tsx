@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Badge } from '@/components/ui/Badge';
 import { Switch } from '@/components/ui/Switch';
-import { eventsAPI } from '@/lib/api';
+import { eventsAPI,categoriesAPI } from '@/lib/api';
 import { Event } from '@/types';
 import { formatDate, formatCurrency } from '@/lib/utils';
 import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/AlertDialog';
@@ -118,7 +118,7 @@ export default function EventsManagementPage() {
         setTotalPages(Math.ceil((eventsResponse.data.count || 0) / pageSize));
 
         // Récupérer les catégories
-        const categoriesResponse = await eventsAPI.getCategories();
+        const categoriesResponse = await categoriesAPI.getCategories();
         setCategories(categoriesResponse.data.results || []);
 
         // Récupérer les statistiques des événements

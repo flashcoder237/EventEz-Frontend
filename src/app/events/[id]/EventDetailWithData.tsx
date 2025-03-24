@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import EventDetail from '@/components/events/EventDetail';
-import { eventsAPI, feedbackAPI } from '@/lib/api';
+import { eventsAPI, feedbacksAPI,ticketTypesAPI} from '@/lib/api';
 import { FaSpinner } from 'react-icons/fa';
 
 export default function EventDetailWithData({ 
@@ -30,15 +30,19 @@ export default function EventDetailWithData({
         // Charger les données selon le type d'événement
         if (event.event_type === 'billetterie') {
           try {
-            const ticketTypesResponse = await eventsAPI.getTicketTypes(event.id);
+            const ticketTypesResponse = await ticketTypesAPI.getTicketTypes({ event: event.id });
             setTicketTypes(ticketTypesResponse.data?.results || []);
           } catch (error) {
             console.error('Erreur lors du chargement des billets:', error);
           }
         } else {
           try {
-            const formFieldsResponse = await eventsAPI.getFormFields(event.id);
-            setFormFields(formFieldsResponse.data?.results || []);
+            // Dans la plupart des cas, vous n'avez pas besoin de cet appel puisque event contient déjà form_fields
+            // Mais si vous avez besoin de les actualiser, voici la bonne façon de faire l'appel
+            // const formFieldsResponse = await eventsAPI.getFormFields({ event: event.id });
+            setFormFields(event.form_fields);
+            console.log(event.form_fields);
+            
           } catch (error) {
             console.error('Erreur lors du chargement des champs:', error);
           }
@@ -46,7 +50,7 @@ export default function EventDetailWithData({
         
         // Charger les feedbacks si nécessaire
         try {
-          const feedbacksResponse = await feedbackAPI.getFeedbacks(event.id);
+          const feedbacksResponse = await feedbacksAPI.getFeedbacks({ event: event.id });
           setFeedbacks(feedbacksResponse.data?.results || []);
         } catch (error) {
           console.error('Erreur lors du chargement des avis:', error);
@@ -73,8 +77,6 @@ export default function EventDetailWithData({
   return (
     <EventDetail 
       event={event}
-      ticketTypes={ticketTypes}
-      formFields={formFields}
       feedbacks={feedbacks}
     />
   );

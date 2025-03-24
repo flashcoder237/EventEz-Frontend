@@ -4,7 +4,7 @@ import MainLayout from '@/components/layout/MainLayout';
 import EventGrid from '@/components/events/EventGrid';
 import EventFilters from '@/components/events/EventFilters';
 import { FaFilter } from 'react-icons/fa';
-import { eventsAPI } from '@/lib/api';
+import { eventsAPI,categoriesAPI } from '@/lib/api';
 import SortSelect from '@/components/events/SortSelect';
 import PaginationButtons from '@/components/common/PaginationButtons';
 
@@ -20,19 +20,21 @@ interface SearchParams {
 
 // Cette fonction s'exécute côté serveur pour obtenir les données
 async function getEventsData(searchParams: SearchParams) {
+   
   try {
-    // Obtenir les événements avec les filtres et la pagination
+    // Résoudre la page et l'offset correctement
+    const page = Number(searchParams.page || 1);
+    const offset = (page - 1) * 5;
+
     const eventsResponse = await eventsAPI.getEvents({
       ...searchParams,
       status: 'validated',
       limit: 5,
-      // Nous envoyons à la fois page et offset pour s'assurer que l'API reçoit ce qu'elle attend
-      page: Number(searchParams.page || 1),
-      offset: (Number(searchParams.page || 1) - 1) * 5
+      page,
+      offset
     });
-    
-    // Obtenir les catégories pour les filtres
-    const categoriesResponse = await eventsAPI.getCategories();
+
+    const categoriesResponse = await categoriesAPI.getCategories();
 
     return {
       events: eventsResponse.data.results || [],
@@ -49,8 +51,23 @@ async function getEventsData(searchParams: SearchParams) {
   }
 }
 
+
 export default async function EventsPage({ searchParams }: { searchParams: SearchParams }) {
-  const { events, totalEvents, categories } = await getEventsData(searchParams);
+  const params = await searchParams;  // Attendre les searchParams
+
+  // Extraire uniquement les paramètres valides
+  const { page, status, category, organizer, search, start_date } = params;
+  
+  // Construire un objet de paramètres avec seulement les valeurs définies
+  const queryParams = {};
+  if (page) queryParams.page = page;
+  if (status) queryParams.status = status;
+  if (category) queryParams.category = category;
+  if (organizer) queryParams.organizer = organizer;
+  if (search) queryParams.search = search;
+  if (start_date) queryParams.start_date = start_date;
+  
+  const { events, totalEvents, categories } = await getEventsData(queryParams);
   
   // Options de tri
   const sortOptions = [
@@ -61,7 +78,8 @@ export default async function EventsPage({ searchParams }: { searchParams: Searc
     { value: '-registration_count', label: 'Par popularité' }
   ];
   
-  const currentSort = searchParams.ordering || 'start_date';
+  const currentSort = (await searchParams).ordering || 'start_date';
+
   
   // Create a function to generate the URL for pagination and sorting
   const createQueryString = (params: Record<string, string>) => {
@@ -124,7 +142,7 @@ export default async function EventsPage({ searchParams }: { searchParams: Searc
         {totalEvents > 5 && (
           <div className="mt-12 flex justify-center">
             <PaginationButtons
-              currentPage={Number(searchParams.page || 1)}
+              currentPage={Number((await searchParams).page || 1)}
               totalItems={totalEvents}
               itemsPerPage={5}
               searchParams={searchParams}

@@ -5,7 +5,7 @@ import Image from 'next/image';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/Button';
 import EventGrid from '@/components/events/EventGrid';
-import { eventsAPI } from '@/lib/api';
+import { eventsAPI,categoriesAPI } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'EventEz - Accueil',
@@ -24,7 +24,7 @@ async function getFeaturedEvents() {
 
 async function getCategories() {
   try {
-    const response = await eventsAPI.getCategories();
+    const response = await categoriesAPI.getCategories();
     return response.data.results || [];
   } catch (error) {
     console.error('Error fetching categories:', error);

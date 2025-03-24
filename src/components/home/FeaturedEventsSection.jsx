@@ -1,193 +1,193 @@
-// components/home/FeaturedEventsSection.jsx
 'use client';
 
-import { useState,useEffect, useRef } from 'react';
-import Image from 'next/image';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { ChevronRight, ChevronLeft, Calendar, MapPin, Users, Heart } from 'lucide-react';
+import Image from 'next/image';
+import { 
+  MapPin, 
+  Calendar, 
+  Users,
+  ChevronRight,
+  ChevronLeft
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
-export default function FeaturedEventsSection({ events = [] }) {
-  // Fonction locale pour formater la date
-  function formatDate(dateString) {
-    const date = new Date(dateString);
-    const options = { day: 'numeric', month: 'short', year: 'numeric' };
-    return date.toLocaleDateString('fr-FR', options);
-  }
-  
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const containerRef = useRef(null);
-  const slideCount = Math.ceil(events.length / 3);
-  
-  // Créer un tableau de nombres aléatoires au chargement du composant
-  // Cela garantit que les mêmes nombres sont utilisés côté serveur et client
-  const [randomLikes, setRandomLikes] = useState([]);
-  const [randomParticipants, setRandomParticipants] = useState([]);
-  
-  useEffect(() => {
-    // Générer les nombres aléatoires au montage du composant
-    const likes = events.map(() => Math.floor(Math.random() * 50) + 10);
-    const participants = events.map(() => Math.floor(Math.random() * 100) + 20);
-    
-    setRandomLikes(likes);
-    setRandomParticipants(participants);
-  }, [events.length]);
-  
-  const handleNextSlide = () => {
-    if (currentSlide < slideCount - 1) {
-      setCurrentSlide(prev => prev + 1);
-    } else {
-      setCurrentSlide(0);
-    }
+function formatDate(dateString) {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('fr-FR', { 
+    day: 'numeric', 
+    month: 'short', 
+    year: 'numeric' 
+  });
+}
+
+function FeaturedEventsSection({ events }) {
+  const [activeEventIndex, setActiveEventIndex] = useState(0);
+
+  // Si moins de 3 événements, on les affiche tous
+  const displayEvents = events.length > 3 ? events.slice(0, 3) : events;
+
+  const handleNextEvent = () => {
+    setActiveEventIndex((prev) => 
+      prev === displayEvents.length - 1 ? 0 : prev + 1
+    );
   };
-  
-  const handlePrevSlide = () => {
-    if (currentSlide > 0) {
-      setCurrentSlide(prev => prev - 1);
-    } else {
-      setCurrentSlide(slideCount - 1);
-    }
+
+  const handlePrevEvent = () => {
+    setActiveEventIndex((prev) => 
+      prev === 0 ? displayEvents.length - 1 : prev - 1
+    );
   };
+
+  const activeEvent = displayEvents[activeEventIndex];
 
   return (
-    <section className="py-20 bg-gray-900 text-white">
+    <section className="py-12 md:py-16 bg-gray-50">
       <div className="container mx-auto px-4">
-        <div className="flex flex-col md:flex-row justify-between items-center mb-12">
-          <div>
-            <span className="text-primary font-semibold text-sm uppercase tracking-wider">Sélection spéciale</span>
-            <h2 className="text-3xl font-bold mt-2">Événements en vedette</h2>
-          </div>
-          
-          <Link href="/events?featured=true" className="text-primary font-medium mt-4 md:mt-0 group flex items-center">
-            Voir tous les événements en vedette
-            <ChevronRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
-          </Link>
+        <div className="text-center mb-8 md:mb-12">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4">
+            Événements à la une
+          </h2>
+          <p className="text-gray-600 max-w-xl mx-auto">
+            Découvrez les événements les plus passionnants et prometteurs du moment.
+          </p>
         </div>
-        
-        <div className="relative">
-          <div 
-            ref={containerRef}
-            className="overflow-hidden"
-          >
-            <div 
-              className="flex transition-transform duration-500 ease-in-out"
-              style={{ transform: `translateX(-${currentSlide * 100}%)` }}
-            >
-              {Array.from({ length: slideCount }).map((_, slideIndex) => (
-            <div key={slideIndex} className="min-w-full flex flex-col md:flex-row gap-6">
-              {events.slice(slideIndex * 3, (slideIndex + 1) * 3).map((event, index) => {
-                // Calculer l'index global pour accéder aux tableaux de nombres aléatoires
-                const globalIndex = slideIndex * 3 + index;
-                
-                return (
-                  <Link 
-                    key={event.id}
-                    href={`/events/${event.id}`}
-                    className="block flex-1 group"
-                  >
-                      <div className="bg-gray-800 rounded-xl overflow-hidden hover:bg-gray-750 transition-all duration-300 transform hover:-translate-y-1 shadow-md hover:shadow-xl">
-                        <div className="relative">
-                          {/* Badge de date */}
-                          <div className="absolute bottom-0 left-0 z-20 m-4">
-                            <div className="bg-primary shadow-lg rounded-lg overflow-hidden">
-                              <div className="bg-primary-dark px-3 py-1 text-xs text-white font-bold text-center uppercase">
-                                {new Date(event.start_date).toLocaleDateString('fr-FR', {month: 'short'})}
-                              </div>
-                              <div className="px-3 py-2 text-white text-center font-bold">
-                                {new Date(event.start_date).getDate()}
-                              </div>
-                            </div>
-                          </div>
-                          
-                          {/* Image avec overlay */}
-                          <div className="aspect-video relative">
-                            <Image 
-                              src={event.banner_image || "/images/placeholder-image.png"}
-                              // src={event.banner_image || `/images/event-featured-${((slideIndex * 3 + index) % 3) + 1}.jpg`}
-                              alt={event.title}
-                              fill
-                              className="object-cover transition-transform duration-500 group-hover:scale-x-105 w-10"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/20 to-transparent"></div>
-                          </div>
-                          
-                          {/* Badge d'intérêt */}
-                          <div className="absolute top-3 right-3">
-                            <span className="flex items-center gap-1 bg-white/10 backdrop-blur-sm text-white px-2 py-1 rounded-full text-xs">
-                              <Heart className="h-3 w-3 text-primary" fill="currentColor" />
-                              <span>{randomLikes[globalIndex] || 25}</span>
-                            </span>
-                          </div>
-                        </div>
-                        
-                        <div className="p-6">
-                          <h3 className="text-xl font-bold mb-3 line-clamp-2 group-hover:text-primary transition-colors">
-                            {event.title}
-                          </h3>
-                          
-                          <div className="space-y-3 mb-4">
-                            <div className="flex items-center gap-2 text-gray-300">
-                              <MapPin className="h-4 w-4 flex-shrink-0 text-primary" />
-                              <span className="text-sm truncate">{event.location}</span>
-                            </div>
-                            
-                            <div className="flex items-center gap-2 text-gray-300">
-                              <Users className="h-4 w-4 flex-shrink-0 text-primary" />
-                              <span className="text-sm">{randomParticipants[globalIndex] || 50} participants</span>
-                            </div>
-                          </div>
-                          
-                          <p className="text-gray-400 mb-4 line-clamp-2 text-sm">
-                            {event.short_description || "Un événement à ne pas manquer ! Rejoignez-nous pour une expérience inoubliable."}
-                          </p>
-                          
-                          <div className="flex items-center justify-between pt-3 border-t border-gray-700">
-                            <span className="text-primary font-bold">
-                              {event.price ? `${event.price} XAF` : 'Gratuit'}
-                            </span>
-                            
-                            <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-primary/20 text-primary">
-                              {event.category?.name || 'Événement'}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      </Link>
-                );
-              })}
-            </div>
-          ))}
-        </div>
-      </div>
 
-          {/* Navigation buttons */}
-          <button 
-            onClick={handlePrevSlide}
-            className="absolute top-1/2 -left-4 -translate-y-1/2 z-10 bg-white text-gray-900 hover:text-primary rounded-full p-3 shadow-lg transition-all transform hover:scale-105"
-            aria-label="Précédent"
-          >
-            <ChevronLeft className="h-6 w-6" />
-          </button>
-          
-          <button 
-            onClick={handleNextSlide}
-            className="absolute top-1/2 -right-4 -translate-y-1/2 z-10 bg-white text-gray-900 hover:text-primary rounded-full p-3 shadow-lg transition-all transform hover:scale-105"
-            aria-label="Suivant"
-          >
-            <ChevronRight className="h-6 w-6" />
-          </button>
-          
-          {/* Pagination dots */}
-          <div className="flex justify-center mt-8">
-            {Array.from({ length: slideCount }).map((_, index) => (
-              <button
+        <div className="grid md:grid-cols-2 gap-6 md:gap-10 items-center">
+          {/* Main Event Display - Desktop & Mobile */}
+          <div className="relative rounded-2xl overflow-hidden shadow-lg">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeEvent.id}
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -50 }}
+                transition={{ duration: 0.5 }}
+              >
+                <Image 
+                  src={activeEvent.banner_image || "/images/placeholder-image.png"}
+                  alt={activeEvent.title}
+                  width={600}
+                  height={400}
+                  className="w-full h-48 md:h-64 lg:h-80 object-cover"
+                />
+                
+                <div className="p-4 md:p-6 bg-white">
+                  <div className="flex justify-between items-center mb-3">
+                    <span className="text-sm text-primary font-medium">
+                      {activeEvent.category?.name || 'Événement'}
+                    </span>
+                    <div className="flex items-center text-gray-500 text-sm">
+                      <Calendar className="h-4 w-4 mr-2 text-primary" />
+                      {formatDate(activeEvent.start_date)}
+                    </div>
+                  </div>
+                  
+                  <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-3 line-clamp-2">
+                    {activeEvent.title}
+                  </h3>
+                  
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center text-gray-600">
+                      <MapPin className="h-4 w-4 mr-2 text-primary" />
+                      <span className="text-sm">{activeEvent.location_city}</span>
+                    </div>
+                    
+                    <Link 
+                      href={`/events/${activeEvent.id}`}
+                      className="flex items-center text-primary hover:underline"
+                    >
+                      Détails
+                      <ChevronRight className="h-4 w-4 ml-1" />
+                    </Link>
+                  </div>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+
+            {/* Navigation Mobile */}
+            <div className="absolute top-1/2 transform -translate-y-1/2 w-full flex justify-between px-4 md:hidden">
+              <button 
+                onClick={handlePrevEvent}
+                className="bg-white/80 backdrop-blur-sm rounded-full p-2 shadow-md"
+              >
+                <ChevronLeft className="h-5 w-5 text-gray-700" />
+              </button>
+              <button 
+                onClick={handleNextEvent}
+                className="bg-white/80 backdrop-blur-sm rounded-full p-2 shadow-md"
+              >
+                <ChevronRight className="h-5 w-5 text-gray-700" />
+              </button>
+            </div>
+          </div>
+
+          {/* Event List - Desktop Only */}
+          <div className="hidden md:block space-y-4">
+            {displayEvents.map((event, index) => (
+              <motion.div 
+                key={event.id}
+                onClick={() => setActiveEventIndex(index)}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className={`
+                  cursor-pointer rounded-xl p-4 transition-all duration-300
+                  ${activeEventIndex === index 
+                    ? 'bg-primary/10 border border-primary/20' 
+                    : 'bg-white hover:bg-gray-100'}
+                `}
+              >
+                <div className="flex items-center">
+                  <Image 
+                    src={event.banner_image || "/images/placeholder-image.png"}
+                    alt={event.title}
+                    width={100}
+                    height={80}
+                    className="w-20 h-16 object-cover rounded-lg mr-4"
+                  />
+                  
+                  <div className="flex-1">
+                    <h4 className="text-base font-semibold text-gray-800 mb-1 line-clamp-2">
+                      {event.title}
+                    </h4>
+                    
+                    <div className="flex justify-between text-sm text-gray-600">
+                      <div className="flex items-center">
+                        <MapPin className="h-4 w-4 mr-2 text-primary" />
+                        {event.location_city}
+                      </div>
+                      <div className="flex items-center">
+                        <Calendar className="h-4 w-4 mr-2 text-primary" />
+                        {formatDate(event.start_date)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+            
+            <div className="text-center mt-6">
+              <Link 
+                href="/events?featured=true"
+                className="text-primary hover:underline flex items-center justify-center"
+              >
+                Voir tous les événements
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Link>
+            </div>
+          </div>
+
+          {/* Mobile Event List - Carousel Dots */}
+          <div className="md:hidden flex justify-center mt-4 space-x-2">
+            {displayEvents.map((_, index) => (
+              <div 
                 key={index}
-                onClick={() => setCurrentSlide(index)}
-                className={`w-3 h-3 mx-1 rounded-full transition-all ${
-                  index === currentSlide 
-                    ? 'bg-primary scale-125' 
-                    : 'bg-gray-600 hover:bg-gray-500'
-                }`}
-                aria-label={`Aller à la diapositive ${index + 1}`}
+                className={`
+                  h-2 w-2 rounded-full transition-all duration-300
+                  ${activeEventIndex === index 
+                    ? 'bg-primary w-6' 
+                    : 'bg-gray-300'}
+                `}
               />
             ))}
           </div>
@@ -196,3 +196,5 @@ export default function FeaturedEventsSection({ events = [] }) {
     </section>
   );
 }
+
+export default FeaturedEventsSection;
