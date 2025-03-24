@@ -323,7 +323,7 @@ export default async function HomePage() {
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/0 to-black/40 opacity-60 group-hover:opacity-80 transition-opacity z-10"></div>
                       
                       <Image 
-                        src={event.banner_url || `/images/event-upcoming-${(index % 4) + 1}.jpg`}
+                        src={event.banner_url || "/images/placeholder-image.png"}
                         alt={event.title}
                         fill
                         className="object-cover transition-transform duration-700 group-hover:scale-110"
