@@ -78,6 +78,8 @@ export default function EventDetailWithData({
     <EventDetail 
       event={event}
       feedbacks={feedbacks}
+      ticketTypes = {ticketTypes}
+      formFields = {event.form_fields}
     />
   );
 }

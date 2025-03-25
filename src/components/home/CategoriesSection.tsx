@@ -37,7 +37,7 @@ const CategoriesSection: React.FC<CategoriesSectionProps> = ({ categories }) => 
           {categories.slice(0, 6).map((category, index) => (
             <Link 
               key={category.id}
-              href={`/events/categories/${category.id}`}
+              href={`/events?category=${category.id}`}
               className="group"
             >
               <div className="aspect-square rounded-xl bg-white border border-gray-100 p-6 flex flex-col items-center justify-center shadow-sm transition-all duration-300 group-hover:shadow-md group-hover:-translate-y-1">
