@@ -6,10 +6,22 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
 import { Menu, X, ChevronDown, User } from 'lucide-react';
-import { useState } from 'react';
+import { useState,useEffect } from 'react';
 import { signIn, signOut, useSession } from 'next-auth/react';
+import { categoriesAPI } from '@/lib/api';
+import { Category } from '@/types/events';
 
+async function getCategoriesData() {
+  try {
+    const categoriesResponse = await categoriesAPI.getCategories();
+    return categoriesResponse.data.results ;
+  } catch (error) {
+    console.error('Erreur lors de la récupération des données du Header:', error);
+    return [];
+  }
+}
 export default function Header() {
+  const [categoriesData, setCategoriesData] = useState<Category[]>([]);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { data: session, status } = useSession({
     required: false,
@@ -18,6 +30,10 @@ export default function Header() {
     },
   });
   const canAccessDashboard = session?.user?.role === 'organizer' || session?.user?.role === 'admin';
+  useEffect(() => {
+    setCategoriesData(getCategoriesData())
+  }, []);
+
   const userActions = () => {
     if (status === 'loading') {
       return (
@@ -83,21 +99,15 @@ export default function Header() {
               </button>
               <div className="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
                 <div className="py-1">
-                  <Link href="/events/categories/1" className="block px-4 py-2 text-sm text-gray-700 hover:bg-violet-50 hover:text-violet-600">
-                    Concerts
-                  </Link>
-                  <Link href="/events/categories/2" className="block px-4 py-2 text-sm text-gray-700 hover:bg-violet-50 hover:text-violet-600">
-                    Conférences
-                  </Link>
-                  <Link href="/events/categories/3" className="block px-4 py-2 text-sm text-gray-700 hover:bg-violet-50 hover:text-violet-600">
-                    Expositions
-                  </Link>
-                  <Link href="/events/categories/4" className="block px-4 py-2 text-sm text-gray-700 hover:bg-violet-50 hover:text-violet-600">
-                    Ateliers
-                  </Link>
-                  <Link href="/events/categories" className="block px-4 py-2 text-sm font-medium text-violet-600 border-t border-gray-100">
-                    Toutes les catégories
-                  </Link>
+                            {categoriesData && categoriesData?.slice(0, 6).map((category, index) => (
+                              <Link 
+                                key={category.id}
+                                href={`/events?category=${category.id}`}
+                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-violet-50 hover:text-violet-600">
+                                 {category.name}
+                            </Link>
+                      
+                      ))}
                 </div>
               </div>
             </div>

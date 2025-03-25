@@ -32,10 +32,10 @@ const nextConfig = {
     ],
   },
   // Configuration webpack si nécessaire
-  webpack: (config, { isServer }) => {
-    config.resolve.alias['@'] = `${__dirname}/src`;
-    return config;
-  },
+  // webpack: (config, { isServer }) => {
+  //   config.resolve.alias['@'] = `${__dirname}/src`;
+  //   return config;
+  // },
   // Variables d'environnement côté client
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
@@ -57,7 +57,7 @@ const nextConfig = {
     ];
   },
   experimental: {
-    turbo: true, // Active Turbopack
+    turbo: { },
   },
 };
 
