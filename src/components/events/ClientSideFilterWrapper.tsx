@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import EventFilters from '@/components/events/EventFilters';
-import DateFilter  from '@/components/events/DateFilter';
 import SortSelect   from '@/components/events/SortSelect';
 
 export default function ClientSideFilterWrapper({ 
@@ -28,25 +27,7 @@ export default function ClientSideFilterWrapper({
     }
   }, []);
   
-  // Gestionnaire pour les filtres de date
-  const handleDateFilterChange = (startDate: string, endDate: string) => {
-    const newSearchParams = new URLSearchParams();
-    
-    // Conserver les paramètres existants
-    Object.entries(searchParams).forEach(([key, value]) => {
-      if (value && key !== 'start_date' && key !== 'end_date') {
-        newSearchParams.set(key, value);
-      }
-    });
-    
-    // Ajouter les nouvelles dates si présentes
-    if (startDate && endDate) {
-      newSearchParams.set('start_date', startDate);
-      newSearchParams.set('end_date', endDate);
-    }
-    
-    router.push(`/events?${newSearchParams.toString()}`);
-  };
+
   
   // Basculer le mode flottant des filtres
   const toggleFilterFloating = () => {
@@ -75,10 +56,7 @@ export default function ClientSideFilterWrapper({
       } bg-white rounded-lg shadow-md mb-6`}>
         <EventFilters categories={categories} />
         
-        {/* Filtre de date */}
-        <div className="px-4 py-2 border-t">
-          <DateFilter onDateFilterChange={handleDateFilterChange} />
-        </div>
+       
         
         {/* Options de tri et résultats */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center p-4 border-t">

@@ -6,7 +6,18 @@ import { Input } from '../ui/Input';
 import { Select } from '../ui/Select';
 import { Button } from '../ui/Button';
 import { Category } from '@/types';
-import { Search, Filter, X, ChevronDown, Calendar, MapPin, Tag, Sparkles } from 'lucide-react';
+import { format, addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
+import { fr } from 'date-fns/locale';
+import { 
+  Search, 
+  Filter, 
+  X, 
+  ChevronDown, 
+  Calendar, 
+  MapPin, 
+  Tag, 
+  Sparkles 
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface EventFiltersProps {
@@ -21,10 +32,14 @@ export default function ModernEventFilters({ categories }: EventFiltersProps) {
   const [category, setCategory] = useState(searchParams.get('category') || '');
   const [eventType, setEventType] = useState(searchParams.get('event_type') || '');
   const [city, setCity] = useState(searchParams.get('city') || '');
-  const [date, setDate] = useState(searchParams.get('date') || '');
   const [expandedFilters, setExpandedFilters] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [animateIn, setAnimateIn] = useState(false);
+  
+  // Date filter states
+  const [dateFilter, setDateFilter] = useState('all');
+  const [startDate, setStartDate] = useState<string | null>(searchParams.get('start_date'));
+  const [endDate, setEndDate] = useState<string | null>(searchParams.get('end_date'));
 
   useEffect(() => {
     // Set animation on mount
@@ -39,6 +54,50 @@ export default function ModernEventFilters({ categories }: EventFiltersProps) {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Initialize date filter based on URL params
+  useEffect(() => {
+    const start = searchParams.get('start_date');
+    const end = searchParams.get('end_date');
+
+    if (start && end) {
+      setStartDate(start);
+      setEndDate(end);
+      
+      const today = formatDateForAPI(new Date());
+      const tomorrow = formatDateForAPI(addDays(new Date(), 1));
+      const weekStart = formatDateForAPI(startOfWeek(new Date(), { weekStartsOn: 1 }));
+      const weekEnd = formatDateForAPI(endOfWeek(new Date(), { weekStartsOn: 1 }));
+      const monthStart = formatDateForAPI(startOfMonth(new Date()));
+      const monthEnd = formatDateForAPI(endOfMonth(new Date()));
+      
+      if (start === today && end === today) {
+        setDateFilter('today');
+      } else if (start === tomorrow && end === tomorrow) {
+        setDateFilter('tomorrow');
+      } else if (start === weekStart && end === weekEnd) {
+        setDateFilter('thisWeek');
+      } else if (start === monthStart && end === monthEnd) {
+        setDateFilter('thisMonth');
+      } else {
+        setDateFilter('custom');
+      }
+    } else {
+      setDateFilter('all');
+      setStartDate(null);
+      setEndDate(null);
+    }
+  }, [searchParams]);
+
+  const formatDateForAPI = (date: Date): string => {
+    return format(date, 'yyyy-MM-dd');
+  };
+
+  const formatDateForDisplay = (dateStr: string): string => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return format(date, 'dd MMM yyyy', { locale: fr });
+  };
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     applyFilters();
@@ -50,7 +109,8 @@ export default function ModernEventFilters({ categories }: EventFiltersProps) {
     if (category) params.set('category', category);
     if (eventType) params.set('event_type', eventType);
     if (city) params.set('city', city);
-    if (date) params.set('date', date);
+    if (startDate) params.set('start_date', startDate);
+    if (endDate) params.set('end_date', endDate);
     
     router.push(`/events?${params.toString()}`);
   };
@@ -60,8 +120,43 @@ export default function ModernEventFilters({ categories }: EventFiltersProps) {
     setCategory('');
     setEventType('');
     setCity('');
-    setDate('');
+    setDateFilter('all');
+    setStartDate(null);
+    setEndDate(null);
     router.push('/events');
+  };
+
+  const applyDateFilter = (filter: string) => {
+    const today = new Date();
+    let start: string | null = null;
+    let end: string | null = null;
+
+    switch (filter) {
+      case 'today':
+        start = formatDateForAPI(today);
+        end = formatDateForAPI(today);
+        break;
+      case 'tomorrow':
+        start = formatDateForAPI(addDays(today, 1));
+        end = formatDateForAPI(addDays(today, 1));
+        break;
+      case 'thisWeek':
+        start = formatDateForAPI(startOfWeek(today, { weekStartsOn: 1 }));
+        end = formatDateForAPI(endOfWeek(today, { weekStartsOn: 1 }));
+        break;
+      case 'thisMonth':
+        start = formatDateForAPI(startOfMonth(today));
+        end = formatDateForAPI(endOfMonth(today));
+        break;
+      default:
+        start = null;
+        end = null;
+        break;
+    }
+
+    setStartDate(start);
+    setEndDate(end);
+    setDateFilter(filter);
   };
   
   const activeFiltersCount = [
@@ -69,20 +164,31 @@ export default function ModernEventFilters({ categories }: EventFiltersProps) {
     category,
     eventType,
     city,
-    date
+    startDate // Compter date comme un filtre actif
   ].filter(Boolean).length;
+
+  const dateRanges = [
+    { id: 'all', label: 'Toutes les dates' },
+    { id: 'today', label: 'Aujourd\'hui' },
+    { id: 'tomorrow', label: 'Demain' },
+    { id: 'thisWeek', label: 'Cette semaine' },
+    { id: 'thisMonth', label: 'Ce mois' }
+  ];
 
   const popularCities = [
     'Yaoundé', 'Douala', 'Bafoussam', 'Limbe'
   ];
 
-  const dateRanges = [
-    { value: 'today', label: "Aujourd'hui" },
-    { value: 'tomorrow', label: 'Demain' },
-    { value: 'weekend', label: 'Ce weekend' },
-    { value: 'week', label: 'Cette semaine' },
-    { value: 'month', label: 'Ce mois' },
-  ];
+  useEffect(() => {
+    // Debounced search and filter application
+    const timer = setTimeout(() => {
+      if (searchTerm || category || eventType || city || startDate || endDate) {
+        applyFilters();
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm, category, eventType, city, startDate, endDate]);
 
   // Animation variants
   const containerVariants = {
@@ -103,17 +209,6 @@ export default function ModernEventFilters({ categories }: EventFiltersProps) {
     hidden: { opacity: 0, y: 10 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.4 } }
   };
-
-  useEffect(() => {
-    // Debounced search
-    const timer = setTimeout(() => {
-      if (searchTerm || category || eventType || city || date) {
-        applyFilters();
-      }
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [searchTerm, category, eventType, city, date]);
 
   return (
     <motion.div 
@@ -215,9 +310,9 @@ export default function ModernEventFilters({ categories }: EventFiltersProps) {
                     <Select
                       options={[
                         { value: '', label: 'Toutes les villes' },
-                        ...popularCities.map(city => ({ 
-                          value: city, 
-                          label: city 
+                        ...popularCities.map(cityName => ({ 
+                          value: cityName, 
+                          label: cityName 
                         }))
                       ]}
                       value={city}
@@ -231,11 +326,14 @@ export default function ModernEventFilters({ categories }: EventFiltersProps) {
                     <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
                     <Select
                       options={[
-                        { value: '', label: 'Toutes dates' },
-                        ...dateRanges
+                        { value: 'all', label: 'Toutes dates' },
+                        ...dateRanges.slice(1).map(range => ({ 
+                          value: range.id, 
+                          label: range.label 
+                        }))
                       ]}
-                      value={date}
-                      onChange={(e) => setDate(e.target.value)}
+                      value={dateFilter}
+                      onChange={(e) => applyDateFilter(e.target.value)}
                       placeholder="Quand"
                       className="border-gray-200 focus:border-violet-400 focus:ring-violet-400/30"
                     />
@@ -264,21 +362,48 @@ export default function ModernEventFilters({ categories }: EventFiltersProps) {
                 </motion.div>
               )}
               
-              {/* Other filters will be shown as a count pill if there are more than 1 filter active */}
-              {activeFiltersCount > 1 && searchTerm && (
+              {/* Date filter badge */}
+              {dateFilter !== 'all' && (
                 <motion.div 
                   initial={{ scale: 0.9, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   className="bg-violet-50 rounded-full px-3 py-1 text-sm flex items-center"
                 >
-                  <span className="text-violet-800">+{activeFiltersCount - 1} filtres</span>
+                  <Calendar className="h-3.5 w-3.5 mr-1 text-violet-500" />
+                  <span className="text-violet-800">
+                    {dateFilter === 'custom' && startDate && endDate ? (
+                      <>
+                        {formatDateForDisplay(startDate)}
+                        {startDate !== endDate && ` - ${formatDateForDisplay(endDate)}`}
+                      </>
+                    ) : (
+                      dateRanges.find(d => d.id === dateFilter)?.label
+                    )}
+                  </span>
+                  <button 
+                    onClick={() => applyDateFilter('all')}
+                    className="ml-1 text-violet-400 hover:text-violet-600"
+                  >
+                    <X size={14} />
+                  </button>
+                </motion.div>
+              )}
+              
+             {/* Other filters will be shown as a count pill if there are more than 2 filters active */}
+             {activeFiltersCount > 2 && searchTerm && dateFilter !== 'all' && (
+                <motion.div 
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="bg-violet-50 rounded-full px-3 py-1 text-sm flex items-center"
+                >
+                  <span className="text-violet-800">+{activeFiltersCount - 2} filtres</span>
                 </motion.div>
               )}
             </motion.div>
           )}
         </div>
       ) : (
-        /* Desktop Version - Modern UI */
+        /* Desktop Version - Modern UI with date filter logic */
         <motion.div 
           variants={containerVariants}
           className="p-6"
@@ -342,11 +467,14 @@ export default function ModernEventFilters({ categories }: EventFiltersProps) {
                 </div>
                 <Select
                   options={[
-                    { value: '', label: 'Toutes dates' },
-                    ...dateRanges
+                    { value: 'all', label: 'Toutes dates' },
+                    ...dateRanges.slice(1).map(range => ({ 
+                      value: range.id, 
+                      label: range.label 
+                    }))
                   ]}
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
+                  value={dateFilter}
+                  onChange={(e) => applyDateFilter(e.target.value)}
                   placeholder="Quand"
                   className="pl-10 rounded-xl border-gray-200 focus:border-violet-400 focus:ring-2 focus:ring-violet-400/30 transition-all shadow-sm"
                 />
@@ -361,7 +489,7 @@ export default function ModernEventFilters({ categories }: EventFiltersProps) {
                 <Button
                   type="button"
                   variant="outline"
-                  className={`border-gray-200 text-gray-600 hover:bg-gray-50 text-sm ${!expandedFilters ? 'px-3 py-1.5' : 'px-3 py-1.5'}`}
+                  className="border-gray-200 text-gray-600 hover:bg-gray-50 text-sm px-3 py-1.5"
                   onClick={() => setExpandedFilters(!expandedFilters)}
                 >
                   <span className="flex items-center gap-1">
@@ -462,13 +590,13 @@ export default function ModernEventFilters({ categories }: EventFiltersProps) {
                       </h3>
                       <div className="space-y-2">
                         {dateRanges.map(range => (
-                          <label key={range.value} className="flex items-center space-x-2 cursor-pointer">
+                          <label key={range.id} className="flex items-center space-x-2 cursor-pointer">
                             <input 
                               type="radio" 
-                              name="date" 
-                              value={range.value} 
-                              checked={date === range.value} 
-                              onChange={() => setDate(range.value)}
+                              name="date_filter" 
+                              value={range.id} 
+                              checked={dateFilter === range.id} 
+                              onChange={() => applyDateFilter(range.id)}
                               className="w-4 h-4 text-violet-600 bg-gray-100 border-gray-300 focus:ring-violet-500"
                             />
                             <span className="text-gray-700">{range.label}</span>
@@ -580,7 +708,8 @@ export default function ModernEventFilters({ categories }: EventFiltersProps) {
                   </motion.div>
                 )}
                 
-                {date && (
+                {/* Date filter badge */}
+                {dateFilter !== 'all' && (
                   <motion.div 
                     initial={{ scale: 0.9, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
@@ -588,10 +717,17 @@ export default function ModernEventFilters({ categories }: EventFiltersProps) {
                   >
                     <Calendar size={14} className="mr-1 text-violet-500" />
                     <span className="text-violet-800">
-                      {dateRanges.find(d => d.value === date)?.label || date}
+                      {dateFilter === 'custom' && startDate && endDate ? (
+                        <>
+                          {formatDateForDisplay(startDate)}
+                          {startDate !== endDate && ` - ${formatDateForDisplay(endDate)}`}
+                        </>
+                      ) : (
+                        dateRanges.find(d => d.id === dateFilter)?.label
+                      )}
                     </span>
                     <button 
-                      onClick={() => setDate('')}
+                      onClick={() => applyDateFilter('all')}
                       className="ml-2 text-violet-400 hover:text-violet-600"
                     >
                       <X size={14} />
