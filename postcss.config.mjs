@@ -1,6 +1,12 @@
+const { fontFamily } = require('tailwindcss/defaultTheme');
+
 const config = {
   theme: {
     extend: {
+      fontFamily: {
+        monainn: ['Monainn', ...fontFamily.sans],
+        agostina: ['Agostina', ...fontFamily.sans],
+      },
       colors: {
         primary: {
           DEFAULT: '#6d28d9', 
@@ -18,7 +24,7 @@ const config = {
           900: '#4c1d95',
         },
         secondary: {
-          DEFAULT: '#ec4899', // Rose - Couleur secondaire
+          DEFAULT: '#ec4899', 
           dark: '#db2777',
           light: '#f472b6',
           50: '#fdf2f8',
@@ -33,7 +39,7 @@ const config = {
           900: '#831843',
         },
         accent: {
-          DEFAULT: '#8b5cf6', // Couleur d'accent pour les éléments qui nécessitent une couleur tertiaire
+          DEFAULT: '#8b5cf6',
           dark: '#7c3aed',
           light: '#a78bfa',
         }
@@ -58,3 +64,4 @@ const config = {
 };
 
 export default config;
+

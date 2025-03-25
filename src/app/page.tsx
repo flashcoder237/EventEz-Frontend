@@ -142,7 +142,12 @@ export default async function HomePage() {
         </div>
       </section>
 
-      
+      {/* <div className="absolute left-0 right-0 top-22 translate-y-1/2 z-20">
+          <SearchSection 
+            categories={categories} 
+            upcomingLocations={popularLocations} 
+          />
+        </div> */}
       {/* Sections suivantes avec des marges et espacements */}
       <div>
         {/* Categories Section with new component */}
@@ -172,7 +177,7 @@ export default async function HomePage() {
         </div>
         
         {/* Testimonials Section - Avec composant client */}
-        <div className="px-4 md:px-8 lg:px-16 bg-gradient-to-r from-violet-700 to-pink-600 text-white">
+        <div className="px-4 md:px-8 lg:px-16 bg-gradient-to-br from-violet-900 via-indigo-800 to-purple-900 text-white">
           <TestimonialsSection />
         </div>
         
@@ -182,7 +187,7 @@ export default async function HomePage() {
         </div>
         
         {/* CTA Section */}
-        <div className="px-4 md:px-8 lg:px-16 bg-gradient-to-r from-violet-600 to-pink-500 text-white relative overflow-hidden">
+        <div className="px-4 md:px-8 lg:px-16 bg-gradient-to-br from-violet-900 via-indigo-800 to-purple-900 text-white relative overflow-hidden">
           <CTASection />
         </div>
         
