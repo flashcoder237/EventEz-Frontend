@@ -58,12 +58,12 @@ export default function ClientSideFilterWrapper({
   };
   
   return (
-    <div id={`filters-${clientFilterId}`}>
+    <div id={`filters-${clientFilterId}`} className="max-w-6xl mx-auto">
       {/* Contrôle pour le mode flottant */}
       <div className="flex justify-end mb-4 ">
         <button 
           onClick={toggleFilterFloating}
-          className="text-sm text-gray-600 flex items-center hover:text-primary transition-colors"
+          className="text-sm text-gray-600 flex items-center hover:text-primary transition-colors text-white"
         >
           {isFilterFloating ? 'Désactiver' : 'Activer'} filtres flottants
         </button>
