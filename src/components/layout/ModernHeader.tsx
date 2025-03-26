@@ -218,6 +218,12 @@ export default function ModernHeader() {
             >
               À propos
             </Link>
+            <Link 
+              href="/princing" 
+              className="text-gray-700 hover:text-violet-600 font-medium transition-colors"
+            >
+             Nos tarifs
+            </Link>
 
             <Link 
               href="/contact" 

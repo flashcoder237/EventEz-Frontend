@@ -11,6 +11,7 @@ import {
   ChevronLeft
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import DynamicEventBanner from '@/components/events/DynamicEventBanner';
 
 function formatDate(dateString) {
   const date = new Date(dateString);
@@ -64,13 +65,30 @@ function FeaturedEventsSection({ events }) {
                 exit={{ opacity: 0, x: -50 }}
                 transition={{ duration: 0.5 }}
               >
-                <Image 
+                {activeEvent.banner_image ? (
+                  // If there's a banner image, display it
+                  <Image 
                   src={activeEvent.banner_image || "/images/placeholder-image.png"}
                   alt={activeEvent.title}
                   width={600}
                   height={400}
                   className="w-full h-48 md:h-64 lg:h-80 object-cover"
                 />
+                ) : (
+                  // If no banner image, create a dynamic artistic banner
+                  <div className="w-full h-48 md:h-64 lg:h-80 overflow-hidden">
+                    <DynamicEventBanner 
+                      title={activeEvent.title} 
+                      category={activeEvent.category?.name} 
+                      eventType={activeEvent.event_type} 
+                      onInteract={() => {
+                        // Handle event interaction
+                        console.log('Event interaction triggered');
+                      }}
+                    />
+                  </div>
+                )}
+              
                 
                 <div className="p-4 md:p-6 bg-white">
                   <div className="flex justify-between items-center mb-3">
@@ -106,7 +124,7 @@ function FeaturedEventsSection({ events }) {
             </AnimatePresence>
 
             {/* Navigation Mobile */}
-            <div className="absolute top-1/2 transform -translate-y-1/2 w-full flex justify-between px-4 md:hidden">
+            <div className="absolute top-1/2 transform -translate-y-1/2 w-full flex justify-between px-4 md:hidden z-20">
               <button 
                 onClick={handlePrevEvent}
                 className="bg-white/80 backdrop-blur-sm rounded-full p-2 shadow-md"

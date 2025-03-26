@@ -8,6 +8,7 @@ import { formatDate } from '@/lib/utils/dateUtils';
 import { Calendar, MapPin, Users, Clock, ChevronRight, Tag } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import LoadingSpinner from '../ui/LoadingSpinner';
+import DynamicEventBanner from '@/components/events/DynamicEventBanner';
 
 interface EventListViewProps {
   events: Event[];
@@ -74,18 +75,22 @@ export default function EventListView({ events, loading = false }: EventListView
             <Link href={`/events/${event.id}`} className="flex flex-col sm:flex-row">
               {/* Image de l'événement */}
               <div className="relative w-full sm:w-48 h-32 sm:h-auto flex-shrink-0 overflow-hidden">
-                {event.banner_image ? (
-                  <Image
-                    src={event.banner_image}
-                    alt={event.title}
-                    fill
-                    className="object-cover transition-transform duration-500 hover:scale-105"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-r from-purple-100 to-indigo-100 flex items-center justify-center">
-                    <Calendar className="h-10 w-10 text-primary/50" />
-                  </div>
-                )}
+              {event.banner_image ? (
+          <Image
+            src={`${event.banner_image}`}
+            alt={event.title}
+            fill
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        ) : (
+          <DynamicEventBanner 
+            title={event.title}
+            category={event.category.name}
+            eventType={event.event_type}
+            isFeatured={event.is_featured}
+            className="w-full h-full"
+          />
+        )}
                 
                 {/* Badge du type d'événement */}
                 <div className="absolute top-2 left-2">

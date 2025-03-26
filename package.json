@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "axios": "^1.8.3",
+    "chroma-js": "^3.1.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cookies-next": "^5.1.0",

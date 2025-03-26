@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useMemo } from 'react';
-import { motion } from 'framer-motion';
+import React, { useMemo, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Music, 
   Award, 
@@ -10,212 +10,238 @@ import {
   Activity, 
   Briefcase, 
   Ticket, 
-  Calendar 
+  Calendar
 } from 'lucide-react';
+import chroma from 'chroma-js';
 
-// Minimalist color palette with a focus on neutrals and soft accents
-const COLOR_PALETTES = {
-  primary: {
-    background: '#f8fafc', // Soft neutral background
-    textColor: '#0f172a', // Deep slate for text
-    accentColor: '#64748b', // Muted slate for icons and accents
-    variants: [
-      '#f1f5f9', // Lighter variant
-      '#e2e8f0', // Slightly darker variant
-      '#cbd5e1'  // Neutral slate variant
-    ]
-  },
+// Advanced Theming System
+const THEME_CONFIGS = {
   musique: {
-    background: '#f8fafc',
-    textColor: '#0f172a',
-    accentColor: '#475569',
-    variants: [
-      '#f1f5f9',
-      '#e2e8f0',
-      '#cbd5e1'
-    ]
-  },
-  art: {
-    background: '#f8fafc',
-    textColor: '#0f172a',
-    accentColor: '#64748b',
-    variants: [
-      '#f1f5f9',
-      '#e2e8f0',
-      '#cbd5e1'
-    ]
+    gradient: {
+      colors: ['#8E2DE2', '#4A00E0'],
+      pattern: 'radial-gradient(circle at 30% 107%, #8E2DE2 0%, #4A00E0 5%, rgba(142,45,226,0.1) 45%, rgba(74,0,224,0.1) 90%)'
+    },
+    backgroundColor: '#4A00E0',
+    textColor: null,
+    accentColor: '#FF6B6B',
+    iconBackground: 'rgba(255, 255, 255, 0.1)',
+    patterns: [
+      'linear-gradient(45deg, rgba(142,45,226,0.1) 0%, rgba(74,0,224,0.1) 100%)',
+      'radial-gradient(circle at 10% 20%, rgba(142,45,226,0.05) 0%, rgba(74,0,224,0.05) 90%)'
+    ],
+    icon: Music
   },
   technologie: {
-    background: '#f8fafc',
-    textColor: '#0f172a',
-    accentColor: '#475569',
-    variants: [
-      '#f1f5f9',
-      '#e2e8f0',
-      '#cbd5e1'
-    ]
+    gradient: {
+      colors: ['#00B4DB', '#0083B0'],
+      pattern: 'radial-gradient(circle at 30% 107%, #00B4DB 0%, #0083B0 5%, rgba(0,180,219,0.1) 45%, rgba(0,131,176,0.1) 90%)'
+    },
+    backgroundColor: '#0083B0',
+    textColor: null,
+    accentColor: '#48BB78',
+    iconBackground: 'rgba(255, 255, 255, 0.1)',
+    patterns: [
+      'linear-gradient(45deg, rgba(0,180,219,0.1) 0%, rgba(0,131,176,0.1) 100%)',
+      'repeating-radial-gradient(circle at 100% 100%, rgba(0,180,219,0.03) 0px, rgba(0,131,176,0.03) 10px, transparent 10px, transparent 20px)'
+    ],
+    icon: Code
+  },
+  art: {
+    gradient: {
+      colors: ['#FF6B6B', '#FFA726'],
+      pattern: 'radial-gradient(circle at 30% 107%, #FF6B6B 0%, #FFA726 5%, rgba(255,107,107,0.1) 45%, rgba(255,167,38,0.1) 90%)'
+    },
+    backgroundColor: '#FFA726',
+    textColor: null,
+    accentColor: '#4ECDC4',
+    iconBackground: 'rgba(255, 255, 255, 0.1)',
+    patterns: [
+      'linear-gradient(45deg, rgba(255,107,107,0.1) 0%, rgba(255,167,38,0.1) 100%)',
+      'polygon-gradient(50% 50%, rgba(255,107,107,0.05) 0%, rgba(255,167,38,0.05) 100%)'
+    ],
+    icon: Award
   },
   default: {
-    background: '#f8fafc',
-    textColor: '#0f172a',
-    accentColor: '#64748b',
-    variants: [
-      '#f1f5f9',
-      '#e2e8f0',
-      '#cbd5e1'
-    ]
+    gradient: {
+      colors: ['#6A11CB', '#2575FC'],
+      pattern: 'radial-gradient(circle at 30% 107%, #6A11CB 0%, #2575FC 5%, rgba(106,17,203,0.1) 45%, rgba(37,117,252,0.1) 90%)'
+    },
+    backgroundColor: '#2575FC',
+    textColor: null,
+    accentColor: '#7928CA',
+    iconBackground: 'rgba(255, 255, 255, 0.1)',
+    patterns: [
+      'linear-gradient(45deg, rgba(106,17,203,0.1) 0%, rgba(37,117,252,0.1) 100%)',
+      'repeating-linear-gradient(45deg, rgba(106,17,203,0.03) 0%, rgba(37,117,252,0.03) 10px, transparent 10px, transparent 20px)'
+    ],
+    icon: Calendar
   }
 };
 
-// Icon mapping remains the same
-const EVENT_ICONS = {
-  musique: Music,
-  art: Award,
-  technologie: Code,
-  conférence: BookOpen,
-  education: BookOpen,
-  sport: Activity,
-  business: Briefcase,
-  billetterie: Ticket,
-  default: Calendar
+// Function to calculate optimal text color based on background
+const getOptimalTextColor = (backgroundColor) => {
+  try {
+    const luminance = chroma(backgroundColor).luminance();
+    return luminance > 0.5 ? '#000000' : '#FFFFFF';
+  } catch {
+    return '#FFFFFF';
+  }
 };
 
-interface DynamicEventBannerProps {
+interface ModernEventBannerProps {
   title: string;
   category?: string;
-  eventType?: string;
+  isFeatured?: boolean;
+  description?: string;
+  className?: string;
+  onInteract?: () => void;
 }
 
-const DynamicEventBanner: React.FC<DynamicEventBannerProps> = ({ 
-  title, 
-  category = '', 
-  eventType = 'default' 
+const ModernEventBanner: React.FC<ModernEventBannerProps> = ({
+  title,
+  category = 'default',
+  isFeatured = false,
+  description = '',
+  className = '',
+  onInteract
 }) => {
-  // Determine color palette and icon
-  const palette = useMemo(() => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  // Theme Selection
+  const theme = useMemo(() => {
     const lowercaseCategory = category.toLowerCase();
-    
-    // Find the first matching palette key
-    const paletteKey = Object.keys(COLOR_PALETTES).find(key => 
+    const themeKey = Object.keys(THEME_CONFIGS).find(key => 
       lowercaseCategory.includes(key)
     ) || 'default';
     
-    const selectedPalette = COLOR_PALETTES[paletteKey];
+    const selectedTheme = { ...THEME_CONFIGS[themeKey] };
     
-    // Randomly select a background variant
-    const finalBackground = selectedPalette.variants 
-      ? selectedPalette.variants[Math.floor(Math.random() * selectedPalette.variants.length)]
-      : selectedPalette.background;
+    // Dynamically calculate text color
+    selectedTheme.textColor = getOptimalTextColor(selectedTheme.backgroundColor);
     
-    return {
-      ...selectedPalette,
-      background: finalBackground
-    };
+    return selectedTheme;
   }, [category]);
 
-  // Determine icon
-  const IconComponent = useMemo(() => {
-    const lowercaseCategory = category.toLowerCase();
-    
-    // Find the first matching icon
-    const iconKey = Object.keys(EVENT_ICONS).find(key => 
-      lowercaseCategory.includes(key)
-    ) || 'default';
-    
-    return EVENT_ICONS[iconKey];
-  }, [category]);
+  // Dynamic Background Variants
+  const backgroundVariants = {
+    initial: { 
+      backgroundPosition: '0% 50%',
+      backgroundSize: '200% 200%'
+    },
+    animate: {
+      backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+      backgroundSize: ['200% 200%', '220% 220%', '200% 200%'],
+      transition: {
+        duration: 20, // Slower animation
+        repeat: Infinity,
+        ease: 'linear'
+      }
+    },
+    hover: {
+      backgroundPosition: '100% 50%',
+      backgroundSize: '250% 250%',
+      transition: {
+        duration: 1,
+        ease: 'easeInOut'
+      }
+    }
+  };
 
   return (
     <motion.div 
-      className="relative w-full h-full overflow-hidden rounded-2xl"
-      initial={{ 
-        opacity: 0, 
-        scale: 0.98 
+      className={`relative overflow-hidden rounded-3xl shadow-2xl cursor-pointer group ${className}`}
+      style={{
+        background: theme.gradient.pattern,
+        minHeight: '400px',
+        color: theme.textColor
       }}
-      animate={{ 
-        opacity: 1, 
-        scale: 1 
-      }}
-      transition={{ 
-        duration: 0.3, 
-        ease: "easeOut" 
-      }}
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      whileHover={{ scale: 1.02 }}
+      transition={{ duration: 0.3 }}
+      onHoverStart={() => setIsHovered(true)}
+      onHoverEnd={() => setIsHovered(false)}
+      onClick={onInteract}
     >
-      {/* Minimalist Background */}
-      <div 
-        className="absolute inset-0"
-        style={{ 
-          backgroundColor: palette.background,
-          zIndex: 1
+      {/* Animated Background Layers */}
+      <motion.div 
+        className="absolute inset-0 opacity-20"
+        style={{
+          background: theme.patterns[0],
+          mixBlendMode: 'overlay'
         }}
+        variants={backgroundVariants}
+        initial="initial"
+        animate="animate"
+        whileHover="hover"
+      />
+      <motion.div 
+        className="absolute inset-0 opacity-10"
+        style={{
+          background: theme.patterns[1],
+          mixBlendMode: 'color-dodge'
+        }}
+        variants={backgroundVariants}
+        initial="initial"
+        animate="animate"
+        whileHover="hover"
       />
 
       {/* Content Container */}
-      <div 
-        className="relative z-10 flex flex-col justify-center items-center h-full p-6 text-center"
-        style={{ 
-          background: 'transparent'
-        }}
-      >
-        {/* Animated Icon with Minimal Interaction */}
-        <motion.div
-          initial={{ 
-            scale: 0.7, 
-            opacity: 0 
-          }}
-          animate={{ 
-            scale: 1,
-            opacity: 1 
-          }}
-          whileHover={{ 
-            scale: 1.05,
-            transition: { 
-              duration: 0.2 
-            }
-          }}
-          transition={{ 
-            duration: 0.3, 
-            type: "spring", 
-            bounce: 0.2 
-          }}
-        >
-          <IconComponent 
-            className="mb-4" 
-            color={palette.accentColor}
-            size={48} 
-            strokeWidth={1.5} 
-          />
-        </motion.div>
+      <div className="relative z-10 flex flex-col justify-between p-8 h-full">
+        {/* Middle Section */}
+        <div className="flex-grow flex flex-col justify-center items-center text-center">
+          {/* Animated Icon */}
+          <motion.div 
+            className="rounded-full p-4 mb-1"
+            style={{
+              backgroundColor: theme.iconBackground,
+              backdropFilter: 'blur(10px)'
+            }}
+            initial={{ scale: 0.7, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            whileHover={{ 
+              scale: 1.1,
+              rotate: [0, -10, 10, 0]
+            }}
+          >
+            <theme.icon 
+              size={64} 
+              color={theme.accentColor} 
+              strokeWidth={1.5} 
+            />
+          </motion.div>
 
-        {/* Event Title with Clean Typography */}
-        <motion.h2
-          className="text-2xl md:text-3xl font-medium tracking-tight"
-          style={{
-            color: palette.textColor,
-            opacity: 0.9
-          }}
-          initial={{ 
-            y: 15, 
-            opacity: 0,
-            scale: 0.98
-          }}
-          animate={{ 
-            y: 0, 
-            opacity: 1,
-            scale: 1
-          }}
-          transition={{ 
-            delay: 0.1, 
-            duration: 0.3,
-            type: "spring",
-            bounce: 0.2
-          }}
-        >
-          {title.length > 50 ? `${title.slice(0, 50)}...` : title}
-        </motion.h2>
+          {/* Title with Dynamic Contrast */}
+          <motion.h2 
+            className="text-2xl md:text-3xl font-bold mb-1 tracking-tight"
+            style={{ 
+              color: theme.accentColor,
+            }}
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+          >
+            {title.length > 50 ? `${title.slice(0, 50)}...` : title}
+          </motion.h2>
+
+          {/* Description */}
+          {isHovered && description && (
+            <div
+              className="text-sm max-w-xl mx-auto"
+              style={{ 
+                color: theme.textColor,
+              }}
+            >
+              {description}
+            </div>
+          )}
+        </div>
+
+        {/* Bottom Section (intentionally left empty) */}
+        <div></div>
       </div>
     </motion.div>
   );
 };
 
-export default DynamicEventBanner;
+export default ModernEventBanner;
