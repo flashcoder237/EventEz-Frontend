@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/Button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Switch } from '@/components/ui/Switch';
-import { eventsAPI,categoriesAPI } from '@/lib/api';
+import { eventsAPI,categoriesAPI,tagsAPI } from '@/lib/api';
 import { 
   FaCalendarAlt, FaMapMarkerAlt, FaImage, FaClock, FaTag, FaMoneyBillWave, 
   FaTicketAlt, FaClipboardList, FaPlus, FaTrashAlt, FaInfoCircle, FaUsers
@@ -93,7 +93,7 @@ export default function CreateEventPage() {
       try {
         const [categoriesResponse, tagsResponse] = await Promise.all([
           categoriesAPI.getCategories(),
-          eventsAPI.getTags()
+          tagsAPI.getTags()
         ]);
         
         setCategories(categoriesResponse.data.results || []);

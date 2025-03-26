@@ -5,8 +5,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Event } from '@/types';
 import { formatDate } from '@/lib/utils/dateUtils';
-import { Calendar, MapPin, Users, Clock, ChevronRight, Theater, Tag } from 'lucide-react';
+import { Calendar, MapPin, Users, Clock, ChevronRight, Tag } from 'lucide-react';
 import { Badge } from '../ui/Badge';
+import LoadingSpinner from '../ui/LoadingSpinner';
 
 interface EventListViewProps {
   events: Event[];
@@ -57,18 +58,22 @@ export default function EventListView({ events, loading = false }: EventListView
 
   return (
     <div className="space-y-4 px-4 md:px-8 lg:px-16">
-      <AnimatePresence>
+      <AnimatePresence initial={false}>
         {events.map((event, index) => (
           <motion.div
             key={event.id}
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: Math.min(0.05 * index, 0.3) }}
-            className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-100 overflow-hidden "
+            transition={{ 
+              duration: 0.4, 
+              delay: Math.min(0.05 * (index % 10), 0.5),
+              ease: [0.25, 0.1, 0.25, 1.0] 
+            }}
+            className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-100 overflow-hidden"
           >
             <Link href={`/events/${event.id}`} className="flex flex-col sm:flex-row">
               {/* Image de l'événement */}
-              <div className="relative w-full sm:w-48 h-32 sm:h-auto flex-shrink-0 overflow-hidden ">
+              <div className="relative w-full sm:w-48 h-32 sm:h-auto flex-shrink-0 overflow-hidden">
                 {event.banner_image ? (
                   <Image
                     src={event.banner_image}
@@ -151,16 +156,10 @@ export default function EventListView({ events, loading = false }: EventListView
         ))}
       </AnimatePresence>
       
-      {/* Indicateur de chargement */}
-      {loading && events.length > 0 && (
-        <div className="flex justify-center py-4">
-          <div className="flex items-center space-x-2">
-            <svg className="animate-spin h-5 w-5 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <span className="text-sm text-gray-600">Chargement...</span>
-          </div>
+      {/* Indicateur de chargement amélioré - bien visible */}
+      {loading && (
+        <div className="py-4 flex justify-center">
+          <LoadingSpinner size="md" text="Chargement des événements..." />
         </div>
       )}
     </div>

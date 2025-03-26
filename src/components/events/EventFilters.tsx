@@ -28,6 +28,7 @@ export default function ModernEventFilters({ categories }: EventFiltersProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   
+  // États locaux qui ne sont pas immédiatement appliqués
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [category, setCategory] = useState(searchParams.get('category') || '');
   const [eventType, setEventType] = useState(searchParams.get('event_type') || '');
@@ -40,6 +41,16 @@ export default function ModernEventFilters({ categories }: EventFiltersProps) {
   const [dateFilter, setDateFilter] = useState('all');
   const [startDate, setStartDate] = useState<string | null>(searchParams.get('start_date'));
   const [endDate, setEndDate] = useState<string | null>(searchParams.get('end_date'));
+
+  // État pour suivre les filtres actifs
+  const [activeFilters, setActiveFilters] = useState({
+    search: searchParams.get('search') || '',
+    category: searchParams.get('category') || '',
+    event_type: searchParams.get('event_type') || '',
+    city: searchParams.get('city') || '',
+    start_date: searchParams.get('start_date') || null,
+    end_date: searchParams.get('end_date') || null
+  });
 
   useEffect(() => {
     // Set animation on mount
@@ -112,6 +123,16 @@ export default function ModernEventFilters({ categories }: EventFiltersProps) {
     if (startDate) params.set('start_date', startDate);
     if (endDate) params.set('end_date', endDate);
     
+    // Mettre à jour les filtres actifs
+    setActiveFilters({
+      search: searchTerm,
+      category,
+      event_type: eventType,
+      city,
+      start_date: startDate,
+      end_date: endDate
+    });
+    
     router.push(`/events?${params.toString()}`);
   };
   
@@ -123,6 +144,17 @@ export default function ModernEventFilters({ categories }: EventFiltersProps) {
     setDateFilter('all');
     setStartDate(null);
     setEndDate(null);
+    
+    // Réinitialiser les filtres actifs
+    setActiveFilters({
+      search: '',
+      category: '',
+      event_type: '',
+      city: '',
+      start_date: null,
+      end_date: null
+    });
+    
     router.push('/events');
   };
 
@@ -159,13 +191,9 @@ export default function ModernEventFilters({ categories }: EventFiltersProps) {
     setDateFilter(filter);
   };
   
-  const activeFiltersCount = [
-    searchTerm,
-    category,
-    eventType,
-    city,
-    startDate // Compter date comme un filtre actif
-  ].filter(Boolean).length;
+  // Compter le nombre de filtres actifs
+  const activeFiltersCount = Object.values(activeFilters)
+    .filter(Boolean).length;
 
   const dateRanges = [
     { id: 'all', label: 'Toutes les dates' },
@@ -178,17 +206,6 @@ export default function ModernEventFilters({ categories }: EventFiltersProps) {
   const popularCities = [
     'Yaoundé', 'Douala', 'Bafoussam', 'Limbe'
   ];
-
-  useEffect(() => {
-    // Debounced search and filter application
-    const timer = setTimeout(() => {
-      if (searchTerm || category || eventType || city || startDate || endDate) {
-        applyFilters();
-      }
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [searchTerm, category, eventType, city, startDate, endDate]);
 
   // Animation variants
   const containerVariants = {
@@ -338,6 +355,16 @@ export default function ModernEventFilters({ categories }: EventFiltersProps) {
                       className="border-gray-200 focus:border-violet-400 focus:ring-violet-400/30"
                     />
                   </div>
+                  
+                  <div className="pt-3">
+                    <Button
+                      onClick={handleSearch}
+                      className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white shadow-md"
+                    >
+                      <Search className="mr-2 h-4 w-4" />
+                      Rechercher
+                    </Button>
+                  </div>
                 </div>
               </motion.div>
             )}
@@ -346,16 +373,17 @@ export default function ModernEventFilters({ categories }: EventFiltersProps) {
           {/* Active Filters - Mobile */}
           {activeFiltersCount > 0 && (
             <motion.div variants={itemVariants} className="mt-3 flex flex-wrap gap-2">
-              {searchTerm && (
+              {activeFilters.search && (
                 <motion.div 
                   initial={{ scale: 0.9, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   className="bg-violet-50 rounded-full px-3 py-1 text-sm flex items-center"
                 >
-                  <span className="text-violet-800 truncate max-w-[150px]">"{searchTerm}"</span>
+                  <span className="text-violet-800 truncate max-w-[150px]">"{activeFilters.search}"</span>
                   <button 
                     onClick={() => setSearchTerm('')}
                     className="ml-1 text-violet-400 hover:text-violet-600"
+                    type="button"
                   >
                     <X size={14} />
                   </button>
@@ -363,7 +391,7 @@ export default function ModernEventFilters({ categories }: EventFiltersProps) {
               )}
               
               {/* Date filter badge */}
-              {dateFilter !== 'all' && (
+              {activeFilters.start_date && (
                 <motion.div 
                   initial={{ scale: 0.9, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
@@ -371,26 +399,20 @@ export default function ModernEventFilters({ categories }: EventFiltersProps) {
                 >
                   <Calendar className="h-3.5 w-3.5 mr-1 text-violet-500" />
                   <span className="text-violet-800">
-                    {dateFilter === 'custom' && startDate && endDate ? (
+                    {dateFilter === 'custom' && activeFilters.start_date && activeFilters.end_date ? (
                       <>
-                        {formatDateForDisplay(startDate)}
-                        {startDate !== endDate && ` - ${formatDateForDisplay(endDate)}`}
+                        {formatDateForDisplay(activeFilters.start_date)}
+                        {activeFilters.start_date !== activeFilters.end_date && ` - ${formatDateForDisplay(activeFilters.end_date || '')}`}
                       </>
                     ) : (
                       dateRanges.find(d => d.id === dateFilter)?.label
                     )}
                   </span>
-                  <button 
-                    onClick={() => applyDateFilter('all')}
-                    className="ml-1 text-violet-400 hover:text-violet-600"
-                  >
-                    <X size={14} />
-                  </button>
                 </motion.div>
               )}
               
              {/* Other filters will be shown as a count pill if there are more than 2 filters active */}
-             {activeFiltersCount > 2 && searchTerm && dateFilter !== 'all' && (
+             {activeFiltersCount > 2 && activeFilters.search && activeFilters.start_date && (
                 <motion.div 
                   initial={{ scale: 0.9, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
@@ -615,7 +637,7 @@ export default function ModernEventFilters({ categories }: EventFiltersProps) {
                           <button
                             key={cityName}
                             type="button"
-                            onClick={() => setCity(cityName)}
+                            onClick={() => setCity(city === cityName ? '' : cityName)}
                             className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
                               city === cityName 
                                 ? 'bg-violet-100 text-violet-800 font-medium' 
@@ -637,42 +659,7 @@ export default function ModernEventFilters({ categories }: EventFiltersProps) {
           {activeFiltersCount > 0 && (
             <motion.div variants={itemVariants} className="mt-4 pt-4 border-t border-gray-100">
               <div className="flex flex-wrap gap-2">
-                {searchTerm && (
-                  <motion.div 
-                    initial={{ scale: 0.9, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    className="bg-violet-50 rounded-full px-3 py-1.5 text-sm flex items-center"
-                  >
-                    <span className="text-violet-800">"{searchTerm}"</span>
-                    <button 
-                      onClick={() => setSearchTerm('')}
-                      className="ml-2 text-violet-400 hover:text-violet-600"
-                    >
-                      <X size={14} />
-                    </button>
-                  </motion.div>
-                )}
-                
-                {category && (
-                  <motion.div 
-                    initial={{ scale: 0.9, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    className="bg-violet-50 rounded-full px-3 py-1.5 text-sm flex items-center"
-                  >
-                    <Tag size={14} className="mr-1 text-violet-500" />
-                    <span className="text-violet-800">
-                      {categories.find(c => c.id.toString() === category)?.name || category}
-                    </span>
-                    <button 
-                      onClick={() => setCategory('')}
-                      className="ml-2 text-violet-400 hover:text-violet-600"
-                    >
-                      <X size={14} />
-                    </button>
-                  </motion.div>
-                )}
-                
-                {eventType && (
+                {activeFilters.search && (
                   <motion.div 
                     initial={{ scale: 0.9, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
@@ -680,28 +667,30 @@ export default function ModernEventFilters({ categories }: EventFiltersProps) {
                   >
                     <Sparkles size={14} className="mr-1 text-violet-500" />
                     <span className="text-violet-800">
-                      {eventType === 'billetterie' ? 'Billetterie' : 'Inscription'}
+                      {activeFilters.event_type === 'billetterie' ? 'Billetterie' : 'Inscription'}
                     </span>
                     <button 
                       onClick={() => setEventType('')}
                       className="ml-2 text-violet-400 hover:text-violet-600"
+                      type="button"
                     >
                       <X size={14} />
                     </button>
                   </motion.div>
                 )}
                 
-                {city && (
+                {activeFilters.city && (
                   <motion.div 
                     initial={{ scale: 0.9, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     className="bg-violet-50 rounded-full px-3 py-1.5 text-sm flex items-center"
                   >
                     <MapPin size={14} className="mr-1 text-violet-500" />
-                    <span className="text-violet-800">{city}</span>
+                    <span className="text-violet-800">{activeFilters.city}</span>
                     <button 
                       onClick={() => setCity('')}
                       className="ml-2 text-violet-400 hover:text-violet-600"
+                      type="button"
                     >
                       <X size={14} />
                     </button>
@@ -709,7 +698,7 @@ export default function ModernEventFilters({ categories }: EventFiltersProps) {
                 )}
                 
                 {/* Date filter badge */}
-                {dateFilter !== 'all' && (
+                {activeFilters.start_date && (
                   <motion.div 
                     initial={{ scale: 0.9, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
@@ -717,10 +706,10 @@ export default function ModernEventFilters({ categories }: EventFiltersProps) {
                   >
                     <Calendar size={14} className="mr-1 text-violet-500" />
                     <span className="text-violet-800">
-                      {dateFilter === 'custom' && startDate && endDate ? (
+                      {dateFilter === 'custom' && activeFilters.start_date && activeFilters.end_date ? (
                         <>
-                          {formatDateForDisplay(startDate)}
-                          {startDate !== endDate && ` - ${formatDateForDisplay(endDate)}`}
+                          {formatDateForDisplay(activeFilters.start_date)}
+                          {activeFilters.start_date !== activeFilters.end_date && ` - ${formatDateForDisplay(activeFilters.end_date || '')}`}
                         </>
                       ) : (
                         dateRanges.find(d => d.id === dateFilter)?.label
@@ -729,6 +718,7 @@ export default function ModernEventFilters({ categories }: EventFiltersProps) {
                     <button 
                       onClick={() => applyDateFilter('all')}
                       className="ml-2 text-violet-400 hover:text-violet-600"
+                      type="button"
                     >
                       <X size={14} />
                     </button>
@@ -741,4 +731,3 @@ export default function ModernEventFilters({ categories }: EventFiltersProps) {
       )}
     </motion.div>
   );
-}

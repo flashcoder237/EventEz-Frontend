@@ -1,6 +1,6 @@
 // src/components/layout/MainLayout.tsx
 import { ReactNode } from 'react';
-import Header from './Header';
+import ModernHeader from './ModernHeader';
 import Footer from './Footer';
 
 interface MainLayoutProps {
@@ -10,11 +10,11 @@ interface MainLayoutProps {
 export default function MainLayout({ children }: MainLayoutProps) {
   return (
     <div className="min-h-screen flex flex-col">
-      <Header />
+      <ModernHeader />
       <main className="flex-1">
         {children}
       </main>
-      <Footer />
+      <ModernHeader />
     </div>
   );
 }

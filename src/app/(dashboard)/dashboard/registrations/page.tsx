@@ -1,7 +1,7 @@
 // app/(dashboard)/dashboard/registrations/page.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect,useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
@@ -10,7 +10,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Badge } from '@/components/ui/Badge';
-import { registrationsAPI, eventsAPI } from '@/lib/api';
+import { registrationsAPI, eventsAPI,usersAPI } from '@/lib/api';
 import { Registration, Event } from '@/types';
 import { formatDate } from '@/lib/utils';
 import {
@@ -54,55 +54,76 @@ export default function RegistrationsDashboard() {
   const [totalRegistrations, setTotalRegistrations] = useState(0);
   const pageSize = 20;
 
-  // Charger les inscriptions et les événements
   useEffect(() => {
     const fetchData = async () => {
-      if (status !== 'authenticated' || !session) {
+      if (status !== "authenticated" || !session) {
         return;
       }
-
+  
       setLoading(true);
       setError(null);
-
+  
       try {
         // Construire les paramètres de filtrage
         const params: any = {
           page,
-          limit: pageSize
+          limit: pageSize,
         };
-
+  
         if (selectedEvent) {
           params.event = selectedEvent;
         }
-
+  
         if (selectedStatus) {
           params.status = selectedStatus;
         }
-
+  
         if (searchQuery) {
           params.search = searchQuery;
         }
-
+  
         // Récupérer les inscriptions filtrées
         const registrationsResponse = await registrationsAPI.getRegistrations(params);
-        setRegistrations(registrationsResponse.data.results || []);
-        setTotalRegistrations(registrationsResponse.data.count || 0);
-        setTotalPages(Math.ceil((registrationsResponse.data.count || 0) / pageSize));
-
+        const registrations = registrationsResponse.data.results || [];
+        const totalCount = registrationsResponse.data.count || 0;
+  
+        // Ajouter les informations des utilisateurs
+        const enrichedRegistrations = await Promise.all(
+          registrations.map(async (registration) => {
+            if (registration.user) {
+              try {
+                const userResponse = await usersAPI.getUsers({ id: registration.user });
+                const userInfo = userResponse.data.results[0] || null; // Prendre le premier utilisateur ou null
+                                
+                return { ...registration, userInfo };
+              } catch (error) {
+                console.error(`Erreur lors de la récupération de l'utilisateur ${registration.user}:`, error);
+                return { ...registration, userInfo: null };
+              }
+            }
+            return { ...registration, userInfo: null };
+          })
+        );
+  
+        // Mettre à jour l'état
+        setRegistrations(enrichedRegistrations);
+        setTotalRegistrations(totalCount);
+        setTotalPages(Math.ceil(totalCount / pageSize));
+  
         // Récupérer les événements de l'organisateur
-        const eventsResponse = await eventsAPI.getEvents({ organizer: 'me' });
+        const eventsResponse = await eventsAPI.getMyEvents();
         setEvents(eventsResponse.data.results || []);
       } catch (err) {
-        console.error('Erreur lors du chargement des inscriptions:', err);
-        setError('Une erreur est survenue lors du chargement des inscriptions.');
+        console.error("Erreur lors du chargement des inscriptions:", err);
+        setError("Une erreur est survenue lors du chargement des inscriptions.");
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchData();
-  }, [session, status, page, selectedEvent, selectedStatus, searchQuery]);
-
+  }, [status, session, page, selectedEvent, selectedStatus, searchQuery]); // Vérifie bien que tes dépendances sont optimisées
+  
   // Filtrer les inscriptions par statut
   const getFilteredRegistrations = () => {
     if (currentTab === 'all') return registrations;
@@ -446,11 +467,11 @@ export default function RegistrationsDashboard() {
                             </div>
                           </td>
                           <td className="px-3 py-4 whitespace-nowrap">
-                            <div className="text-sm font-medium text-gray-900">
-                              {registration.user_details?.first_name} {registration.user_details?.last_name}
-                            </div>
-                            <div className="text-sm text-gray-500">{registration.user_details?.email}</div>
-                          </td>
+                          <div className="text-sm font-medium text-gray-900">
+                            {registration.userInfo?.first_name} {registration.userInfo?.last_name}
+                          </div>
+                          <div className="text-sm text-gray-500">{registration.userInfo?.email}</div>
+                        </td>
                           <td className="px-3 py-4 whitespace-nowrap">
                             <div className="text-sm text-gray-900">
                               {registration.event_detail?.title || 'Événement inconnu'}

@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { EventList } from '@/types/events';
+import DynamicEventBanner from '@/components/events/DynamicEventBanner';
 
 // Helper function to format date
 const formatDate = (dateString: string) => {
@@ -23,33 +24,6 @@ const formatDate = (dateString: string) => {
     year: 'numeric' 
   };
   return date.toLocaleDateString('fr-FR', options);
-};
-
-// Function to get default image based on category or event type
-const getDefaultImage = (event: EventList) => {
-  const categorySlug = event.category?.name.toLowerCase().replace(/\s+/g, '-');
-  const eventTypeSlug = event.event_type.toLowerCase();
-
-  // Dynamic image generation based on category or event type
-  const defaultImages = {
-    // Categories
-    'conference': '/images/defaults/conference.jpg',
-    'musique': '/images/defaults/music.jpg',
-    'art': '/images/defaults/art.jpg',
-    'sport': '/images/defaults/sport.jpg',
-    'technologie': '/images/defaults/tech.jpg',
-    
-    // Event Types
-    'billetterie': '/images/defaults/ticketed-event.jpg',
-    'inscription': '/images/defaults/registration-event.jpg'
-  };
-
-  // First try category, then event type, fallback to generic
-  return (
-    defaultImages[categorySlug] || 
-    defaultImages[eventTypeSlug] || 
-    '/images/defaults/default-event.jpg'
-  );
 };
 
 interface PopularEventsSectionProps {
@@ -104,43 +78,53 @@ const PopularEventsSection: React.FC<PopularEventsSectionProps> = ({ events }) =
                     className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300"
                   >
                     <div className="relative aspect-[4/3]">
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/0 to-black/40 opacity-60 group-hover:opacity-80 transition-opacity z-10"></div>
+                      {event.banner_image ? (
+                        // If there's a banner image, display it
+                        <Image 
+                          src={event.banner_image}
+                          alt={event.title}
+                          fill
+                          className="object-cover transition-transform duration-500 group-hover:scale-110"
+                        />
+                      ) : (
+                        // If no banner image, create a dynamic artistic banner
+                        <div className="absolute inset-0 overflow-hidden">
+                          <DynamicEventBanner 
+                            title={event.title} 
+                            category={event.category?.name} 
+                            eventType={event.event_type} 
+                          />
+                        </div>
+                      )}
                       
-                      <Image 
-                        src={event.banner_image || getDefaultImage(event)}
-                        alt={event.title}
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-110"
-                      />
-                      
-                      <div className="absolute top-3 left-3 z-10">
+                      <div className="absolute top-3 left-3 z-20">
                         <span className="bg-white/90 backdrop-blur-sm text-gray-800 px-3 py-1 rounded-full text-xs font-medium shadow-sm">
                           {event.category?.name || 'Événement'}
                         </span>
                       </div>
                       
                       {event.is_featured && (
-                        <div className="absolute top-3 right-3 z-10">
+                        <div className="absolute top-3 right-3 z-20">
                           <span className="bg-gradient-to-r from-violet-600 to-pink-500 text-white px-3 py-1 rounded-full text-xs font-medium shadow-sm">
                             En vedette
                           </span>
                         </div>
                       )}
                       
-                      <div className="absolute bottom-3 left-3 z-10">
+                      <div className="absolute bottom-3 left-3 z-20">
                         <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm text-gray-800 px-3 py-1.5 rounded-lg text-sm font-medium shadow-sm">
                           <Calendar className="h-4 w-4 text-violet-600" />
                           {formatDate(event.start_date)}
                         </div>
                       </div>
                       
-                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
                         <span className="bg-gradient-to-r from-violet-600/90 to-pink-500/90 backdrop-blur-sm text-white px-4 py-2 rounded-lg font-medium transform -translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
                           Découvrir
                         </span>
                       </div>
                     </div>
-                    
+
                     <div className="p-5">
                       <h3 className="font-bold text-lg text-gray-900 mb-2 line-clamp-2 group-hover:text-violet-600 transition-colors">
                         {event.title}
@@ -155,7 +139,7 @@ const PopularEventsSection: React.FC<PopularEventsSectionProps> = ({ events }) =
                       </p>
                       
                       <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                        <span className="font-bold text-primary text-lg">
+                        <span className="font-bold text-violet-600 text-lg">
                           {event.ticket_price_range || 'Gratuit'}
                         </span>
                         
@@ -171,7 +155,7 @@ const PopularEventsSection: React.FC<PopularEventsSectionProps> = ({ events }) =
             ))}
           </div>
         </AnimatePresence>
-        
+
         <div className="text-center mt-8 md:mt-12">
           {visibleEvents < events.length ? (
             <Button 
@@ -182,7 +166,7 @@ const PopularEventsSection: React.FC<PopularEventsSectionProps> = ({ events }) =
               Voir plus d'événements
               <ChevronDown className="ml-2 h-4 w-4 md:h-5 md:w-5" />
             </Button>
-          ) : (
+          ) : events.length > 6 && (
             <Button 
               onClick={handleShowLess}
               variant="outline"

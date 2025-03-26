@@ -8,6 +8,7 @@ import ViewSelector from './ViewSelector';
 import { Button } from '../ui/Button';
 import { eventsAPI } from '@/lib/api';
 import { ChevronUp, ChevronDown, ArrowUp } from 'lucide-react';
+import LoadingSpinner from '../ui/LoadingSpinner';
 
 interface InfiniteScrollEventsProps {
   initialEvents: Event[];
@@ -20,66 +21,83 @@ export default function InfiniteScrollEvents({
   totalEvents,
   searchParams
 }: InfiniteScrollEventsProps) {
-  console.log("InfiniteScrollEvents - Initial Events:", initialEvents.length);
+  // Nombre d'événements par vague de chargement
+  const EVENTS_PER_WAVE = 5;
   
-  const EVENTS_PER_PAGE = 9;
-  const [events, setEvents] = useState<Event[]>(initialEvents || []);
+  const [allLoadedEvents, setAllLoadedEvents] = useState<Event[]>([]);
+  const [visibleEvents, setVisibleEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(1);
+  const [currentWave, setCurrentWave] = useState(1);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list' | 'calendar'>('grid');
   
-  // S'assurer que nous avons les événements initiaux
-  useEffect(() => {
-    console.log("Setting initial events:", initialEvents.length);
-    if (initialEvents && initialEvents.length > 0) {
-      setEvents(initialEvents);
-    }
-  }, [initialEvents]);
-  
   // Pour savoir si on a atteint la fin
-  const hasMoreEvents = events.length < totalEvents;
-  
-  // Référence pour savoir combien d'événements sont actuellement visibles
-  const visibleEventsCount = Math.min(page * EVENTS_PER_PAGE, events.length);
+  const hasMoreLoadedEvents = visibleEvents.length < allLoadedEvents.length;
+  const hasMoreServerEvents = allLoadedEvents.length < totalEvents;
 
-  // Chargement de plus d'événements
-  const loadMoreEvents = useCallback(async () => {
-    if (loading || !hasMoreEvents) return;
+  // Réinitialiser les événements quand les filtres changent (searchParams)
+  useEffect(() => {
+    // Réinitialiser l'état
+    setAllLoadedEvents(initialEvents || []);
+    setVisibleEvents(initialEvents.slice(0, EVENTS_PER_WAVE) || []);
+    setCurrentWave(1);
+    
+    // Scroll vers le haut quand les filtres changent
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [initialEvents, searchParams]);
+  
+  // Charger plus d'événements depuis le serveur
+  const loadMoreFromServer = useCallback(async () => {
+    if (loading || !hasMoreServerEvents) return;
     
     setLoading(true);
-    console.log("Loading more events from offset:", events.length);
     
     try {
       const response = await eventsAPI.getEvents({
         ...searchParams,
         status: 'validated',
-        limit: EVENTS_PER_PAGE,
-        offset: events.length
+        limit: EVENTS_PER_WAVE,
+        offset: allLoadedEvents.length
       });
       
-      console.log("API response:", response.data.results?.length || 0, "events");
-      
       if (response.data.results?.length) {
-        setEvents(prevEvents => [...prevEvents, ...response.data.results]);
-        setPage(prev => prev + 1);
+        const newEvents = response.data.results;
+        setAllLoadedEvents(prev => [...prev, ...newEvents]);
+        
+        // Si tous les événements visibles sont déjà affichés, ajouter les nouveaux à l'affichage
+        if (!hasMoreLoadedEvents) {
+          setVisibleEvents(prev => [...prev, ...newEvents]);
+          setCurrentWave(prev => prev + 1);
+        }
       }
     } catch (error) {
       console.error('Erreur lors du chargement de plus d\'événements:', error);
     } finally {
       setLoading(false);
     }
-  }, [events.length, hasMoreEvents, loading, searchParams]);
+  }, [allLoadedEvents.length, hasMoreLoadedEvents, hasMoreServerEvents, loading, searchParams]);
+
+  // Afficher plus d'événements déjà chargés
+  const showMoreEvents = () => {
+    if (hasMoreLoadedEvents) {
+      const nextWave = currentWave + 1;
+      setVisibleEvents(allLoadedEvents.slice(0, nextWave * EVENTS_PER_WAVE));
+      setCurrentWave(nextWave);
+    } else if (hasMoreServerEvents) {
+      // Si tous les événements chargés sont déjà visibles, charger depuis le serveur
+      loadMoreFromServer();
+    }
+  };
 
   // Réduire le nombre d'événements affichés
   const showLessEvents = () => {
-    if (page > 1) {
-      setPage(prev => prev - 1);
+    if (currentWave > 1) {
+      const prevWave = currentWave - 1;
+      setVisibleEvents(allLoadedEvents.slice(0, prevWave * EVENTS_PER_WAVE));
+      setCurrentWave(prevWave);
+      
       // Défilement automatique vers le haut de la section
-      window.scrollTo({
-        top: document.getElementById('events-section')?.offsetTop || 0,
-        behavior: 'smooth'
-      });
+      document.getElementById('events-section')?.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
@@ -111,13 +129,6 @@ export default function InfiniteScrollEvents({
     }
   }, []);
 
-  // Afficher tous les événements ou seulement ceux de la page actuelle
-  const displayedEvents = events.slice(0, page * EVENTS_PER_PAGE);
-  
-  // Debug display
-  console.log("DisplayedEvents:", displayedEvents.length);
-  console.log("ViewMode:", viewMode);
-
   return (
     <div id="events-section">
       {/* Sélecteur de vue */}
@@ -133,25 +144,25 @@ export default function InfiniteScrollEvents({
         />
       </div>
       
-      {/* Affichage du nombre d'événements pour le débug */}
-      {events.length === 0 && (
+      {/* Affichage si aucun événement n'est trouvé */}
+      {totalEvents === 0 && !loading && (
         <div className="bg-yellow-50 p-4 mb-4 rounded-lg">
           <p className="text-yellow-700">
-            Aucun événement à afficher. Veuillez vérifier les filtres ou réessayer.
+            Aucun événement ne correspond à vos critères de recherche. Veuillez modifier vos filtres ou réessayer.
           </p>
         </div>
       )}
       
       {/* Affichage des événements selon le mode sélectionné */}
-      {viewMode === 'grid' && (
-        <EventGrid events={displayedEvents} loading={loading} />
+      {totalEvents > 0 && viewMode === 'grid' && (
+        <EventGrid events={visibleEvents} loading={loading && visibleEvents.length === 0} />
       )}
       
-      {viewMode === 'list' && (
-        <EventListView events={displayedEvents} loading={loading} />
+      {totalEvents > 0 && viewMode === 'list' && (
+        <EventListView events={visibleEvents} loading={loading && visibleEvents.length === 0} />
       )}
       
-      {viewMode === 'calendar' && (
+      {totalEvents > 0 && viewMode === 'calendar' && (
         <div className="bg-white rounded-lg p-8 text-center">
           <p className="text-gray-600">
             La vue calendrier sera bientôt disponible !
@@ -159,47 +170,49 @@ export default function InfiniteScrollEvents({
         </div>
       )}
       
-      {/* Actions de défilement */}
-      <div className="mt-8 flex flex-col items-center space-y-4">
-        {page > 1 && (
-          <Button
-            onClick={showLessEvents}
-            variant="outline"
-            className="w-48 flex items-center justify-center"
-          >
-            <ChevronUp className="h-4 w-4 mr-2" />
-            Voir moins
-          </Button>
-        )}
-        
-        {hasMoreEvents && (
-          <Button
-            onClick={loadMoreEvents}
-            disabled={loading}
-            className="w-48 flex items-center justify-center bg-primary"
-          >
-            {loading ? (
-              <span className="flex items-center">
-                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Chargement...
-              </span>
-            ) : (
-              <>
-                <ChevronDown className="h-4 w-4 mr-2" />
-                Voir plus
-              </>
-            )}
-          </Button>
-        )}
-        
-        {/* Compteur d'événements */}
-        <p className="text-gray-600 text-sm">
-          Affichage de {visibleEventsCount} sur {totalEvents} événements
-        </p>
-      </div>
+      {/* Actions de défilement - ne les afficher que s'il y a des événements */}
+      {totalEvents > 0 && (
+        <div className="mt-8 flex flex-col items-center space-y-4">
+          {currentWave > 1 && (
+            <Button
+              onClick={showLessEvents}
+              variant="outline"
+              className="w-48 flex items-center justify-center"
+            >
+              <ChevronUp className="h-4 w-4 mr-2" />
+              Voir moins
+            </Button>
+          )}
+          
+          {(hasMoreLoadedEvents || hasMoreServerEvents) && (
+            <Button
+              onClick={showMoreEvents}
+              disabled={loading}
+              className="w-48 flex items-center justify-center bg-primary"
+            >
+              {loading ? (
+                <span className="flex items-center">
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Chargement...
+                </span>
+              ) : (
+                <>
+                  <ChevronDown className="h-4 w-4 mr-2" />
+                  Voir plus
+                </>
+              )}
+            </Button>
+          )}
+          
+          {/* Compteur d'événements */}
+          <p className="text-gray-600 text-sm">
+            Affichage de {visibleEvents.length} sur {totalEvents} événements
+          </p>
+        </div>
+      )}
       
       {/* Bouton retour en haut */}
       {showScrollTop && (

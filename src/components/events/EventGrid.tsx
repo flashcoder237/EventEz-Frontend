@@ -1,9 +1,9 @@
-// components/events/EventGrid.tsx
 'use client';
 
 import { useRef, useEffect } from 'react';
 import { Event } from '@/types';
 import EventCard from './EventCard';
+import LoadingSpinner from '../ui/LoadingSpinner';
 
 interface EventGridProps {
   events: Event[];
@@ -11,15 +11,19 @@ interface EventGridProps {
 }
 
 export default function EventGrid({ events, loading = false }: EventGridProps) {
-  console.log("EventGrid - Events:", events.length);
-  
   const gridRef = useRef<HTMLDivElement>(null);
 
   // Animation lorsque de nouveaux événements sont ajoutés
   useEffect(() => {
-    if (gridRef.current && !loading) {
-      // Non-blocking log
-      console.log("Grid rendered with", events.length, "events");
+    if (gridRef.current && !loading && events.length > 0) {
+      // Animer subtilement l'apparition des nouveaux éléments
+      const newElements = gridRef.current.querySelectorAll('[data-new="true"]');
+      newElements.forEach(el => {
+        // Retirer l'attribut pour éviter de les animer à nouveau
+        setTimeout(() => {
+          el.removeAttribute('data-new');
+        }, 600);
+      });
     }
   }, [events.length, loading]);
 
@@ -68,30 +72,20 @@ export default function EventGrid({ events, loading = false }: EventGridProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6  px-4 md:px-8 lg:px-16" ref={gridRef}>
-      {events.map((event, index) => {
-        // Debug log pour chaque événement
-        console.log(`Rendering event ${index}:`, event.id, event.title);
-        
-        return (
-          <div key={event.id}>
-            <EventCard event={event} />
-          </div>
-        );
-      })}
-      
-      {/* Indicateur de chargement en bas de la grille */}
-      {loading && events.length > 0 && (
-        <div className="col-span-full flex justify-center py-4">
-          <div className="flex items-center space-x-2">
-            <svg className="animate-spin h-5 w-5 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <span className="text-sm text-gray-600">Chargement...</span>
-          </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-4 md:px-8 lg:px-16" ref={gridRef}>
+      {events.map((event, index) => (
+        <div 
+          key={event.id} 
+          className="opacity-0 animate-fade-in" 
+          style={{ 
+            animationDelay: `${Math.min(index * 0.1, 0.5)}s`,
+            animationFillMode: 'forwards'
+          }}
+          data-new={events.length > 3 && index >= events.length - 3 ? "true" : "false"}
+        >
+          <EventCard event={event} />
         </div>
-      )}
+      ))}
     </div>
   );
 }

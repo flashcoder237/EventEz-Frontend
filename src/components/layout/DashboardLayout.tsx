@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import Header from './Header';
+import ModernHeader from './ModernHeader';
 import Footer from './Footer';
 import DashboardSidebar from './DashboardSidebar';
 
@@ -14,8 +14,8 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <div className="min-h-screen flex flex-col">
-      <Header />
-      <div className="flex flex-1">
+      <ModernHeader />
+      <div className="flex flex-1 py-16">
         <DashboardSidebar />
         <main className="flex-1 bg-gray-50 p-4 overflow-auto">
           {children}
