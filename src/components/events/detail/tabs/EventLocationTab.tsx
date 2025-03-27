@@ -1,10 +1,19 @@
-// src/components/events/detail/tabs/EventLocationTab.tsx
 'use client';
 
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Event } from '@/types';
 import { Button } from '@/components/ui/Button';
-import { MapPin, Copy, ExternalLink, Map, MapIcon } from 'lucide-react';
+import { 
+  MapPin, 
+  Copy, 
+  ExternalLink, 
+  Map, 
+  MapIcon, 
+  Navigation,
+  Info,
+  CheckCircle
+} from 'lucide-react';
 
 interface EventLocationTabProps {
   event: Event;
@@ -31,93 +40,155 @@ export default function EventLocationTab({ event }: EventLocationTabProps) {
   };
 
   const openInOpenStreetMap = () => {
-    // Utilisez l'adresse texte pour la recherche dans OpenStreetMap
     const osmUrl = `https://www.openstreetmap.org/search?query=${encodeURIComponent(fullAddress)}`;
     window.open(osmUrl, '_blank');
   };
 
-  return (
-    <div>
-      <h2 className="text-2xl font-bold mb-6">Lieu de l'événement</h2>
-      
-      <div className="bg-gray-50 rounded-lg p-6">
-        <h3 className="text-xl font-bold mb-2">{event.location_name}</h3>
-        <p className="text-gray-700 mb-4">{fullAddress}</p>
-        
-        <div className="flex flex-wrap gap-3 mt-4 mb-6">
-          <Button 
-            variant="outline" 
-            size="sm"
-            className="inline-flex items-center"
-            onClick={openInMaps}
-          >
-            <MapPin className="h-4 w-4 mr-2" />
-            Voir sur Google Maps
-          </Button>
-          
-          <Button
-            variant="outline"
-            size="sm"
-            className="inline-flex items-center"
-            onClick={openInOpenStreetMap}
-          >
-            <Map className="h-4 w-4 mr-2" />
-            Voir sur OpenStreetMap
-          </Button>
-          
-          <div className="relative">
-            <Button
-              variant="outline"
-              size="sm"
-              className="inline-flex items-center"
-              onClick={copyAddress}
-            >
-              <Copy className="h-4 w-4 mr-2" />
-              Copier l'adresse
-            </Button>
-            {copyTooltip && (
-              <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-                Adresse copiée !
-              </div>
-            )}
-          </div>
-        </div>
-        
-        {/* Affichage statique au lieu de la carte interactive */}
-        <div className="mt-6 overflow-hidden rounded-lg relative">
-          <div className="h-80 w-full bg-gray-100 flex flex-col items-center justify-center">
-            <MapIcon className="h-12 w-12 text-gray-400 mb-3" />
-            <p className="text-gray-600 font-medium">Visualisation de maps non disponible pour le moment</p>
-            <p className="text-gray-500 text-sm mt-2 max-w-md text-center px-4">
-              Vous pouvez consulter la localisation en utilisant les boutons ci-dessus
-              pour ouvrir Google Maps ou OpenStreetMap.
-            </p>
-          </div>
-        </div>
+  // Location tips based on city
+  const getLocationTips = () => {
+    const cityTips: { [key: string]: React.ReactNode } = {
+      'Douala': (
+        <>
+          À Douala, il est recommandé d'arriver au moins 30 minutes avant le début de l'événement en raison du trafic.
+          Vous trouverez facilement des taxis aux alentours.
+        </>
+      ),
+      'Yaoundé': (
+        <>
+          À Yaoundé, prévoir un délai supplémentaire pour le trajet en raison des embouteillages fréquents.
+          Des parkings sont disponibles à proximité du lieu de l'événement.
+        </>
+      ),
+      'default': (
+        <>
+          Nous vous recommandons d'arriver au moins 15 minutes avant le début de l'événement.
+          N'hésitez pas à contacter l'organisateur pour des conseils sur les transports et l'accès.
+        </>
+      )
+    };
 
-        {/* Informations complémentaires sur le lieu */}
-        <div className="mt-6 p-4 bg-blue-50 rounded-lg text-sm">
-          <h4 className="font-medium text-blue-800 mb-2">Conseils pour se rendre sur place</h4>
-          <p className="text-blue-700 mb-2">
-            {event.location_city === 'Douala' ? (
-              <>
-                À Douala, il est recommandé d'arriver au moins 30 minutes avant le début de l'événement en raison du trafic.
-                Vous trouverez facilement des taxis aux alentours.
-              </>
-            ) : event.location_city === 'Yaoundé' ? (
-              <>
-                À Yaoundé, prévoir un délai supplémentaire pour le trajet en raison des embouteillages fréquents.
-                Des parkings sont disponibles à proximité du lieu de l'événement.
-              </>
-            ) : (
-              <>
-                Nous vous recommandons d'arriver au moins 15 minutes avant le début de l'événement.
-                N'hésitez pas à contacter l'organisateur pour des conseils sur les transports et l'accès.
-              </>
-            )}
-          </p>
+    return cityTips[event.location_city] || cityTips['default'];
+  };
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="max-w-4xl mx-auto"
+    >
+      <motion.h2 
+        className="text-3xl font-bold mb-8 text-gray-800 dark:text-gray-200 flex items-center"
+        initial={{ x: -20, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+      >
+        <MapPin className="mr-4 text-primary" size={36} />
+        Lieu de l'événement
+      </motion.h2>
+      
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700 shadow-sm overflow-hidden"
+      >
+        <div className="p-6">
+          <h3 className="text-xl font-bold mb-2 text-gray-800 dark:text-gray-200">
+            {event.location_name}
+          </h3>
+          <p className="text-gray-700 dark:text-gray-400 mb-4">{fullAddress}</p>
+          
+          <div className="flex flex-wrap gap-3 mt-4 mb-6">
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="inline-flex items-center"
+                onClick={openInMaps}
+              >
+                <MapPin className="h-4 w-4 mr-2" />
+                Google Maps
+              </Button>
+            </motion.div>
+            
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="inline-flex items-center"
+                onClick={openInOpenStreetMap}
+              >
+                <Map className="h-4 w-4 mr-2" />
+                OpenStreetMap
+              </Button>
+            </motion.div>
+            
+            <motion.div 
+              className="relative" 
+              whileHover={{ scale: 1.05 }} 
+              whileTap={{ scale: 0.95 }}
+            >
+              <Button
+                variant="outline"
+                size="sm"
+                className="inline-flex items-center"
+                onClick={copyAddress}
+              >
+                <Copy className="h-4 w-4 mr-2" />
+                Copier l'adresse
+              </Button>
+              <AnimatePresence>
+                {copyTooltip && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="absolute -top-10 left-1/2 -translate-x-1/2 bg-green-500 text-white text-xs px-3 py-1.5 rounded-full flex items-center"
+                  >
+                    <CheckCircle className="mr-2 h-4 w-4" />
+                    Adresse copiée !
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          </div>
+          
+          {/* Placeholder for map */}
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mt-6 overflow-hidden rounded-xl relative"
+          >
+            <div className="h-80 w-full bg-gray-100 dark:bg-gray-700 flex flex-col items-center justify-center">
+              <MapIcon className="h-16 w-16 text-gray-400 dark:text-gray-500 mb-4" />
+              <p className="text-gray-600 dark:text-gray-400 font-medium mb-2">
+                Visualisation de carte non disponible
+              </p>
+              <p className="text-gray-500 dark:text-gray-400 text-sm max-w-md text-center px-4">
+                Utilisez les boutons ci-dessus pour consulter la localisation sur Google Maps ou OpenStreetMap
+              </p>
+            </div>
+          </motion.div>
+
+          {/* Location Tips */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-6 p-5 bg-blue-50 dark:bg-blue-900/30 rounded-xl"
+          >
+            <div className="flex items-start mb-3">
+              <Info className="mr-3 mt-1 h-5 w-5 text-blue-500 flex-shrink-0" />
+              <div>
+                <h4 className="font-semibold text-blue-800 dark:text-blue-300 mb-2">
+                  Conseils pour se rendre sur place
+                </h4>
+                <p className="text-blue-700 dark:text-blue-200 text-sm leading-relaxed">
+                  {getLocationTips()}
+                </p>
+              </div>
+            </div>
+          </motion.div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

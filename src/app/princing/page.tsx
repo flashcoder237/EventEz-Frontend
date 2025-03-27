@@ -553,20 +553,20 @@ export default function PricingPage() {
               
               <div className="bg-gray-50 rounded-2xl p-6 shadow-inner mb-8">
                 <div className="grid grid-cols-2 gap-4 mb-6">
-                  <div className="flex items-center p-4 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                    <div className="h-12 w-12 rounded-full bg-orange-100 text-orange-500 flex items-center justify-center mr-4 font-bold text-sm">OM</div>
+                  <div className="flex items-center">
+                    <div className="p-2 rounded-full bg-orange-100 text-orange-500 flex items-center justify-center mr-1 font-bold text-sm">OM</div>
                     <span className="font-medium">Orange Money</span>
                   </div>
-                  <div className="flex items-center p-4 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                    <div className="h-12 w-12 rounded-full bg-yellow-100 text-yellow-600 flex items-center justify-center mr-4 font-bold text-sm">MM</div>
+                  <div className="flex items-center">
+                    <div className="p-2 rounded-full bg-yellow-100 text-yellow-600 flex items-center justify-center mr-1 font-bold text-sm">MM</div>
                     <span className="font-medium">MTN Mobile</span>
                   </div>
-                  <div className="flex items-center p-4 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                    <div className="h-12 w-12 rounded-full bg-blue-100 text-blue-500 flex items-center justify-center mr-4 font-bold text-sm">CB</div>
+                  <div className="flex items-center">
+                    <div className="p-2 rounded-full bg-blue-100 text-blue-500 flex items-center justify-center mr-1 font-bold text-sm">CB</div>
                     <span className="font-medium">Carte bancaire</span>
                   </div>
-                  <div className="flex items-center p-4 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                    <div className="h-12 w-12 rounded-full bg-green-100 text-green-500 flex items-center justify-center mr-4 font-bold text-sm">VP</div>
+                  <div className="flex items-center">
+                    <div className="p-2 rounded-full bg-green-100 text-green-500 flex items-center justify-center mr-1 font-bold text-sm">VP</div>
                     <span className="font-medium">Virement</span>
                   </div>
                 </div>

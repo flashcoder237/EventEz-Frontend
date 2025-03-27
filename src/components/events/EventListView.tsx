@@ -74,23 +74,24 @@ export default function EventListView({ events, loading = false }: EventListView
           >
             <Link href={`/events/${event.id}`} className="flex flex-col sm:flex-row">
               {/* Image de l'événement */}
-              <div className="relative w-full sm:w-48 h-32 sm:h-auto flex-shrink-0 overflow-hidden">
+              <div className="relative w-full sm:h-60 h-60 sm:w-90 flex-shrink-0 overflow-hidden">
               {event.banner_image ? (
-          <Image
-            src={`${event.banner_image}`}
-            alt={event.title}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-          />
-        ) : (
-          <DynamicEventBanner 
-            title={event.title}
-            category={event.category.name}
-            eventType={event.event_type}
-            isFeatured={event.is_featured}
-            className="w-full h-full"
-          />
-        )}
+                  <Image
+                    src={`${event.banner_image}`}
+                    alt={event.title}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                ) : (
+                  <div className="absolute inset-0 overflow-hidden">
+                  <DynamicEventBanner 
+                    title={event.title}
+                    category={event.category.name}
+                    eventType={event.event_type}
+                    isFeatured={event.is_featured}
+                  />
+                  </div>
+                )}
                 
                 {/* Badge du type d'événement */}
                 <div className="absolute top-2 left-2">

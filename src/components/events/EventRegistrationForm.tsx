@@ -45,10 +45,18 @@ interface RegistrationData {
   }[];
 }
 
+function normalizedOptions(options) {
+  return Array.isArray(options) 
+  ? options.map(opt => typeof opt === 'string' ? { value: opt, label: opt } : opt) 
+  : typeof options === 'string'
+    ? options.split(',').map(opt => ({ value: opt.trim(), label: opt.trim() }))
+    : [];
+}
+
+
 export default function EventRegistrationForm({ 
   event, 
-  ticketTypes = [], 
- 
+  ticketTypes = [],  
 }: EventRegistrationFormProps) {
   const router = useRouter();
   const { data: session } = useSession();
@@ -301,10 +309,8 @@ export default function EventRegistrationForm({
                   <div key={field.id}>
                     <Select
                       value={currentValue as string || ''}
-                      options={field.options ? field.options : ""}
-                      onValueChange={(value) => 
-                        handleFormFieldChange(field.id, value)
-                      }
+                      options={field.options ? normalizedOptions(field.options) : normalizedOptions("")}
+                      onChange={(e) => handleFormFieldChange(field.id, e.target.value)}
                       placeholder={field.label}
                     >
                      

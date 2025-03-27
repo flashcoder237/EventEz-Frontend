@@ -18,6 +18,7 @@ interface SearchParams {
   end_date?: string;
 }
 
+
 // Cette fonction s'exécute côté serveur pour obtenir les données
 async function getEventsData(searchParams: SearchParams) {
   try {
@@ -51,6 +52,7 @@ export default async function EventsPage({ searchParams }: { searchParams: Searc
   // Obtenir les données côté serveur
   const { events, totalEvents, categories } = await getEventsData(searchParams);
   
+  
   // Options de tri
   const sortOptions = [
     { value: 'start_date', label: 'Par date (croissant)' },
@@ -68,14 +70,17 @@ export default async function EventsPage({ searchParams }: { searchParams: Searc
   return (
     <MainLayout>
       {/* Header */}
-      <div className="bg-gradient-to-r from-purple-800 to-indigo-700 text-white py-35 text-center">
+      <div className="bg-gradient-to-r from-purple-800 to-indigo-700 text-white py-40 text-center">
         <div className="container mx-auto px-4">
           <h1 className="text-3xl font-bold mb-4">Explorez les événements</h1>
           <p className="text-lg mb-0 font-thin">
             Découvrez tous les événements disponibles sur notre plateforme
           </p>
         </div>
+         {/* Forme décorative en bas */}
+    
       </div>
+     
       
       <div className="container mx-auto px-4 py-8 bottom-40 relative">
       <ClientSideFilterWrapper 

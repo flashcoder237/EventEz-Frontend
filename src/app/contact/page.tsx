@@ -676,10 +676,10 @@ export default function ContactPage() {
               <motion.div 
                 key={index}
                 className="border border-gray-200 rounded-xl overflow-hidden mb-4 text-black"
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 1, y: 20 }}
                 animate={animationTriggered["faq-items"] ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.5, delay: 0.3 + (index * 0.1) }}
-                whileHover={{ scale: 1.01 }}
+                transition={{ duration: 0.5, delay: 0.1  }}
+                whileHover={{ scale: 1.1 }}
               >
                 <details className="group">
                   <summary className="flex justify-between items-center cursor-pointer px-6 py-4">

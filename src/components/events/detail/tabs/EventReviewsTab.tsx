@@ -1,11 +1,22 @@
-// src/components/events/detail/tabs/EventReviewsTab.tsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useSession } from 'next-auth/react';
 import { Event, Feedback } from '@/types';
 import { Button } from '@/components/ui/Button';
-import { MessageCircle, User, Star, X, Edit, Trash } from 'lucide-react';
+import { 
+  MessageCircle, 
+  User, 
+  Star, 
+  X, 
+  Edit, 
+  Trash, 
+  CheckCircle,
+  Filter,
+  ChevronDown,
+  ChevronUp
+} from 'lucide-react';
 import { feedbacksAPI } from '@/lib/api';
 
 interface EventReviewsTabProps {
@@ -22,6 +33,23 @@ export default function EventReviewsTab({ feedbacks, event }: EventReviewsTabPro
   const [userFeedback, setUserFeedback] = useState<Feedback | null>(null);
   const [displayedFeedbacks, setDisplayedFeedbacks] = useState(feedbacks);
   const [editMode, setEditMode] = useState(false);
+  
+  // Pagination and Filtering
+  const [visibleReviews, setVisibleReviews] = useState(3);
+  const [filterRating, setFilterRating] = useState<number | null>(null);
+  const [showFilterOptions, setShowFilterOptions] = useState(false);
+
+  // Filtered and paginated feedbacks
+  const filteredFeedbacks = useMemo(() => {
+    return filterRating
+      ? displayedFeedbacks.filter(feedback => feedback.rating === filterRating)
+      : displayedFeedbacks;
+  }, [displayedFeedbacks, filterRating]);
+
+  // Paginated feedbacks
+  const paginatedFeedbacks = useMemo(() => {
+    return filteredFeedbacks.slice(0, visibleReviews);
+  }, [filteredFeedbacks, visibleReviews]);
 
   // Vérifier si l'utilisateur actuel a déjà laissé un avis
   const currentUserFeedback = displayedFeedbacks.find(
@@ -43,7 +71,6 @@ export default function EventReviewsTab({ feedbacks, event }: EventReviewsTabPro
 
     setLoading(true);
     try {
-      // Créer un nouveau feedback
       const feedbackData = {
         event: event.id,
         rating,
@@ -51,10 +78,8 @@ export default function EventReviewsTab({ feedbacks, event }: EventReviewsTabPro
       };
 
       if (editMode && userFeedback) {
-        // Mettre à jour un feedback existant
         await feedbacksAPI.updateFeedback(userFeedback.id, feedbackData);
         
-        // Mettre à jour l'affichage local
         setDisplayedFeedbacks(prev => 
           prev.map(f => f.id === userFeedback.id 
             ? { ...f, rating, comment, updated_at: new Date().toISOString() }
@@ -62,10 +87,8 @@ export default function EventReviewsTab({ feedbacks, event }: EventReviewsTabPro
           )
         );
       } else {
-        // Créer un nouveau feedback
         const response = await feedbacksAPI.createFeedback(feedbackData);
         
-        // Ajouter à l'affichage local
         const newFeedback = {
           id: response.data.id,
           event: event.id,
@@ -115,170 +138,287 @@ export default function EventReviewsTab({ feedbacks, event }: EventReviewsTabPro
     }
   };
 
+  // Gestionnaires de pagination et filtrage
+  const loadMoreReviews = () => {
+    setVisibleReviews(prev => prev + 3);
+  };
+
+  const showLessReviews = () => {
+    setVisibleReviews(3);
+  };
+
+  const applyRatingFilter = (rating: number | null) => {
+    setFilterRating(rating);
+    setVisibleReviews(3);
+    setShowFilterOptions(false);
+  };
+
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold">Avis et commentaires</h2>
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="max-w-4xl mx-auto"
+    >
+      {/* En-tête et bouton d'avis */}
+      <div className="flex items-center justify-between mb-8">
+        <motion.h2 
+          className="text-3xl font-bold text-gray-800 dark:text-gray-200"
+          initial={{ x: -20, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+        >
+          Avis et commentaires
+        </motion.h2>
         
         {status !== 'loading' && session?.user && !currentUserFeedback && !showReviewForm && (
-          <Button 
-            variant="outline" 
-            size="sm"
-            className="inline-flex items-center"
-            onClick={() => setShowReviewForm(true)}
+          <motion.div
+            initial={{ x: 20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
           >
-            <MessageCircle className="mr-2 h-4 w-4" />
-            Laisser un avis
-          </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="inline-flex items-center"
+              onClick={() => setShowReviewForm(true)}
+            >
+              <MessageCircle className="mr-2 h-4 w-4" />
+              Laisser un avis
+            </Button>
+          </motion.div>
         )}
       </div>
-      
+
       {/* Résumé des avis */}
-      {displayedFeedbacks.length > 0 && (
-        <div className="bg-gray-50 rounded-lg p-4 mb-6">
-          <div className="flex items-center">
-            <div className="flex items-center mr-4">
-              {[1, 2, 3, 4, 5].map(star => (
-                <Star
-                  key={star}
-                  className={`h-5 w-5 ${
-                    star <= Math.round(averageRating)
-                      ? 'text-amber-400 fill-amber-400'
-                      : 'text-gray-300'
-                  }`}
-                />
-              ))}
-            </div>
-            <div>
-              <span className="font-bold text-lg">{averageRating.toFixed(1)}</span>
-              <span className="text-gray-600 ml-1">
-                sur 5 ({displayedFeedbacks.length} avis)
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
-      
-      {/* Formulaire d'avis */}
-      {showReviewForm && (
-        <div className="bg-white rounded-lg border p-4 mb-6">
-          <div className="flex justify-between items-center mb-3">
-            <h3 className="font-medium text-lg">
-              {editMode ? 'Modifier votre avis' : 'Laisser un avis'}
-            </h3>
-            <button 
-              onClick={() => {
-                setShowReviewForm(false);
-                setEditMode(false);
-              }}
-              className="text-gray-400 hover:text-gray-600"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
-          
-          <form onSubmit={handleSubmitReview}>
-            <div className="mb-4">
-              <label className="block text-sm font-medium mb-2">Votre note</label>
-              <div className="flex">
+      <AnimatePresence>
+        {displayedFeedbacks.length > 0 && (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-900/50 rounded-xl p-6 mb-8 shadow-sm flex justify-between items-center"
+          >
+            <div className="flex items-center">
+              <div className="flex items-center mr-6">
                 {[1, 2, 3, 4, 5].map(star => (
-                  <button
+                  <Star
                     key={star}
-                    type="button"
-                    onClick={() => handleRatingClick(star)}
-                    className="p-1"
-                  >
-                    <Star
-                      className={`h-8 w-8 ${
-                        star <= rating
-                          ? 'text-amber-400 fill-amber-400'
-                          : 'text-gray-300'
-                      } hover:text-amber-400 transition-colors`}
-                    />
-                  </button>
+                    className={`h-6 w-6 ${
+                      star <= Math.round(averageRating)
+                        ? 'text-amber-400 fill-amber-400'
+                        : 'text-gray-300 dark:text-gray-600'
+                    }`}
+                  />
                 ))}
+              </div>
+              <div>
+                <span className="font-bold text-2xl text-gray-800 dark:text-gray-200">
+                  {averageRating.toFixed(1)}
+                </span>
+                <span className="text-gray-600 dark:text-gray-400 ml-2">
+                  sur 5 ({displayedFeedbacks.length} avis)
+                </span>
               </div>
             </div>
             
-            <div className="mb-4">
-              <label htmlFor="comment" className="block text-sm font-medium mb-2">
-                Votre commentaire
-              </label>
-              <textarea
-                id="comment"
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                className="w-full border rounded-md p-2"
-                rows={4}
-                placeholder="Partagez votre expérience..."
-                required
-              />
-            </div>
-            
-            <div className="flex gap-2">
-              <Button
-                type="submit"
-                disabled={loading}
-                className="bg-primary"
-              >
-                {loading 
-                  ? 'Envoi en cours...' 
-                  : editMode 
-                    ? 'Mettre à jour' 
-                    : 'Publier l\'avis'
-                }
-              </Button>
-              <Button
-                type="button"
+            {/* Filtre des avis */}
+            <div className="relative">
+              <Button 
                 variant="outline"
+                size="sm"
+                onClick={() => setShowFilterOptions(!showFilterOptions)}
+                className="flex items-center"
+              >
+                <Filter className="mr-2 h-4 w-4" />
+                Filtrer
+                {filterRating ? ` (${filterRating} ★)` : ''}
+              </Button>
+              
+              <AnimatePresence>
+                {showFilterOptions && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border dark:border-gray-700 z-10 p-2"
+                  >
+                    <div className="space-y-1">
+                      {[5, 4, 3, 2, 1].map(rating => (
+                        <Button
+                          key={rating}
+                          variant={filterRating === rating ? 'default' : 'ghost'}
+                          size="sm"
+                          className="w-full justify-start"
+                          onClick={() => applyRatingFilter(rating)}
+                        >
+                          {rating} ★
+                        </Button>
+                      ))}
+                      {filterRating && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full justify-start text-red-500"
+                          onClick={() => applyRatingFilter(null)}
+                        >
+                          Effacer le filtre
+                        </Button>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Formulaire d'avis */}
+      <AnimatePresence>
+        {showReviewForm && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700 p-6 mb-8 shadow-lg"
+          >
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="font-semibold text-xl text-gray-800 dark:text-gray-200">
+                {editMode ? 'Modifier votre avis' : 'Laisser un avis'}
+              </h3>
+              <motion.button 
                 onClick={() => {
                   setShowReviewForm(false);
                   setEditMode(false);
                 }}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
               >
-                Annuler
-              </Button>
+                <X className="h-6 w-6" />
+              </motion.button>
             </div>
-          </form>
-        </div>
-      )}
+            
+            <form onSubmit={handleSubmitReview}>
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                  Votre note
+                </label>
+                <div className="flex space-x-1">
+                  {[1, 2, 3, 4, 5].map(star => (
+                    <motion.button
+                      key={star}
+                      type="button"
+                      onClick={() => handleRatingClick(star)}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      className="p-1"
+                    >
+                      <Star
+                        className={`h-9 w-9 transition-colors ${
+                          star <= rating
+                            ? 'text-amber-400 fill-amber-400'
+                            : 'text-gray-300 dark:text-gray-600'
+                        } hover:text-amber-400`}
+                      />
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="mb-6">
+                <label htmlFor="comment" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                  Votre commentaire
+                </label>
+                <textarea
+                  id="comment"
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  className="w-full border rounded-lg p-3 dark:bg-gray-900 dark:border-gray-700 focus:ring-2 focus:ring-blue-500/50 transition-all"
+                  rows={4}
+                  placeholder="Partagez votre expérience..."
+                  required
+                />
+              </div>
+              
+              <div className="flex gap-4">
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="bg-primary hover:bg-primary-600 transition-colors"
+                >
+                  {loading 
+                    ? 'Envoi en cours...' 
+                    : editMode 
+                      ? 'Mettre à jour' 
+                      : 'Publier l\'avis'
+                  }
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setShowReviewForm(false);
+                    setEditMode(false);
+                  }}
+                >
+                  Annuler
+                </Button>
+              </div>
+            </form>
+          </motion.div>
+        )}
+      </AnimatePresence>
       
       {/* Liste des avis */}
-      {displayedFeedbacks.length === 0 ? (
-        <div className="bg-gray-50 rounded-lg p-8 text-center">
-          <MessageCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-600">Aucun avis n'a encore été laissé pour cet événement.</p>
-          {status !== 'loading' && session?.user && !showReviewForm && (
+      {filteredFeedbacks.length === 0 ? (
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-gray-50 dark:bg-gray-800 rounded-xl p-12 text-center"
+        >
+          <MessageCircle className="h-16 w-16 text-gray-400 dark:text-gray-600 mx-auto mb-6" />
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            {filterRating 
+              ? `Aucun avis avec ${filterRating} étoile${filterRating > 1 ? 's' : ''}` 
+              : 'Aucun avis n\'a encore été laissé pour cet événement'}
+          </p>
+          {filterRating && (
             <Button
-              onClick={() => setShowReviewForm(true)}
-              className="mt-4 bg-primary"
+              onClick={() => applyRatingFilter(null)}
+              variant="outline"
             >
-              Soyez le premier à laisser un avis
+              Réinitialiser le filtre
             </Button>
           )}
-        </div>
+        </motion.div>
       ) : (
-        <div className="space-y-6">
-          {displayedFeedbacks.map(feedback => {
+        <div className="space-y-8">
+          {paginatedFeedbacks.map(feedback => {
             const isUserFeedback = session?.user?.id && feedback.user === session.user.id;
             
             return (
-              <div key={feedback.id} className="border-b pb-6 last:border-0">
-                <div className="flex justify-between items-start">
+              <motion.div 
+                key={feedback.id} 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border dark:border-gray-700"
+              >
+                <div className="flex justify-between items-start mb-4">
                   <div className="flex items-center">
-                    <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center mr-3">
-                      <User className="h-5 w-5 text-primary" />
+                    <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center mr-4">
+                      <User className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                      <p className="font-medium flex items-center">
+                      <p className="font-semibold text-gray-800 dark:text-gray-200 flex items-center">
                         {feedback.user_name}
                         {isUserFeedback && (
-                          <span className="ml-2 text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                          <span className="ml-2 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded-full">
                             Vous
                           </span>
                         )}
                       </p>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
                         {new Date(feedback.created_at).toLocaleDateString('fr-FR', {
                           year: 'numeric',
                           month: 'long',
@@ -288,45 +428,81 @@ export default function EventReviewsTab({ feedbacks, event }: EventReviewsTabPro
                     </div>
                   </div>
                   
-                  <div className="flex">
-                    <div className="flex">
+                  <div className="flex items-center">
+                    <div className="flex mr-4">
                       {[...Array(5)].map((_, i) => (
                         <Star 
                           key={i} 
-                          className={`h-5 w-5 ${i < feedback.rating ? 'text-amber-400 fill-amber-400' : 'text-gray-300'}`} 
+                          className={`h-5 w-5 ${
+                            i < feedback.rating 
+                              ? 'text-amber-400 fill-amber-400' 
+                              : 'text-gray-300 dark:text-gray-600'
+                          }`} 
                         />
                       ))}
                     </div>
                     
                     {isUserFeedback && (
-                      <div className="flex ml-3">
-                        <button
+                      <div className="flex">
+                        <motion.button
                           onClick={() => handleEditReview(feedback)}
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
                           className="text-gray-400 hover:text-primary mr-2"
                           title="Modifier"
                         >
-                          <Edit className="h-4 w-4" />
-                        </button>
-                        <button
+                          <Edit className="h-5 w-5" />
+                        </motion.button>
+                        <motion.button
                           onClick={() => handleDeleteReview(feedback.id)}
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
                           className="text-gray-400 hover:text-red-500"
                           title="Supprimer"
                         >
-                          <Trash className="h-4 w-4" />
-                        </button>
+                          <Trash className="h-5 w-5" />
+                        </motion.button>
                       </div>
                     )}
                   </div>
                 </div>
                 
-                <div className="mt-3 text-gray-700">
+                <div className="text-gray-700 dark:text-gray-300 mt-4">
                   {feedback.comment}
                 </div>
-              </div>
+              </motion.div>
             );
           })}
+          
+          {/* Boutons de pagination */}
+          {filteredFeedbacks.length > visibleReviews && (
+            <div className="text-center">
+              <Button
+                variant="outline"
+                onClick={loadMoreReviews}
+                className="flex items-center mx-auto"
+              >
+                Voir plus d'avis
+                <ChevronDown className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          )}
+          
+          {visibleReviews > 3 && filteredFeedbacks.length > 3 && (
+            <div className="text-center">
+              <Button
+                variant="outline"
+                onClick={showLessReviews}
+                className="flex items-center mx-auto"
+              >
+                Voir moins d'avis
+                <ChevronUp className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          )}
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }
+
