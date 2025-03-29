@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
 import { 
@@ -9,10 +11,13 @@ import {
   CheckCircle, 
   AlertTriangle, 
   ShoppingCart,
-  Info
+  Info,
+  Loader
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils/dateUtils';
 import { Event } from '@/types';
+import { useTicketSelection } from '@/context/TicketSelectionContext';
+import { formatCurrency } from '@/lib/utils';
 
 interface EventTicketsTabProps {
   ticketTypes: any[];
@@ -20,36 +25,57 @@ interface EventTicketsTabProps {
 }
 
 export default function EventTicketsTab({ ticketTypes, event }: EventTicketsTabProps) {
-  const [selectedTickets, setSelectedTickets] = useState<{[key: string]: number}>({});
+  const router = useRouter();
+  const { data: session, status } = useSession();
+  const [loading, setLoading] = useState(false);
+  const { selectedTickets, updateTicketSelection, totalSelectedTickets, totalPrice } = useTicketSelection();
   const isExpired = new Date(event.end_date) < new Date();
 
-  // Calculate total selected tickets and total price
-  const ticketSummary = useMemo(() => {
-    const totalTickets = Object.values(selectedTickets).reduce((sum, qty) => sum + qty, 0);
-    const totalPrice = ticketTypes.reduce((total, ticket) => 
-      total + (ticket.price * (selectedTickets[ticket.id] || 0)), 0
-    );
-    return { totalTickets, totalPrice };
-  }, [selectedTickets, ticketTypes]);
+  // Gestion des animations pour les tickets sélectionnés
+  const [animatingTicketId, setAnimatingTicketId] = useState<string | null>(null);
 
-  const handleSelectTicket = (ticketId: string, quantity: number) => {
-    setSelectedTickets(prev => ({
-      ...prev,
-      [ticketId]: Math.max(0, quantity)
-    }));
+  const handleSelectTicket = (ticketId: string, quantity: number, price: number, name: string) => {
+    // Animer le ticket en cours de modification
+    setAnimatingTicketId(ticketId);
+    setTimeout(() => setAnimatingTicketId(null), 300);
+    
+    // Mettre à jour la sélection dans le contexte
+    updateTicketSelection(ticketId, quantity, price, name);
   };
 
-  const handleProceedToCheckout = () => {
-    const selectedTicketData = Object.entries(selectedTickets)
-      .filter(([_, quantity]) => quantity > 0)
-      .map(([ticketId, quantity]) => ({ ticketId, quantity }));
-
-    if (selectedTicketData.length === 0) {
-      alert('Veuillez sélectionner au moins un billet');
+  const handleProceedToCheckout = async () => {
+    setLoading(true);
+    
+    // Vérifier si l'utilisateur est connecté
+    if (status !== 'authenticated') {
+      router.push(`/login?redirect=/events/${event.id}/register`);
       return;
     }
-
-    window.location.href = `/events/${event.id}/register?tickets=${encodeURIComponent(JSON.stringify(selectedTicketData))}`;
+    
+    try {
+      // Vérifier si des tickets sont sélectionnés
+      if (totalSelectedTickets <= 0) {
+        alert('Veuillez sélectionner au moins un billet');
+        setLoading(false);
+        return;
+      }
+      
+      // Convertir les données sélectionnées pour l'URL
+      const selectedTicketsData = {
+        tickets: Object.values(selectedTickets)
+          .filter(ticket => ticket.quantity > 0)
+          .map(ticket => ({
+            ticketId: ticket.ticketId,
+            quantity: ticket.quantity
+          }))
+      };
+      
+      // Rediriger vers la page d'inscription avec les billets sélectionnés
+      router.push(`/events/${event.id}/register?tickets=${encodeURIComponent(JSON.stringify(selectedTicketsData))}`);
+    } catch (error) {
+      console.error('Erreur lors de la redirection vers le checkout:', error);
+      setLoading(false);
+    }
   };
 
   return (
@@ -87,10 +113,16 @@ export default function EventTicketsTab({ ticketTypes, event }: EventTicketsTabP
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              className="bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700 overflow-hidden"
+              className={`bg-white dark:bg-gray-800 rounded-xl border overflow-hidden transition-all duration-300 ${
+                animatingTicketId === ticket.id.toString() 
+                  ? 'border-purple-500 shadow-md' 
+                  : selectedTickets[ticket.id]?.quantity > 0
+                    ? 'border-purple-200 shadow-sm'
+                    : 'dark:border-gray-700 border-gray-200'
+              }`}
               whileHover={{ 
-                scale: 1.02,
-                boxShadow: '0 10px 15px rgba(0,0,0,0.1)'
+                scale: 1.01,
+                boxShadow: '0 10px 15px rgba(0,0,0,0.05)'
               }}
             >
               <div className="p-6 flex flex-col md:flex-row justify-between items-start gap-4">
@@ -125,51 +157,88 @@ export default function EventTicketsTab({ ticketTypes, event }: EventTicketsTabP
                 <div className="flex flex-col items-end">
                   <div className="text-2xl font-bold text-primary mb-4">
                     {ticket.price > 0 
-                      ? `${ticket.price.toLocaleString()} XAF` 
+                      ? formatCurrency(ticket.price) 
                       : 'Gratuit'}
                   </div>
                   
                   {ticket.available_quantity > 0 && !isExpired && (
                     <div className="flex items-center">
                       <motion.button
-                        onClick={() => handleSelectTicket(ticket.id, (selectedTickets[ticket.id] || 0) - 1)}
-                        disabled={(selectedTickets[ticket.id] || 0) <= 0}
+                        onClick={() => handleSelectTicket(
+                          ticket.id.toString(),
+                          Math.max((selectedTickets[ticket.id]?.quantity || 0) - 1, 0),
+                          ticket.price,
+                          ticket.name
+                        )}
+                        disabled={(selectedTickets[ticket.id]?.quantity || 0) <= 0}
                         whileTap={{ scale: 0.9 }}
-                        className="bg-gray-100 dark:bg-gray-700 rounded-full p-2 disabled:opacity-50"
+                        className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                          (selectedTickets[ticket.id]?.quantity || 0) <= 0
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700'
+                            : 'bg-gray-100 text-gray-800 hover:bg-purple-100 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-purple-900'
+                        }`}
                       >
-                        -
+                        <span className="text-xl font-bold">-</span>
                       </motion.button>
-                      <span className="mx-4 min-w-[30px] text-center text-lg font-semibold">
-                        {selectedTickets[ticket.id] || 0}
+                      
+                      <span className="mx-4 min-w-[36px] text-center text-lg font-semibold text-gray-800 dark:text-gray-200">
+                        {selectedTickets[ticket.id]?.quantity || 0}
                       </span>
+                      
                       <motion.button
-                        onClick={() => handleSelectTicket(ticket.id, (selectedTickets[ticket.id] || 0) + 1)}
-                        disabled={(selectedTickets[ticket.id] || 0) >= ticket.available_quantity}
+                        onClick={() => handleSelectTicket(
+                          ticket.id.toString(),
+                          Math.min((selectedTickets[ticket.id]?.quantity || 0) + 1, ticket.available_quantity),
+                          ticket.price,
+                          ticket.name
+                        )}
+                        disabled={(selectedTickets[ticket.id]?.quantity || 0) >= ticket.available_quantity}
                         whileTap={{ scale: 0.9 }}
-                        className="bg-gray-100 dark:bg-gray-700 rounded-full p-2 disabled:opacity-50"
+                        className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                          (selectedTickets[ticket.id]?.quantity || 0) >= ticket.available_quantity
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700'
+                            : 'bg-gray-100 text-gray-800 hover:bg-purple-100 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-purple-900'
+                        }`}
                       >
-                        +
+                        <span className="text-xl font-bold">+</span>
                       </motion.button>
                     </div>
                   )}
                 </div>
               </div>
+              
+              {/* Barre de remplissage pour indiquer les billets restants */}
+              {ticket.available_quantity > 0 && ticket.quantity_total > 0 && (
+                <div className="px-6 pb-6">
+                  <div className="mt-2 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
+                    <span>{Math.round((ticket.quantity_sold / ticket.quantity_total) * 100)}% vendus</span>
+                    <span>{ticket.available_quantity} restants</span>
+                  </div>
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                    <div 
+                      className="bg-gradient-to-r from-violet-600 to-pink-500 h-1.5 rounded-full" 
+                      style={{ width: `${Math.round((ticket.quantity_sold / ticket.quantity_total) * 100)}%` }}
+                    ></div>
+                  </div>
+                </div>
+              )}
             </motion.div>
           ))}
 
+          {/* Section du résumé et bouton d'achat */}
           <AnimatePresence>
-            {ticketSummary.totalTickets > 0 && !isExpired && (
+            {totalSelectedTickets > 0 && !isExpired && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
-                className="bg-blue-50 dark:bg-blue-900/30 rounded-xl p-6 flex justify-between items-center"
+                className="bg-gradient-to-r from-violet-500/10 to-pink-500/10 rounded-xl p-6 flex flex-col md:flex-row justify-between items-center gap-4 border border-purple-200 shadow-sm"
               >
                 <div>
                   <div className="flex items-center text-gray-700 dark:text-gray-300 mb-2">
                     <ShoppingCart className="mr-2 text-primary" />
                     <span className="font-semibold">
-                      {ticketSummary.totalTickets} billet{ticketSummary.totalTickets > 1 ? 's' : ''} sélectionné{ticketSummary.totalTickets > 1 ? 's' : ''}
+                      {totalSelectedTickets} billet{totalSelectedTickets > 1 ? 's' : ''} sélectionné{totalSelectedTickets > 1 ? 's' : ''}
                     </span>
                   </div>
                   <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
@@ -177,16 +246,26 @@ export default function EventTicketsTab({ ticketTypes, event }: EventTicketsTabP
                     Les billets seront réservés à votre nom
                   </p>
                 </div>
-                <div>
+                <div className="flex flex-col items-end">
                   <div className="text-2xl font-bold text-primary mb-2">
-                    {ticketSummary.totalPrice.toLocaleString()} XAF
+                    {formatCurrency(totalPrice)}
                   </div>
                   <Button 
-                    className="w-full bg-primary hover:bg-primary-600 transition-colors"
                     onClick={handleProceedToCheckout}
+                    disabled={loading}
+                    className="w-full md:w-auto bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white transition-colors"
                   >
-                    <Ticket className="mr-2 h-5 w-5" /> 
-                    Procéder à l'achat
+                    {loading ? (
+                      <div className="flex items-center">
+                        <Loader className="animate-spin mr-2 h-5 w-5" />
+                        <span>Traitement...</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center">
+                        <Ticket className="mr-2 h-5 w-5" /> 
+                        <span>Procéder à l'achat</span>
+                      </div>
+                    )}
                   </Button>
                 </div>
               </motion.div>
@@ -194,7 +273,38 @@ export default function EventTicketsTab({ ticketTypes, event }: EventTicketsTabP
           </AnimatePresence>
         </div>
       )}
+      
+      {/* Instructions d'achat - Section informative */}
+      {ticketTypes.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="mt-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6"
+        >
+          <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">
+            Comment acheter des billets
+          </h3>
+          <ol className="space-y-3 text-sm text-gray-600 dark:text-gray-400">
+            <li className="flex items-start">
+              <span className="flex items-center justify-center bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-300 w-6 h-6 rounded-full mr-3 flex-shrink-0 font-medium">1</span>
+              <span>Sélectionnez le type et la quantité de billets que vous souhaitez acheter.</span>
+            </li>
+            <li className="flex items-start">
+              <span className="flex items-center justify-center bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-300 w-6 h-6 rounded-full mr-3 flex-shrink-0 font-medium">2</span>
+              <span>Cliquez sur "Procéder à l'achat" pour continuer vers le paiement.</span>
+            </li>
+            <li className="flex items-start">
+              <span className="flex items-center justify-center bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-300 w-6 h-6 rounded-full mr-3 flex-shrink-0 font-medium">3</span>
+              <span>Remplissez les informations nécessaires et choisissez votre mode de paiement.</span>
+            </li>
+            <li className="flex items-start">
+              <span className="flex items-center justify-center bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-300 w-6 h-6 rounded-full mr-3 flex-shrink-0 font-medium">4</span>
+              <span>Une fois le paiement confirmé, vous recevrez vos billets par email.</span>
+            </li>
+          </ol>
+        </motion.div>
+      )}
     </motion.div>
   );
 }
-

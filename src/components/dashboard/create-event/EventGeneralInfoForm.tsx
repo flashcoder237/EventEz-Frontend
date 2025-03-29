@@ -35,15 +35,8 @@ export default function EventGeneralInfoForm({
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    // Vérifier si e.target et name existent
-    if (!e.target || e.target.name === undefined) {
-      console.warn('Événement de changement reçu sans nom défini:', e);
-      return; // Ne pas mettre à jour l'état si le nom est indéfini
-    }
-  
     const { name, value } = e.target;
     console.log(`handleChange called with name: ${name}, value: ${value}`);
-    
     setEventData((prev: any) => ({
       ...prev,
       [name]: value
@@ -84,7 +77,7 @@ export default function EventGeneralInfoForm({
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <FaInfoCircle className="mr-2 text-violet" />
+        <FaInfoCircle className="mr-2 text-primary" />
         Informations générales
       </motion.h2>
       
@@ -137,7 +130,7 @@ export default function EventGeneralInfoForm({
               value={eventData.category}
               onChange={handleChange}
               options={[
-                { value: '', label: ' ' },
+                { value: '', label: 'Sélectionnez une catégorie' },
                 ...categories.map(category => ({
                   value: category.id.toString(),
                   label: category.name
@@ -196,7 +189,7 @@ export default function EventGeneralInfoForm({
                 onClick={() => toggleTag(tag.id)}
                 className={`rounded-full px-3 py-1 text-sm font-medium transition-colors ${
                   eventData.selected_tags.includes(tag.id)
-                    ? 'bg-violet-500  text-white'
+                    ? 'bg-primary text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
                 whileHover={{ scale: 1.05 }}
@@ -257,6 +250,13 @@ export default function EventGeneralInfoForm({
           type="button" 
           onClick={goToNextStep}
           className="transition-all hover:scale-105"
+        >
+          Étape suivante
+        </Button>
+      </motion.div>
+    </div>
+  );
+}
         >
           Étape suivante
         </Button>

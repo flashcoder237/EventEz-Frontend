@@ -2,6 +2,7 @@
 
 import { SessionProvider } from "next-auth/react";
 import { ReactNode } from "react";
+import { TicketSelectionProvider } from '@/context/TicketSelectionContext';
 
 type ProvidersProps = {
   children: ReactNode;
@@ -18,7 +19,9 @@ export function Providers({ children }: ProvidersProps) {
         // Ne pas faire échouer l'application en cas d'erreur de session
       }}
     >
-      {children}
+      <TicketSelectionProvider>
+        {children}
+      </TicketSelectionProvider>
     </SessionProvider>
   );
 }
