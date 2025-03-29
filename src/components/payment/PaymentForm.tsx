@@ -128,15 +128,34 @@ export default function PaymentForm({ event, registration, totalAmount: propsTot
       // Traiter le paiement en fonction de la méthode
       if (paymentMethod === 'mtn_money' || paymentMethod === 'orange_money') {
         // Pour Mobile Money, rediriger vers la page de traitement en attente de confirmation
+        // Le statut de l'inscription sera mis à jour dans la page de traitement
         router.push(`/events/${event.id}/register/payment/processing?registration=${registration.id}&payment=${paymentId}&method=${paymentMethod}`);
       } else if (paymentMethod === 'credit_card') {
-        // Simuler un traitement de carte de crédit
-        await processPayment(paymentId);
-        
-        // Rediriger vers la confirmation après succès
-        router.push(`/events/${event.id}/register/confirmation?registration=${registration.id}`);
+        try {
+          // Simuler un traitement de carte de crédit
+          const processingResult = await processPayment(paymentId);
+          
+          if (processingResult && processingResult.success) {
+            // Mettre à jour le statut de l'inscription pour la marquer comme confirmée
+            await registrationsAPI.patchRegistration(registration.id, {
+              status: 'confirmed',
+              payment_status: 'paid'
+            });
+            
+            // Rediriger vers la confirmation après succès
+            router.push(`/events/${event.id}/register/confirmation?registration=${registration.id}`);
+          } else {
+            throw new Error("Le traitement de la carte a échoué");
+          }
+        } catch (error) {
+          console.error("Erreur lors du traitement de la carte:", error);
+          setError("Le traitement de la carte a échoué. Veuillez réessayer.");
+          setLoading(false);
+          return;
+        }
       } else if (paymentMethod === 'bank_transfer') {
-        // Pour un virement bancaire, afficher les instructions
+        // Pour un virement bancaire, l'inscription reste en statut pending
+        // jusqu'à la confirmation manuelle du paiement
         router.push(`/events/${event.id}/register/payment/bank-transfer?registration=${registration.id}&payment=${paymentId}`);
       }
       

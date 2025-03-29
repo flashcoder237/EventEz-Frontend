@@ -155,7 +155,7 @@ export default function EventRegistrationForm({
     // Vérifier que la réponse contient bien un ID
     console.log("Réponse de l'API:", response);
     
-    // L'erreur est probablement ici, assurez-vous que vous accédez correctement à l'ID
+    // Vérifier que nous avons un ID d'inscription valide
     if (!response.data || !response.data.id) {
       throw new Error("La réponse de l'API ne contient pas d'ID d'inscription");
     }
@@ -163,11 +163,21 @@ export default function EventRegistrationForm({
     // Nettoyer le contexte après inscription réussie
     clearSelection();
     
-    // Rediriger vers la page de paiement avec l'ID correct
-    if (finalTotal > 0) {
-      router.push(`/events/${event.id}/register/payment?registration=${response.data.id}`);
-    } else {
+    // Pour les événements gratuits, l'inscription est déjà confirmée
+    if (finalTotal <= 0) {
+      // Mettre à jour le statut de l'inscription pour la marquer comme confirmée
+      try {
+        await registrationsAPI.patchRegistration(response.data.id, {
+          status: 'confirmed'
+        });
+      } catch (error) {
+        console.error("Erreur lors de la confirmation de l'inscription gratuite:", error);
+      }
       router.push(`/events/${event.id}/register/confirmation?registration=${response.data.id}`);
+    } else {
+      // Pour les événements payants, rediriger vers la page de paiement
+      // L'inscription restera en statut 'pending' jusqu'au paiement réussi
+      router.push(`/events/${event.id}/register/payment?registration=${response.data.id}`);
     }
     } catch (error) {
       console.error('Erreur lors de l\'inscription:', error);
@@ -453,3 +463,4 @@ export default function EventRegistrationForm({
       </div>
     </motion.div>
   );
+}

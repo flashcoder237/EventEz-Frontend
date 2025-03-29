@@ -34,11 +34,19 @@ export default function ClientPaymentForm({
 
         // Récupérer les détails de l'inscription
         const registrationResponse = await registrationsAPI.getRegistration(registrationId);
-        setRegistration(registrationResponse.data);
+        const registrationData = registrationResponse.data;
+        setRegistration(registrationData);
+        
+        // Vérifier si l'inscription est déjà confirmée ou payée
+        if (registrationData.status === 'confirmed' || registrationData.payment_status === 'paid') {
+          // Rediriger vers la page de confirmation
+          router.replace(`/events/${eventId}/register/confirmation?registration=${registrationId}`);
+          return;
+        }
 
         // Calculer le montant total si nécessaire
-        if (initialTotalAmount === 0 && registrationResponse.data.tickets && registrationResponse.data.tickets.length > 0) {
-          const calculatedTotal = registrationResponse.data.tickets.reduce((acc, ticket) => {
+        if (initialTotalAmount === 0 && registrationData.tickets && registrationData.tickets.length > 0) {
+          const calculatedTotal = registrationData.tickets.reduce((acc, ticket) => {
             return acc + ticket.total_price;
           }, 0);
           setTotalAmount(calculatedTotal);
@@ -52,7 +60,7 @@ export default function ClientPaymentForm({
     };
 
     fetchData();
-  }, [eventId, registrationId, initialTotalAmount]);
+  }, [eventId, registrationId, initialTotalAmount, router]);
 
   if (loading) {
     return (

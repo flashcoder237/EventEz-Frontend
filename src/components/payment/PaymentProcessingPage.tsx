@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
-import { Check, X, AlertTriangle, ArrowLeft, Loader, SmartphoneCharging } from 'lucide-react';
+import { Check, X, AlertTriangle, ArrowLeft, Loader } from 'lucide-react';
+import { registrationsAPI, paymentsAPI } from '@/lib/api';
 
 interface PaymentProcessingProps {
   params: { id: string };
@@ -59,7 +60,7 @@ export default function PaymentProcessingPage({ params, searchParams }: PaymentP
       });
     }, 300);
     
-    // Simuler la vérification périodique du statut
+    // Définir la fonction de vérification du statut
     const checkStatus = async () => {
       try {
         const response = await fetch(`/api/payments/process?id=${searchParams.payment}`);
@@ -71,6 +72,16 @@ export default function PaymentProcessingPage({ params, searchParams }: PaymentP
             setProgress(100);
             setProcessingStatus('success');
             
+            try {
+              // Mettre à jour le statut de l'inscription pour la marquer comme confirmée
+              await registrationsAPI.patchRegistration(searchParams.registration, {
+                status: 'confirmed',
+                payment_status: 'paid'
+              });
+            } catch (updateError) {
+              console.error("Erreur lors de la mise à jour de l'inscription:", updateError);
+            }
+            
             // Rediriger après un délai
             setTimeout(() => {
               router.replace(`/events/${params.id}/register/confirmation?registration=${searchParams.registration}`);
@@ -79,6 +90,15 @@ export default function PaymentProcessingPage({ params, searchParams }: PaymentP
             clearInterval(interval);
             setProcessingStatus('failed');
             setError('Le paiement a échoué. Veuillez réessayer.');
+            
+            try {
+              // Mettre à jour le statut du paiement pour indiquer l'échec
+              await paymentsAPI.patchPayment(searchParams.payment, {
+                status: 'failed'
+              });
+            } catch (updateError) {
+              console.error("Erreur lors de la mise à jour du statut de paiement:", updateError);
+            }
           }
         } else {
           console.error('Erreur lors de la vérification du statut:', data.error);
@@ -95,7 +115,7 @@ export default function PaymentProcessingPage({ params, searchParams }: PaymentP
     const statusInterval = setInterval(checkStatus, 3000);
     
     // Simuler un résultat après un délai maximum (30 secondes)
-    const timeout = setTimeout(() => {
+    const timeout = setTimeout(async () => {
       clearInterval(interval);
       clearInterval(statusInterval);
       
@@ -105,6 +125,21 @@ export default function PaymentProcessingPage({ params, searchParams }: PaymentP
       if (success) {
         setProgress(100);
         setProcessingStatus('success');
+        
+        try {
+          // Mettre à jour le statut de l'inscription pour la marquer comme confirmée
+          await registrationsAPI.patchRegistration(searchParams.registration, {
+            status: 'confirmed',
+            payment_status: 'paid'
+          });
+          
+          // Mettre à jour le statut du paiement
+          await paymentsAPI.patchPayment(searchParams.payment, {
+            status: 'completed'
+          });
+        } catch (error) {
+          console.error("Erreur lors de la mise à jour de l'inscription après paiement:", error);
+        }
         
         // Rediriger après un délai
         setTimeout(() => {
