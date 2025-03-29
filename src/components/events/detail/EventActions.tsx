@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
 import { Event } from '@/types';
@@ -27,14 +27,27 @@ interface EventActionsProps {
 }
 
 export default function EventActions({ event, ticketTypes = [], formFields = [] }: EventActionsProps) {
+  // Ajout des styles personnalisés pour l'animation de la barre de progression
+  const progressBarStyle = `
+    @keyframes gradient {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    .bg-size-200 { background-size: 200% 200%; }
+    .bg-pos-0 { background-position: 0% 0%; }
+    .animate-gradient { animation: gradient 3s ease infinite; }
+  `;
+
   const [liked, setLiked] = useState(false);
   const [shareTooltip, setShareTooltip] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
   
   const isBilletterie = event.event_type === 'billetterie';
-  const isExpired = useMemo(() => new Date(event.end_date) < new Date(), [event.end_date]);
+  const isExpired = useMemo(() => new Date(event.end_date) < currentTime, [event.end_date, currentTime]);
   
-  // Enhanced registration deadline calculation
-  const registrationDeadline = useMemo(() => {
+  // Fonction pour calculer le temps restant
+  const calculateTimeRemaining = useCallback(() => {
     const now = new Date();
     const deadline = event.registration_deadline 
       ? new Date(event.registration_deadline) 
@@ -45,13 +58,31 @@ export default function EventActions({ event, ticketTypes = [], formFields = [] 
     const diffTime = Math.abs(deadline.getTime() - now.getTime());
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
     const diffHours = Math.floor((diffTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const diffMinutes = Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60));
+    const diffSeconds = Math.floor((diffTime % (1000 * 60)) / 1000);
     
     return { 
       days: diffDays, 
       hours: diffHours,
+      minutes: diffMinutes,
+      seconds: diffSeconds,
       percentage: Math.round((1 - diffTime / (new Date(event.start_date).getTime() - now.getTime())) * 100)
     };
   }, [event.registration_deadline, event.start_date]);
+  
+  // État pour stocker le temps restant
+  const [registrationDeadline, setRegistrationDeadline] = useState(calculateTimeRemaining());
+  
+  // Mettre à jour le temps restant chaque seconde
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+      setRegistrationDeadline(calculateTimeRemaining());
+    }, 1000);
+    
+    // Nettoyer l'intervalle lors du démontage du composant
+    return () => clearInterval(timer);
+  }, [calculateTimeRemaining]);
   
   const canRegister = !isExpired && registrationDeadline !== null;
   
@@ -118,27 +149,54 @@ export default function EventActions({ event, ticketTypes = [], formFields = [] 
           <h3 className="font-bold text-primary mb-3 text-center">
             Temps restant pour s'inscrire
           </h3>
-          <div className="flex items-center justify-center gap-4">
+          <div className="flex items-center justify-center gap-2 md:gap-4">
             <div className="text-center">
-              <div className="text-3xl font-bold text-gray-800 dark:text-gray-200">
-                {registrationDeadline.days}
+              <div className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-gray-200">
+                {String(registrationDeadline.days).padStart(2, '0')}
               </div>
               <div className="text-xs text-gray-600 dark:text-gray-400">Jours</div>
             </div>
-            <div className="text-2xl font-bold text-gray-400 dark:text-gray-600">:</div>
+            <div className="text-xl md:text-2xl font-bold text-gray-400 dark:text-gray-600">:</div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-gray-800 dark:text-gray-200">
-                {registrationDeadline.hours}
+              <div className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-gray-200">
+                {String(registrationDeadline.hours).padStart(2, '0')}
               </div>
               <div className="text-xs text-gray-600 dark:text-gray-400">Heures</div>
             </div>
+            <div className="text-xl md:text-2xl font-bold text-gray-400 dark:text-gray-600">:</div>
+            <div className="text-center">
+              <div className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-gray-200">
+                {String(registrationDeadline.minutes).padStart(2, '0')}
+              </div>
+              <div className="text-xs text-gray-600 dark:text-gray-400">Minutes</div>
+            </div>
+            <div className="text-xl md:text-2xl font-bold text-gray-400 dark:text-gray-600">:</div>
+            <div className="text-center">
+              <div className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-gray-200">
+                {String(registrationDeadline.seconds).padStart(2, '0')}
+              </div>
+              <div className="text-xs text-gray-600 dark:text-gray-400">Secondes</div>
+            </div>
           </div>
           {registrationDeadline.percentage > 0 && (
-            <div className="mt-3 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
-              <div 
-                className="bg-primary h-1.5 rounded-full" 
-                style={{ width: `${registrationDeadline.percentage}%` }}
-              ></div>
+            <div className="mt-3 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 overflow-hidden">
+              <motion.div 
+                className="bg-gradient-to-r from-violet-600 to-pink-500 h-2.5 rounded-full"
+                initial={{ width: 0 }}
+                animate={{ 
+                  width: `${registrationDeadline.percentage}%`,
+                  transition: { duration: 1, ease: "easeOut" }
+                }}
+                transition={{
+                  background: {
+                    duration: 2,
+                    repeat: Infinity,
+                    repeatType: "reverse"
+                  }
+                }}
+              >
+                <div className="h-full w-full bg-gradient-to-r from-violet-600 via-pink-500 to-violet-600 bg-size-200 bg-pos-0 animate-gradient"></div>
+              </motion.div>
             </div>
           )}
         </motion.div>
@@ -164,6 +222,8 @@ export default function EventActions({ event, ticketTypes = [], formFields = [] 
 
   return (
     <div className="space-y-6">
+      {/* Ajout des styles CSS en ligne */}
+      <style>{progressBarStyle}</style>
       {/* Action Card */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
@@ -204,6 +264,7 @@ export default function EventActions({ event, ticketTypes = [], formFields = [] 
           </Button>
         </div>
         
+        {/* Le reste du code reste identique */}
         {/* Additional Actions */}
         <div className="border-t dark:border-gray-700 pt-4 flex gap-2">
           <motion.div 

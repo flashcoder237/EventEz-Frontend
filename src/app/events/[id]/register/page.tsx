@@ -83,9 +83,9 @@ export default async function EventRegisterPage({
     return (
       <MainLayout>
         {/* En-tête de la page d'inscription */}
-        <div className="bg-gradient-to-r from-purple-800 to-indigo-700 text-white py-12">
+        <div className="bg-gradient-to-r from-purple-800 to-indigo-700 text-white py-25 text-center">
           <div className="container mx-auto px-4">
-            <h1 className="text-3xl font-bold mb-4">{event.title}</h1>
+            <h1 className="text-4xl font-bold mb-4">{event.title}</h1>
             <p className="text-xl text-purple-100">
               {event.event_type === 'billetterie' 
                 ? 'Achetez vos billets' 
