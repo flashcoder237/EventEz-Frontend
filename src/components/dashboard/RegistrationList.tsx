@@ -24,7 +24,8 @@ export default function RegistrationList({ eventId, limit = 10 }: RegistrationLi
   const { data: session, status } = useSession({
     required: true,
     onUnauthenticated() {
-      // Handled by middleware
+      const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+      router.push(`/login?redirect=${returnUrl}`);
     },
   });
   

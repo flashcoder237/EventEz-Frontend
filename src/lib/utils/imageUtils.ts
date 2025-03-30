@@ -15,7 +15,7 @@ export function cleanImageUrl(url: string | null | undefined): string {
     
     // Si l'URL est un chemin relatif commençant par /media/
     if (url.startsWith('/media/')) {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
       return `${baseUrl}${url}`;
     }
     
@@ -25,7 +25,7 @@ export function cleanImageUrl(url: string | null | undefined): string {
     }
     
     // Si aucune des conditions ci-dessus n'est satisfaite, ajouter le préfixe de l'API
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
     return `${baseUrl}/${url}`;
   } catch (error) {
     console.error('Erreur lors du nettoyage de l\'URL de l\'image:', error);

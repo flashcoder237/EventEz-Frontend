@@ -10,7 +10,8 @@ export default function DashboardSidebar() {
   const { data: session, status } = useSession({
     required: true,
     onUnauthenticated() {
-      // Cette page étant protégée, nous pouvons laisser le middleware gérer la redirection
+      const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+      router.push(`/login?redirect=${returnUrl}`);
     },
   });
   const pathname = usePathname();

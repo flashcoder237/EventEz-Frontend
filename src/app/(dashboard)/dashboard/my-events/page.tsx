@@ -18,7 +18,8 @@ export default function MyEventsPage() {
   const { data: session, status: sessionStatus } = useSession({
     required: true,
     onUnauthenticated() {
-      router.push('/login?redirect=/dashboard/my-events');
+      const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+      router.push(`/login?redirect=${returnUrl}`);
     },
   });
   const router = useRouter();

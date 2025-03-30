@@ -20,8 +20,8 @@ export default function DashboardStats() {
   const { data: session, status } = useSession({
     required: true,
     onUnauthenticated() {
-      // Rediriger vers la page de connexion si non authentifié
-      window.location.href = '/login?redirect=/dashboard';
+      const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+      router.push(`/login?redirect=${returnUrl}`);
     },
   });
 

@@ -17,8 +17,9 @@ export default function RegistrationsDashboard() {
   const { data: session, status } = useSession({
     required: true,
     onUnauthenticated() {
-      // La page est protégée par le middleware
-    },
+  const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+  router.push(`/login?redirect=${returnUrl}`);
+},
   });
 
   // États

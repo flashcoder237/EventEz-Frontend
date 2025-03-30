@@ -91,25 +91,25 @@ export default function LoginPage() {
     }
   };
 
-  // Rediriger si déjà connecté
-  useEffect(() => {
-    // Vérifiez si l'utilisateur a choisi "se souvenir de moi" précédemment
-    const hasSavedSession = getCookie('eventez_session') === 'true';
-    
-    if (status === 'authenticated' && session) {
-      router.push('/');
-    } else if (hasSavedSession && status === 'unauthenticated') {
-      // Si l'utilisateur a choisi "se souvenir de moi" mais n'est pas connecté,
-      // tentez une reconnexion automatique avec les identifiants sauvegardés
-      const savedEmail = localStorage.getItem('eventez_email');
-      if (savedEmail) {
-        // Vous ne pouvez pas récupérer le mot de passe stocké pour des raisons de sécurité,
-        // donc cette reconnexion automatique nécessiterait une implémentation côté serveur
-        // avec des jetons de rafraîchissement. Voir la note dans les commentaires.
-      }
-    }
-  }, [session, status, router]);
+// Rediriger si déjà connecté
+useEffect(() => {
+  // Vérifiez si l'utilisateur a choisi "se souvenir de moi" précédemment
+  const hasSavedSession = getCookie('eventez_session') === 'true';
   
+  if (status === 'authenticated' && session) {
+    // Utiliser le callbackUrl au lieu de rediriger systématiquement vers la page d'accueil
+    router.push(callbackUrl);
+  } else if (hasSavedSession && status === 'unauthenticated') {
+    // Si l'utilisateur a choisi "se souvenir de moi" mais n'est pas connecté,
+    // vous pourriez simplement indiquer visuellement que les identifiants sont pré-remplis
+    const savedEmail = localStorage.getItem('eventez_email');
+    if (savedEmail) {
+      // Email déjà chargé dans le state
+      // Vous pourriez ajouter un visuel indiquant que le "remember me" est activé
+    }
+  }
+}, [session, status, router, callbackUrl]); // Ajoutez callbackUrl aux dépendances
+
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
       {/* Left panel with background and illustration */}

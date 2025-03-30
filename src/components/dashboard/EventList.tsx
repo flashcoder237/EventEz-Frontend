@@ -19,8 +19,8 @@ export default function EventList() {
   const { data: session, status } = useSession({
     required: true,
     onUnauthenticated() {
-      // La page du tableau de bord est protégée par le middleware, 
-      // donc cette fonction ne devrait jamais être appelée
+      const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+      router.push(`/login?redirect=${returnUrl}`);
     },
   });
   useEffect(() => {
