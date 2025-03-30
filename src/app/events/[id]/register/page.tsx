@@ -1,10 +1,9 @@
-
 // app/events/[id]/register/page.tsx
 import { redirect, notFound } from 'next/navigation';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/options';
 import MainLayout from '@/components/layout/MainLayout';
-import EventRegistrationForm from '@/components/events/registration';
+import EventRegistrationForm from '@/components/events/EventRegistrationForm';
 import { eventsAPI } from '@/lib/api';
 
 // Metadata generation
