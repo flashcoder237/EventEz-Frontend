@@ -265,7 +265,7 @@ export default function PaymentForm({
           <button
             type="button"
             className="flex items-center text-gray-600 hover:text-gray-800 transition-colors"
-            onClick={() => router.back()}
+            onClick={() => router.push(`/events/${event.id}?tab=tickets`)}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Retour

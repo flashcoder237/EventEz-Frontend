@@ -111,6 +111,18 @@ export default function PaymentPage({ event, registration, totalAmount: propsTot
           />
         </motion.div>
       </div>
+      
+      {/* Affichage des montants pour le débogage en mode développement */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="mt-8 p-4 bg-gray-50 rounded-lg text-xs text-gray-500">
+          <h3 className="font-bold mb-2">Détails des montants (debug):</h3>
+          <ul className="space-y-1">
+            <li>Montant brut: {resolvedTotalAmount} ({typeof resolvedTotalAmount})</li>
+            <li>Frais de service: {serviceFee} ({typeof serviceFee})</li>
+            <li>Total final: {finalTotal} ({typeof finalTotal})</li>
+          </ul>
+        </div>
+      )}
     </motion.div>
   );
 }
