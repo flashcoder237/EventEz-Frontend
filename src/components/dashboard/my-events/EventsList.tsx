@@ -30,19 +30,19 @@ export default function EventsList({
       <Tabs defaultValue={currentStatus} className="w-full">
         <div className="px-4 pt-4">
           <TabsList className="inline-flex">
-            <EventTab value="all" href="/dashboard/my-events">
+            <EventTab value="all" href="/dashboard">
               Tous
             </EventTab>
-            <EventTab value="draft" href="/dashboard/my-events?status=draft">
+            <EventTab value="draft" href="/dashboard?status=draft">
               Brouillons
             </EventTab>
-            <EventTab value="published" href="/dashboard/my-events?status=published">
+            <EventTab value="published" href="/dashboard?status=published">
               Publiés
             </EventTab>
-            <EventTab value="validated" href="/dashboard/my-events?status=validated">
+            <EventTab value="validated" href="/dashboard?status=validated">
               Validés
             </EventTab>
-            <EventTab value="completed" href="/dashboard/my-events?status=completed">
+            <EventTab value="completed" href="/dashboard?status=completed">
               Terminés
             </EventTab>
           </TabsList>

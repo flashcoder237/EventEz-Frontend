@@ -70,7 +70,7 @@ export default function ModernHeader() {
               <div className="py-1">
                 {canAccessDashboard && (
                   <Link 
-                    href="/dashboard/my-events" 
+                    href="/dashboard" 
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-violet-50 hover:text-violet-600"
                     onClick={closeAllDropdowns}
                   >

@@ -306,7 +306,7 @@ export default function CreateEventPage() {
       // Rediriger vers la page de l'événement créé ou le tableau de bord
       setTimeout(() => {
         router.push(isDraft 
-          ? '/dashboard/my-events' 
+          ? '/dashboard' 
           : `/events/${eventId}`
         );
       }, 2000);

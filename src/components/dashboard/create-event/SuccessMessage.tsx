@@ -48,7 +48,7 @@ export default function SuccessMessage({ router }: SuccessMessageProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.8 }}
         >
-          <Button onClick={() => router.push('/dashboard/my-events')}>
+          <Button onClick={() => router.push('/dashboard')}>
             Retour au tableau de bord
           </Button>
         </motion.div>

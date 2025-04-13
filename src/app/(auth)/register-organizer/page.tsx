@@ -120,7 +120,7 @@ export default function RegisterOrganizerPage() {
       });
       
       // Redirection vers le tableau de bord
-      router.push('/dashboard/my-events');
+      router.push('/dashboard');
     } catch (error: any) {
       if (error.response?.data) {
         // Afficher les erreurs de validation renvoyées par l'API

@@ -7,10 +7,10 @@ import { FaPlus, FaSpinner } from 'react-icons/fa';
 import { eventsAPI, analyticsAPI } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 
-import PageHeader from '@/components/dashboard/my-events/PageHeader';
-import StatisticsCards from '@/components/dashboard/my-events/StatisticsCards';
-import CategoryOverview from '@/components/dashboard/my-events/CategoryOverview';
-import EventsList from '@/components/dashboard/my-events/EventsList';
+import PageHeader from '@/components/dashboard/PageHeader';
+import StatisticsCards from '@/components/dashboard/StatisticsCards';
+import CategoryOverview from '@/components/dashboard/CategoryOverview';
+import EventsList from '@/components/dashboard/EventsList';
 import ErrorAlert from '@/components/ui/ErrorAlert';
 
 export default function MyEventsPage() {
@@ -83,7 +83,7 @@ export default function MyEventsPage() {
       params.set('status', currentStatus);
     }
     params.set('page', page);
-    router.push(`/dashboard/my-events?${params.toString()}`);
+    router.push(`/dashboard?${params.toString()}`);
   };
 
   // Si en cours de chargement de la session, afficher un spinner

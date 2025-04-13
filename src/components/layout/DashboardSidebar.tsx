@@ -1,12 +1,37 @@
-// components/layout/DashboardSidebar.tsx
 'use client';
 
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { FaCalendarAlt, FaChartLine, FaUsers, FaCreditCard, FaCog, FaPlus } from 'react-icons/fa';
+import { 
+  Calendar, 
+  BarChart, 
+  Users, 
+  CreditCard, 
+  Settings, 
+  PlusCircle,
+  ChevronRight,
+  Menu,
+  X
+} from 'lucide-react';
+
+// Définition du type de menu item
+type MenuItem = {
+  href: string;
+  label: string;
+  icon: React.ReactNode;
+  matchPaths?: string[];
+};
+
+// Fonction utilitaire pour combiner des classes conditionnelles
+const cn = (...classes: (string | boolean | undefined)[]) => {
+  return classes.filter(Boolean).join(' ');
+};
 
 export default function DashboardSidebar() {
+  const router = useRouter();
+  const pathname = usePathname();
   const { data: session, status } = useSession({
     required: true,
     onUnauthenticated() {
@@ -14,137 +39,229 @@ export default function DashboardSidebar() {
       router.push(`/login?redirect=${returnUrl}`);
     },
   });
-  const pathname = usePathname();
+  
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
-  const isActive = (path: string) => {
-    return pathname === path;
+  // Fermer la sidebar mobile quand le chemin change
+  useEffect(() => {
+    setIsMobileSidebarOpen(false);
+  }, [pathname]);
+
+  // Définition des items du menu
+  const menuItems: MenuItem[] = [
+    {
+      href: '/dashboard',
+      label: 'Mes événements',
+      icon: <Calendar className="h-5 w-5" />,
+      matchPaths: ['/dashboard/event/']
+    },
+    {
+      href: '/dashboard/create-event',
+      label: 'Créer un événement',
+      icon: <PlusCircle className="h-5 w-5" />
+    },
+    {
+      href: '/dashboard/analytics',
+      label: 'Analytiques',
+      icon: <BarChart className="h-5 w-5" />,
+      matchPaths: ['/dashboard/analytics/']
+    },
+    {
+      href: '/dashboard/registrations',
+      label: 'Inscriptions',
+      icon: <Users className="h-5 w-5" />
+    },
+    {
+      href: '/dashboard/payments',
+      label: 'Paiements',
+      icon: <CreditCard className="h-5 w-5" />
+    },
+    {
+      href: '/dashboard/settings',
+      label: 'Paramètres',
+      icon: <Settings className="h-5 w-5" />
+    }
+  ];
+
+  // Vérification si un menu est actif
+  const isActive = (item: MenuItem) => {
+    if (pathname === item.href) return true;
+    if (item.matchPaths) {
+      return item.matchPaths.some(path => pathname.startsWith(path));
+    }
+    return false;
   };
 
-  if (status === 'loading' || !session) {
-    return (
-      <aside className="bg-white border-r border-gray-200 w-64 min-h-screen sticky top-0 pt-4">
-        <div className="animate-pulse p-6">
-          <div className="h-6 bg-gray-200 rounded w-2/3 mb-4"></div>
-          <div className="space-y-3">
-            <div className="h-4 bg-gray-200 rounded w-full"></div>
-            <div className="h-4 bg-gray-200 rounded w-full"></div>
-            <div className="h-4 bg-gray-200 rounded w-full"></div>
-          </div>
-        </div>
-      </aside>
-    );
+  // État de chargement
+  if (status === 'loading') {
+    return <SidebarSkeleton />;
   }
 
-  if (!session || (session.user.role !== 'organizer' && session.user.role !== 'admin')) {
+  // Vérification des permissions
+  if (!session || (session.user?.role !== 'organizer' && session.user?.role !== 'admin')) {
     return null;
   }
 
-  return (
-    <aside className="bg-white border-r border-gray-200 w-64 min-h-screen sticky top-0 pt-4">
-      <div className="px-6 py-4">
-        <h2 className="text-lg font-semibold text-gray-900">Tableau de bord</h2>
-        <p className="text-sm text-gray-600">Gérez vos événements</p>
+  // Sidebar version desktop - sticky, toujours visible
+  const DesktopSidebar = (
+    <aside className="hidden md:block bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 w-64 h-screen sticky top-0 overflow-y-auto">
+      <div className="px-6 py-5 border-b border-gray-200 dark:border-gray-800">
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white">Tableau de bord</h2>
+        <p className="text-sm text-gray-600 dark:text-gray-400">Gérez vos événements</p>
       </div>
       
-      <nav className="mt-6 px-3">
-        <div className="space-y-1">
-          <Link
-            href="/dashboard/my-events"
-            className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md ${
-              isActive('/dashboard/my-events') || pathname.startsWith('/dashboard/event/')
-                ? 'bg-primary text-white'
-                : 'text-gray-700 hover:bg-gray-50 hover:text-primary'
-            }`}
-          >
-            <FaCalendarAlt className={`mr-3 h-5 w-5 ${
-              isActive('/dashboard/my-events') || pathname.startsWith('/dashboard/event/')
-                ? 'text-white'
-                : 'text-gray-500 group-hover:text-primary'
-            }`} />
-            Mes événements
-          </Link>
-          
-          <Link
-            href="/dashboard/create-event"
-            className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md ${
-              isActive('/dashboard/create-event')
-                ? 'bg-primary text-white'
-                : 'text-gray-700 hover:bg-gray-50 hover:text-primary'
-            }`}
-          >
-            <FaPlus className={`mr-3 h-5 w-5 ${
-              isActive('/dashboard/create-event')
-                ? 'text-white'
-                : 'text-gray-500 group-hover:text-primary'
-            }`} />
-            Créer un événement
-          </Link>
-          
-          <Link
-            href="/dashboard/analytics"
-            className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md ${
-              isActive('/dashboard/analytics') || pathname.startsWith('/dashboard/analytics/')
-                ? 'bg-primary text-white'
-                : 'text-gray-700 hover:bg-gray-50 hover:text-primary'
-            }`}
-          >
-            <FaChartLine className={`mr-3 h-5 w-5 ${
-              isActive('/dashboard/analytics') || pathname.startsWith('/dashboard/analytics/')
-                ? 'text-white'
-                : 'text-gray-500 group-hover:text-primary'
-            }`} />
-            Analytiques
-          </Link>
-          
-          <Link
-            href="/dashboard/registrations"
-            className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md ${
-              isActive('/dashboard/registrations')
-                ? 'bg-primary text-white'
-                : 'text-gray-700 hover:bg-gray-50 hover:text-primary'
-            }`}
-          >
-            <FaUsers className={`mr-3 h-5 w-5 ${
-              isActive('/dashboard/registrations')
-                ? 'text-white'
-                : 'text-gray-500 group-hover:text-primary'
-            }`} />
-            Inscriptions
-          </Link>
-          
-          <Link
-            href="/dashboard/payments"
-            className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md ${
-              isActive('/dashboard/payments')
-                ? 'bg-primary text-white'
-                : 'text-gray-700 hover:bg-gray-50 hover:text-primary'
-            }`}
-          >
-            <FaCreditCard className={`mr-3 h-5 w-5 ${
-              isActive('/dashboard/payments')
-                ? 'text-white'
-                : 'text-gray-500 group-hover:text-primary'
-            }`} />
-            Paiements
-          </Link>
-          
-          <Link
-            href="/dashboard/settings"
-            className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md ${
-              isActive('/dashboard/settings')
-                ? 'bg-primary text-white'
-                : 'text-gray-700 hover:bg-gray-50 hover:text-primary'
-            }`}
-          >
-            <FaCog className={`mr-3 h-5 w-5 ${
-              isActive('/dashboard/settings')
-                ? 'text-white'
-                : 'text-gray-500 group-hover:text-primary'
-            }`} />
-            Paramètres
-          </Link>
+      <SidebarContent isActive={isActive} menuItems={menuItems} />
+
+      <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 dark:border-gray-800">
+        <div className="text-xs text-gray-500 dark:text-gray-400">
+          <p>Version 2.0</p>
+          <p>{session.user?.name || 'Utilisateur'}</p>
         </div>
-      </nav>
+      </div>
+    </aside>
+  );
+
+  // Bouton flottant pour mobile - toujours visible
+  const MobileMenuButton = (
+    <button 
+      onClick={() => setIsMobileSidebarOpen(true)}
+      className="md:hidden fixed z-50 bottom-4 right-4 p-3 bg-primary text-white rounded-full shadow-lg"
+      aria-label="Ouvrir le menu"
+    >
+      <Menu className="h-6 w-6" />
+    </button>
+  );
+
+  // Sidebar pour mobile - flottante
+  const MobileSidebar = (
+    <>
+      {isMobileSidebarOpen && (
+        <>
+          {/* Overlay pour fermer la sidebar */}
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+            onClick={() => setIsMobileSidebarOpen(false)}
+          />
+          
+          {/* Sidebar flottante */}
+          <aside className="fixed inset-y-0 left-0 z-50 w-72 bg-white dark:bg-gray-900 shadow-xl rounded-r-2xl overflow-y-auto md:hidden">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-800">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">Tableau de bord</h2>
+              <button 
+                onClick={() => setIsMobileSidebarOpen(false)}
+                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+                aria-label="Fermer le menu"
+              >
+                <X className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+              </button>
+            </div>
+
+            <SidebarContent isActive={isActive} menuItems={menuItems} />
+
+            <div className="p-4 mt-auto border-t border-gray-200 dark:border-gray-800">
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                <p>Connecté en tant que</p>
+                <p className="font-medium">{session.user?.name || 'Utilisateur'}</p>
+              </div>
+            </div>
+          </aside>
+        </>
+      )}
+    </>
+  );
+
+  // Menu de navigation flottant pour mobile
+  const MobileFloatingNav = (
+    <div className="fixed bottom-0 left-0 right-0 flex md:hidden justify-evenly bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 shadow-lg z-30 py-1">
+      {menuItems.slice(0, 5).map((item) => (
+        <Link
+          key={item.href}
+          href={item.href}
+          className={cn(
+            "flex flex-col items-center justify-center py-2 px-1",
+            isActive(item) 
+              ? "text-primary"
+              : "text-gray-500 dark:text-gray-400"
+          )}
+        >
+          <span className="p-1 rounded-full">
+            {React.cloneElement(item.icon as React.ReactElement, {
+              className: cn(
+                "h-5 w-5",
+                isActive(item) ? "text-primary" : "text-gray-500 dark:text-gray-400"
+              )
+            })}
+          </span>
+          <span className="text-xs mt-1">{item.label}</span>
+        </Link>
+      ))}
+    </div>
+  );
+
+  return (
+    <>
+      {DesktopSidebar}
+      {MobileFloatingNav}
+      {MobileMenuButton}
+      {MobileSidebar}
+    </>
+  );
+}
+
+// Composant réutilisable pour le contenu de la sidebar
+function SidebarContent({ isActive, menuItems }) {
+  return (
+    <nav className="mt-4 px-4">
+      <ul className="space-y-1">
+        {menuItems.map((item) => (
+          <li key={item.href}>
+            <Link
+              href={item.href}
+              className={cn(
+                "flex items-center justify-between px-3 py-2 rounded-lg transition-colors group",
+                isActive(item) 
+                  ? "bg-primary text-white" 
+                  : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+              )}
+            >
+              <div className="flex items-center">
+                <span className={cn(
+                  "mr-3",
+                  isActive(item) ? "text-white" : "text-gray-500 group-hover:text-primary dark:text-gray-400"
+                )}>
+                  {item.icon}
+                </span>
+                <span className="font-medium">{item.label}</span>
+              </div>
+              {isActive(item) && (
+                <ChevronRight className="h-4 w-4 text-white" />
+              )}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}
+
+// Composant pour l'état de chargement
+function SidebarSkeleton() {
+  return (
+    <aside className="hidden md:block bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 w-64 h-screen sticky top-0">
+      <div className="p-6 border-b border-gray-200 dark:border-gray-800">
+        <div className="h-7 bg-gray-200 dark:bg-gray-700 rounded w-2/3 mb-3 animate-pulse"></div>
+        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full animate-pulse"></div>
+      </div>
+      <div className="mt-6 px-3">
+        <div className="space-y-3">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="flex items-center p-2">
+              <div className="h-5 w-5 rounded bg-gray-200 dark:bg-gray-700 mr-3 animate-pulse"></div>
+              <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-3/4 animate-pulse"></div>
+            </div>
+          ))}
+        </div>
+      </div>
     </aside>
   );
 }

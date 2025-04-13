@@ -44,11 +44,11 @@ const nextConfig = {
   // Configuration des redirections
   async redirects() {
     return [
-      {
-        source: '/dashboard',
-        destination: '/dashboard/my-events',
-        permanent: true,
-      },
+      // {
+      //   source: '/dashboard',
+      //   destination: '/dashboard',
+      //   permanent: true,
+      // },
       {
         source: '/admin',
         destination: '/admin/dashboard',

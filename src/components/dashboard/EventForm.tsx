@@ -277,7 +277,7 @@ if (eventType === 'billetterie') {
 }
 
 // Rediriger vers la page de l'événement
-router.push(`/dashboard/my-events`);
+router.push(`/dashboard`);
 } catch (error: any) {
 console.error('Error submitting event:', error);
 setError(error.response?.data?.detail || 'Une erreur est survenue lors de la soumission du formulaire');
@@ -834,7 +834,7 @@ Formulaire d'inscription
 <Button
 type="button"
 variant="ghost"
-onClick={() => router.push('/dashboard/my-events')}
+onClick={() => router.push('/dashboard')}
 >
 Annuler
 </Button>

@@ -22,6 +22,7 @@ export default function EventGeneralInfoForm({
   tags,
   goToNextStep
 }: EventGeneralInfoFormProps) {
+  
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: (i: number) => ({
@@ -251,14 +252,7 @@ export default function EventGeneralInfoForm({
           onClick={goToNextStep}
           className="transition-all hover:scale-105"
         >
-          Étape suivante
-        </Button>
-      </motion.div>
-    </div>
-  );
-}
-        >
-          Étape suivante
+          Etape suivante
         </Button>
       </motion.div>
     </div>
