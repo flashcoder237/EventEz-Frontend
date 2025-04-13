@@ -153,6 +153,15 @@ export const authAPI = {
 
 // API des utilisateurs
 export const usersAPI = {
+  getOrganizers: async () => {
+    try {
+      // Endpoint spécifique pour obtenir les organisateurs sans authentification
+      return api.get('/users/organizers/');
+    } catch (error) {
+      console.error("Erreur lors de la récupération des organisateurs:", error);
+      throw error;
+    }
+  },
   getUsers: async (params?: any) => {
     return api.get('/users/', { params });
   },

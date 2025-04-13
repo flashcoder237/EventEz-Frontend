@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { Button } from '../../components/ui/Button';
 import { ArrowRight, Search, Filter, Calendar, Users, Star, MapPin } from 'lucide-react';
 import { usersAPI } from '../../lib/api';
+import { useRouter } from 'next/navigation';
 
 // Type pour les organisateurs
 interface Organizer {
@@ -53,8 +54,8 @@ export default function OrganizersPage() {
     setError(null);
     
     try {
-      // Récupérer les utilisateurs avec le rôle 'organizer'
-      const response = await usersAPI.getUsers({ role: 'organizer' });
+      // Utiliser le nouvel endpoint pour récupérer les organisateurs
+      const response = await usersAPI.getOrganizers();
       
       if (response.data && response.data.results) {
         // Transformer les données pour correspondre à notre format
@@ -201,6 +202,20 @@ export default function OrganizersPage() {
     }
   };
   
+  const router = useRouter();
+  
+  // Fonction de recherche pour filtrer les organisateurs
+  const searchOrganizers = () => {
+    if (!searchTerm.trim() && selectedCategory === 'all') return;
+    
+    // Rediriger vers la page de tous les organisateurs avec les paramètres de recherche
+    const searchParams = new URLSearchParams();
+    if (searchTerm.trim()) searchParams.append('search', searchTerm.trim());
+    if (selectedCategory !== 'all') searchParams.append('category', selectedCategory);
+    
+    router.push(`/organizers/all?${searchParams.toString()}`);
+  };
+  
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
@@ -302,7 +317,10 @@ export default function OrganizersPage() {
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
                 </div>
-                <Button className="bg-violet-600 hover:bg-violet-700 text-white">
+                <Button 
+                  className="bg-violet-600 hover:bg-violet-700 text-white"
+                  onClick={searchOrganizers}
+                >
                   Rechercher
                 </Button>
               </motion.div>
@@ -419,61 +437,77 @@ export default function OrganizersPage() {
             </motion.p>
           </motion.div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featuredOrganizers.map((organizer, index) => (
-              <motion.div 
-                key={organizer.id}
-                className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow"
-                initial={{ opacity: 0, y: 30 }}
-                animate={animationTriggered["featured-section"] ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.5, delay: 0.3 + (index * 0.1) }}
-                whileHover={{ y: -5 }}
+          {isLoading ? (
+            <div className="flex justify-center items-center h-64">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-violet-600"></div>
+            </div>
+          ) : error ? (
+            <div className="bg-red-50 text-red-700 p-4 rounded-lg text-center">
+              {error}
+              <button 
+                onClick={fetchOrganizers} 
+                className="ml-4 text-violet-600 underline hover:text-violet-800"
               >
-                <div className="p-6">
-                  <div className="flex items-center mb-4">
-                    <div className="h-16 w-16 rounded-full overflow-hidden mr-4 flex-shrink-0">
-                      <Image
-                        src={organizer.logo}
-                        alt={organizer.name}
-                        width={64}
-                        height={64}
-                        className="object-cover"
-                      />
+                Réessayer
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {featuredOrganizers.map((organizer, index) => (
+                <motion.div 
+                  key={organizer.id}
+                  className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={animationTriggered["featured-section"] ? { opacity: 1, y: 0 } : {}}
+                  transition={{ duration: 0.5, delay: 0.3 + (index * 0.1) }}
+                  whileHover={{ y: -5 }}
+                >
+                  <div className="p-6">
+                    <div className="flex items-center mb-4">
+                      <div className="h-16 w-16 rounded-full overflow-hidden mr-4 flex-shrink-0">
+                        <Image
+                          src={organizer.logo}
+                          alt={organizer.name}
+                          width={64}
+                          height={64}
+                          className="object-cover"
+                        />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-900">{organizer.name}</h3>
+                        <p className="text-violet-600 text-sm">{organizer.category}</p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="text-xl font-bold text-gray-900">{organizer.name}</h3>
-                      <p className="text-violet-600 text-sm">{organizer.category}</p>
+                    
+                    <p className="text-gray-700 mb-4">{organizer.description}</p>
+                    
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center">
+                        <Star className="h-5 w-5 text-yellow-500 mr-1" />
+                        <span className="text-gray-900 font-medium">{organizer.rating}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Calendar className="h-5 w-5 text-gray-500 mr-1" />
+                        <span className="text-gray-700">{organizer.eventCount} événements</span>
+                      </div>
                     </div>
+                    
+                    <div className="flex items-center text-gray-700 mb-4">
+                      <MapPin className="h-5 w-5 text-gray-500 mr-1" />
+                      <span>{organizer.location}</span>
+                    </div>
+                    
+                    <Button 
+                      href={`/organizers/${organizer.id}`}
+                      className="w-full bg-violet-50 text-violet-700 hover:bg-violet-100 border border-violet-200"
+                    >
+                      Voir le profil
+                    </Button>
                   </div>
-                  
-                  <p className="text-gray-700 mb-4">{organizer.description}</p>
-                  
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center">
-                      <Star className="h-5 w-5 text-yellow-500 mr-1" />
-                      <span className="text-gray-900 font-medium">{organizer.rating}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <Calendar className="h-5 w-5 text-gray-500 mr-1" />
-                      <span className="text-gray-700">{organizer.eventCount} événements</span>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center text-gray-700 mb-4">
-                    <MapPin className="h-5 w-5 text-gray-500 mr-1" />
-                    <span>{organizer.location}</span>
-                  </div>
-                  
-                  <Button 
-                    href={`/organizers/${organizer.id}`}
-                    className="w-full bg-violet-50 text-violet-700 hover:bg-violet-100 border border-violet-200"
-                  >
-                    Voir le profil
-                  </Button>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
       
@@ -509,59 +543,75 @@ export default function OrganizersPage() {
               transition={{ duration: 0.7, delay: 0.3 }}
             >
               Découvrez les organisateurs les plus appréciés par notre communauté
-            </motion.p>
+              </motion.p>
           </motion.div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {popularOrganizers.map((organizer, index) => (
-              <motion.div 
-                key={organizer.id}
-                className="bg-white rounded-lg shadow overflow-hidden hover:shadow-md transition-shadow"
-                initial={{ opacity: 0, y: 30 }}
-                animate={animationTriggered["popular-section"] ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.5, delay: 0.3 + (index * 0.1) }}
-                whileHover={{ y: -5 }}
+          {isLoading ? (
+            <div className="flex justify-center items-center h-64">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-violet-600"></div>
+            </div>
+          ) : error ? (
+            <div className="bg-red-50 text-red-700 p-4 rounded-lg text-center">
+              {error}
+              <button 
+                onClick={fetchOrganizers} 
+                className="ml-4 text-violet-600 underline hover:text-violet-800"
               >
-                <div className="p-4">
-                  <div className="flex items-center mb-3">
-                    <div className="h-12 w-12 rounded-full overflow-hidden mr-3 flex-shrink-0">
-                      <Image
-                        src={organizer.logo}
-                        alt={organizer.name}
-                        width={48}
-                        height={48}
-                        className="object-cover"
-                      />
+                Réessayer
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {popularOrganizers.map((organizer, index) => (
+                <motion.div 
+                  key={organizer.id}
+                  className="bg-white rounded-lg shadow overflow-hidden hover:shadow-md transition-shadow"
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={animationTriggered["popular-section"] ? { opacity: 1, y: 0 } : {}}
+                  transition={{ duration: 0.5, delay: 0.3 + (index * 0.1) }}
+                  whileHover={{ y: -5 }}
+                >
+                  <div className="p-4">
+                    <div className="flex items-center mb-3">
+                      <div className="h-12 w-12 rounded-full overflow-hidden mr-3 flex-shrink-0">
+                        <Image
+                          src={organizer.logo}
+                          alt={organizer.name}
+                          width={48}
+                          height={48}
+                          className="object-cover"
+                        />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-bold text-gray-900 line-clamp-1">{organizer.name}</h3>
+                        <p className="text-violet-600 text-xs">{organizer.category}</p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="text-lg font-bold text-gray-900 line-clamp-1">{organizer.name}</h3>
-                      <p className="text-violet-600 text-xs">{organizer.category}</p>
+                    
+                    <p className="text-gray-700 text-sm mb-3 line-clamp-2">{organizer.description}</p>
+                    
+                    <div className="flex items-center justify-between mb-3 text-sm">
+                      <div className="flex items-center">
+                        <Star className="h-4 w-4 text-yellow-500 mr-1" />
+                        <span className="text-gray-900 font-medium">{organizer.rating}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Calendar className="h-4 w-4 text-gray-500 mr-1" />
+                        <span className="text-gray-700">{organizer.eventCount}</span>
+                      </div>
                     </div>
+                    
+                    <Button 
+                      href={`/organizers/${organizer.id}`}
+                      className="w-full text-sm py-1 bg-violet-50 text-violet-700 hover:bg-violet-100 border border-violet-200"
+                    >
+                      Voir le profil
+                    </Button>
                   </div>
-                  
-                  <p className="text-gray-700 text-sm mb-3 line-clamp-2">{organizer.description}</p>
-                  
-                  <div className="flex items-center justify-between mb-3 text-sm">
-                    <div className="flex items-center">
-                      <Star className="h-4 w-4 text-yellow-500 mr-1" />
-                      <span className="text-gray-900 font-medium">{organizer.rating}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <Calendar className="h-4 w-4 text-gray-500 mr-1" />
-                      <span className="text-gray-700">{organizer.eventCount}</span>
-                    </div>
-                  </div>
-                  
-                  <Button 
-                    href={`/organizers/${organizer.id}`}
-                    className="w-full text-sm py-1 bg-violet-50 text-violet-700 hover:bg-violet-100 border border-violet-200"
-                  >
-                    Voir le profil
-                  </Button>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
           
           <div className="mt-10 text-center">
             <Button 
