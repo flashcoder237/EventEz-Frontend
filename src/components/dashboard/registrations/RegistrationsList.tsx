@@ -47,6 +47,8 @@ export default function RegistrationsList() {
       try {
         const response = await registrationsAPI.getMyRegistrations();
         const registrationsData = response.data || [];
+        console.log(response);
+        
         setRegistrations(registrationsData);
         
         // Récupérer les détails des événements

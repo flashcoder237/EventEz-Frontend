@@ -69,7 +69,7 @@ export default function HomeHeroSection({ featuredEvents = [] }) {
   const featuredEvent = featuredEvents.length > 0 ? featuredEvents[0] : null;
 
   return (
-    <section className="relative min-h-[650px] md:min-h-[700px] h-[85vh] overflow-hidden bg-gradient-to-r from-violet-900/90 via-indigo-800/80 to-purple-900/90">
+    <section className="relative min-h-[650px] md:min-h-[700px] h-auto overflow-hidden bg-gradient-to-r from-violet-900/90 via-indigo-800/80 to-purple-900/90 py-16">
       {/* Animated Backgrounds */}
       <AnimatePresence mode="wait">
         <motion.div
@@ -198,7 +198,7 @@ export default function HomeHeroSection({ featuredEvents = [] }) {
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
                 <Button 
-                  href="/register-organizer" 
+                  href="/dashboard/events/create" 
                   className="bg-white text-violet-700 hover:bg-gray-100 px-8 py-4 rounded-full text-lg font-medium shadow-xl hover:shadow-2xl transition-all"
                 >
                   Créer un événement

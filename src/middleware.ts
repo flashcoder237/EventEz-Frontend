@@ -57,10 +57,21 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
   
-  // Pour les routes du tableau de bord, vérifier les rôles
-  if (request.nextUrl.pathname.startsWith('/dashboard') && token) {
+  // Liste des chemins qui nécessitent un rôle d'organisateur
+  const ORGANIZER_PATHS = [
+    '/dashboard/events/create',
+    '/dashboard/payments',
+    '/dashboard/analytics',
+    '/dashboard/messages',
+  ];
+  
+  // Vérifier si le chemin nécessite un rôle d'organisateur
+  const requiresOrganizer = ORGANIZER_PATHS.some(orgPath => request.nextUrl.pathname.startsWith(orgPath));
+  
+  // Pour les routes du tableau de bord qui nécessitent un rôle d'organisateur
+  if (requiresOrganizer && token) {
     if (token.role !== 'organizer' && token.role !== 'admin') {
-      return NextResponse.redirect(new URL('/', request.url));
+      return NextResponse.redirect(new URL('/dashboard/become-organizer', request.url));
     }
   }
   

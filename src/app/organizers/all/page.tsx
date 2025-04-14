@@ -38,6 +38,7 @@ export default function AllOrganizersPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const organizersPerPage = 12;
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
   // Fonction pour récupérer les organisateurs
   const fetchOrganizers = async () => {
@@ -53,7 +54,7 @@ export default function AllOrganizersPage() {
           const organizer: Organizer = {
             id: user.id,
             name: user.company_name || `${user.first_name} ${user.last_name}`,
-            logo: user.organizer_profile?.logo || "/images/team-1.jpg",
+            logo: user.organizer_profile?.logo || (user.organizer_type === 'organization' ? '/images/defaults/organization.png' : '/images/defaults/user.png'),
             category: user.organizer_type === 'organization' ? 'Organisation' : 'Individuel',
             rating: user.organizer_profile?.rating || 4.5,
             eventCount: user.organizer_profile?.event_count || 0,
@@ -64,8 +65,6 @@ export default function AllOrganizersPage() {
         });
         
         setOrganizers(organizersData);
-        setFilteredOrganizers(organizersData);
-        setTotalPages(Math.ceil(organizersData.length / organizersPerPage));
         
         // Créer des catégories basées sur les types d'organisateurs
         const categoryMap = new Map<string, number>();
@@ -91,6 +90,7 @@ export default function AllOrganizersPage() {
         });
         
         setCategories(categoryList);
+        setInitialLoadComplete(true);
       }
     } catch (err) {
       console.error("Erreur lors de la récupération des organisateurs:", err);
@@ -109,14 +109,13 @@ export default function AllOrganizersPage() {
       }));
       
       setOrganizers(fallbackData as Organizer[]);
-      setFilteredOrganizers(fallbackData as Organizer[]);
-      setTotalPages(Math.ceil(fallbackData.length / organizersPerPage));
       
       setCategories([
         { id: 'all', name: 'Tous', count: fallbackData.length },
         { id: 'organisation', name: 'Organisation', count: Math.floor(fallbackData.length / 2) },
         { id: 'individuel', name: 'Individuel', count: Math.ceil(fallbackData.length / 2) }
       ]);
+      setInitialLoadComplete(true);
     } finally {
       setIsLoading(false);
     }
@@ -124,6 +123,8 @@ export default function AllOrganizersPage() {
 
   // Filtrer les organisateurs en fonction de la recherche et de la catégorie
   const filterOrganizers = () => {
+    if (!initialLoadComplete) return;
+    
     let filtered = [...organizers];
     
     // Filtrer par terme de recherche
@@ -178,9 +179,10 @@ export default function AllOrganizersPage() {
     fetchOrganizers();
   }, []);
 
+  // Effectuer le filtrage chaque fois que les données changent ou que les filtres changent
   useEffect(() => {
     filterOrganizers();
-  }, [searchTerm, selectedCategory]);
+  }, [searchTerm, selectedCategory, organizers, initialLoadComplete]);
 
   return (
     <MainLayout>

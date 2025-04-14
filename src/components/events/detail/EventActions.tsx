@@ -254,7 +254,7 @@ export default function EventActions({ event, ticketTypes = [], formFields = [] 
           
           <Button 
             href={canRegister ? `/events/${event.id}/register` : undefined}
-            className="w-full bg-gradient-to-r from-violet-600 to-pink-500 hover:from-violet-700 hover:to-pink-600 text-white border-0"
+            className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 shadow-lg shadow-violet-500/20 text-white border-0"
             disabled={!canRegister || (isBilletterie ? ticketTypes.length === 0 : formFields.length === 0)}
           >
             {isBilletterie 

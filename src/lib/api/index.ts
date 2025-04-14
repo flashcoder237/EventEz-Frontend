@@ -3,7 +3,6 @@ import axios from 'axios';
 import { getSession, signOut } from 'next-auth/react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
-
 // Vérification de l'environnement d'exécution
 const isClient = typeof window !== 'undefined';
 
@@ -149,6 +148,24 @@ export const authAPI = {
   refreshToken: async (refreshToken: string) => {
     return api.post('/token/refresh/', { refresh: refreshToken });
   },
+   // Fonction pour demander une réinitialisation de mot de passe
+  requestPasswordReset: async (email: string) => {
+    return api.post('/auth/password-reset/request/', { email });
+  },
+  
+  // Fonction pour valider un token de réinitialisation
+  validateResetToken: async (token: string) => {
+    return api.get(`/auth/password-reset/validate/${token}/`);
+  },
+  
+  // Fonction pour réinitialiser le mot de passe
+  resetPassword: async (token: string, password: string) => {
+    return api.post('/auth/password-reset/confirm/', {
+      token,
+      password,
+    });
+  },
+  
 };
 
 // API des utilisateurs

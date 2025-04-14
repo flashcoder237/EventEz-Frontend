@@ -40,10 +40,13 @@ export default function EventOrganizerTab({ event }: EventOrganizerTabProps) {
           status: 'validated',
           limit: 5
         });
+      console.log(response);
+      
         
         const filteredEvents = response.data.results.filter(
-          (e: Event) => e.organizer === event.organizer && e.id !== event.id
+          (e: Event) => e.organizer?.organizer_name === event.organizer?.organizer_name && e.id !== event.id
         );
+        
         
         setOrganizerEvents(filteredEvents.slice(0, 3));
       } catch (error) {
@@ -67,11 +70,11 @@ export default function EventOrganizerTab({ event }: EventOrganizerTabProps) {
   };
 
   const goToOrganizerProfile = () => {
-    router.push('/organisateurs');
+    router.push('/organizers/'+ event.organizer.id);
   };
 
   const goToOrganizerEvents = () => {
-    router.push('/evenements');
+    router.push('/organizers/'+event.organizer.id);
   };
 
   return (
@@ -107,7 +110,7 @@ export default function EventOrganizerTab({ event }: EventOrganizerTabProps) {
             </motion.div>
             <div>
               <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
-                {event.organizer_name || 'Organisateur'}
+                {event.organizer.company_name || 'Organisateur'}
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
                 Organisateur d'événements
@@ -118,9 +121,7 @@ export default function EventOrganizerTab({ event }: EventOrganizerTabProps) {
           {/* Organizer Description */}
           <div className="mb-6">
             <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-              Organisateur actif sur la plateforme EventEz depuis 2021. Spécialisé dans 
-              l'organisation d'événements professionnels et culturels au Cameroun.
-              Notre équipe s'engage à offrir des expériences uniques et mémorables à nos participants.
+             {event.organizer.organizer_profile.description || 'Pas de description disponible.'}
             </p>
           </div>
           
@@ -131,24 +132,16 @@ export default function EventOrganizerTab({ event }: EventOrganizerTabProps) {
               whileHover={{ x: 5 }}
             >
               <Mail className="h-5 w-5 mr-3 text-primary" />
-              <span>contact@{event.organizer_name?.toLowerCase().replace(/\s+/g, '')}.com</span>
+              <span>{event.organizer.email}</span>
             </motion.div>
             <motion.div 
               className="flex items-center text-sm text-gray-600 dark:text-gray-400"
               whileHover={{ x: 5 }}
             >
               <Phone className="h-5 w-5 mr-3 text-primary" />
-              <span>+237 6XX XXX XXX</span>
+              <span>{event.organizer.phone_number}</span>
             </motion.div>
-            <motion.div 
-              className="flex items-center text-sm text-gray-600 dark:text-gray-400"
-              whileHover={{ x: 5 }}
-            >
-              <Globe className="h-5 w-5 mr-3 text-primary" />
-              <span className="hover:underline cursor-pointer">
-                www.{event.organizer_name?.toLowerCase().replace(/\s+/g, '')}.com
-              </span>
-            </motion.div>
+            
           </div>
           
           {/* Action Buttons */}

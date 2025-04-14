@@ -18,9 +18,13 @@ import {
   PlusCircle,
   Ticket,
   MessageSquare,
-  User
+  User,
+  AlertTriangle,
+  Lock,
+  ArrowRight
 } from 'lucide-react';
 import Image from 'next/image';
+import BecomeOrganizerCard from './BecomeOrganizerCard';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -32,16 +36,31 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
   const pathname = usePathname();
   const { data: session } = useSession();
   
-  const navigation = [
+  // Determine if user is an organizer
+  const isOrganizer = session?.user?.role === 'organizer' || session?.user?.role === 'admin';
+  console.log(session?.user?.role);
+  
+  
+  // Navigation items for all users
+  const commonNavigation = [
     { name: 'Vue d\'ensemble', href: '/dashboard', icon: Home },
-    { name: 'Mes événements', href: '/dashboard/events', icon: Calendar },
-    { name: 'Créer un événement', href: '/dashboard/events/create', icon: PlusCircle },
     { name: 'Mes inscriptions', href: '/dashboard/registrations', icon: Ticket },
-    { name: 'Paiements', href: '/dashboard/payments', icon: CreditCard },
-    { name: 'Statistiques', href: '/dashboard/analytics', icon: BarChart2 },
     { name: 'Notifications', href: '/dashboard/notifications', icon: Bell },
-    { name: 'Messages', href: '/dashboard/messages', icon: MessageSquare },
   ];
+  
+  // Navigation items only for organizers
+  const organizerNavigation = [
+    { name: 'Mes événements', href: '/dashboard/events', icon: Calendar },
+    { name: 'Créer un événement', href: '/dashboard/events/create', icon: PlusCircle, organizerOnly: true },
+    { name: 'Paiements', href: '/dashboard/payments', icon: CreditCard, organizerOnly: true },
+    { name: 'Statistiques', href: '/dashboard/analytics', icon: BarChart2, organizerOnly: true },
+    { name: 'Messages', href: '/dashboard/messages', icon: MessageSquare, organizerOnly: true },
+  ];
+  
+  // Combine navigation items based on user role
+  const navigation = isOrganizer 
+    ? [...commonNavigation, ...organizerNavigation]
+    : [...commonNavigation, { name: 'Mes événements', href: '/dashboard/events', icon: Calendar }];
   
   const secondaryNavigation = [
     { name: 'Profil', href: '/dashboard/profile', icon: User },
@@ -81,6 +100,25 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
             <nav className="px-2 space-y-1">
               {navigation.map((item) => {
                 const isActive = pathname === item.href;
+                
+                // Check if this is an organizer-only item and user is not an organizer
+                const isRestricted = item.organizerOnly && !isOrganizer;
+                
+                if (isRestricted) {
+                  return (
+                    <div
+                      key={item.name}
+                      className="group flex items-center px-2 py-2 text-base font-medium rounded-md text-gray-400 cursor-not-allowed"
+                    >
+                      <Lock className="mr-4 h-6 w-6 text-gray-400" />
+                      <span>{item.name}</span>
+                      <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded">
+                        Organisateur
+                      </span>
+                    </div>
+                  );
+                }
+                
                 return (
                   <Link
                     key={item.name}
@@ -100,6 +138,28 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
                   </Link>
                 );
               })}
+              
+              {!isOrganizer && (
+                <div className="mt-6 px-2">
+                  <div className="p-3 bg-yellow-50 rounded-md border border-yellow-200">
+                    <div className="flex">
+                      <AlertTriangle className="h-5 w-5 text-yellow-400" />
+                      <div className="ml-3">
+                        <p className="text-sm text-yellow-700">
+                          Certaines fonctionnalités sont réservées aux organisateurs.
+                        </p>
+                        <Link
+                          href="/dashboard/become-organizer"
+                          className="mt-2 inline-flex items-center text-sm font-medium text-yellow-700 hover:text-yellow-600"
+                        >
+                          Devenir organisateur
+                          <ArrowRight className="ml-1 h-4 w-4" />
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </nav>
             <div className="pt-6 mt-6">
               <div className="px-2 space-y-1">
@@ -149,6 +209,25 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
             <nav className="flex-1 px-3 py-4 space-y-1">
               {navigation.map((item) => {
                 const isActive = pathname === item.href;
+                
+                // Check if this is an organizer-only item and user is not an organizer
+                const isRestricted = item.organizerOnly && !isOrganizer;
+                
+                if (isRestricted) {
+                  return (
+                    <div
+                      key={item.name}
+                      className="group flex items-center px-2 py-2 text-sm font-medium rounded-md text-gray-400 cursor-not-allowed"
+                    >
+                      <Lock className="mr-3 h-6 w-6 text-gray-400" />
+                      <span>{item.name}</span>
+                      <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded">
+                        Organisateur
+                      </span>
+                    </div>
+                  );
+                }
+                
                 return (
                   <Link
                     key={item.name}
@@ -168,6 +247,28 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
                   </Link>
                 );
               })}
+              
+              {!isOrganizer && (
+                <div className="mt-6">
+                  <div className="p-3 bg-yellow-50 rounded-md border border-yellow-200">
+                    <div className="flex">
+                      <AlertTriangle className="h-5 w-5 text-yellow-400" />
+                      <div className="ml-3">
+                        <p className="text-sm text-yellow-700">
+                          Certaines fonctionnalités sont réservées aux organisateurs.
+                        </p>
+                        <Link
+                          href="/dashboard/become-organizer"
+                          className="mt-2 inline-flex items-center text-sm font-medium text-yellow-700 hover:text-yellow-600"
+                        >
+                          Devenir organisateur
+                          <ArrowRight className="ml-1 h-4 w-4" />
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </nav>
             <div className="pt-2 border-t border-gray-200">
               <div className="px-3 space-y-1">

@@ -80,11 +80,60 @@ export default function EventCard({ event }: EventCardProps) {
         
         {/* Featured badge */}
         {event.is_featured && (
-          <div className="absolute top-3 right-3 flex items-center gap-1 bg-amber-400 text-amber-900 px-3 py-1 rounded-full text-xs font-medium">
-            <FaStar className="text-amber-900" size={12} />
-            <span>En vedette</span>
-          </div>
-        )}
+                          <div className="absolute top-4 right-4 z-20">
+                            <div className="bg-violet-600 text-white p-2 rounded-full shadow-md flex items-center justify-center relative overflow-visible" style={{
+                              '--tw-shadow': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                              'boxShadow': 'var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)'
+                            }}>
+                              {/* Animation CSS intégrée */}
+                              <style dangerouslySetInnerHTML={{ __html: `
+                                @keyframes starPulse {
+                                  0%, 100% { transform: scale(1); }
+                                  50% { transform: scale(1.1); }
+                                }
+                                
+                                @keyframes starSparkle {
+                                  0% { opacity: 0; transform: translate(0, 0); }
+                                  25% { opacity: 1; }
+                                  100% { opacity: 0; transform: translate(var(--x), var(--y)); }
+                                }
+                                
+                                .star-main { animation: starPulse 2s infinite; }
+                                
+                                .star-particle-1 {
+                                  --x: -10px; --y: -8px;
+                                  animation: starSparkle 3s ease-in-out 0s infinite;
+                                }
+                                
+                                .star-particle-2 {
+                                  --x: 8px; --y: -10px;
+                                  animation: starSparkle 3s ease-in-out 0.5s infinite;
+                                }
+                                
+                                .star-particle-3 {
+                                  --x: 10px; --y: 6px;
+                                  animation: starSparkle 3s ease-in-out 1s infinite;
+                                }
+                                
+                                .star-particle-4 {
+                                  --x: -8px; --y: 10px;
+                                  animation: starSparkle 3s ease-in-out 1.5s infinite;
+                                }
+                              ` }} />
+                              
+                              {/* Étoile principale */}
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 relative z-10 star-main" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                              </svg>
+                              
+                              {/* Particules d'étoiles */}
+                              <span className="absolute top-0 left-1/2 h-2 w-2 bg-yellow-200 rounded-full opacity-0 star-particle-1"></span>
+                              <span className="absolute top-0 left-1/2 h-1 w-1 bg-yellow-300 rounded-full opacity-0 star-particle-2"></span>
+                              <span className="absolute top-0 left-1/2 h-1.5 w-1.5 bg-yellow-100 rounded-full opacity-0 star-particle-3"></span>
+                              <span className="absolute top-0 left-1/2 h-2 w-2 bg-yellow-400 rounded-full opacity-0 star-particle-4"></span>
+                            </div>
+                          </div>
+                        )}
       </div>
       
       {/* Content container */}

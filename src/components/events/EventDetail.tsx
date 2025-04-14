@@ -37,16 +37,17 @@ export default function EventDetail({
   const activeTab = searchParams.get('tab') || 'details';
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-6xl mx-auto pt-10">
       {/* Hero Section avec l'image de l'événement */}
       <EventHero event={event} />
       
       {/* Tags de navigation rapide */}
-      <div className="mt-4 mb-6">
+      <div className="invisible hidden">
         <EventTabLinks 
           event={event} 
           activeTab={activeTab} 
           feedbacksCount={feedbacks.length}
+          
         />
       </div>
       

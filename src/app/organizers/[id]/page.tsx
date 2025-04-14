@@ -70,7 +70,7 @@ export default function OrganizerProfilePage() {
           name: userData.company_name || `${userData.first_name} ${userData.last_name}`,
           firstName: userData.first_name,
           lastName: userData.last_name,
-          logo: userData.organizer_profile?.logo || "/images/team-1.jpg",
+          logo: userData.organizer_profile?.logo || (userData.organizer_type === 'organization' ? '/images/defaults/organization.png' : '/images/defaults/user.png'),
           category: userData.organizer_type === 'organization' ? 'Organisation' : 'Individuel',
           rating: userData.organizer_profile?.rating || 4.5,
           eventCount: userData.organizer_profile?.event_count || 0,

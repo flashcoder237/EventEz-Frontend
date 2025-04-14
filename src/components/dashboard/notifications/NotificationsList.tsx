@@ -32,6 +32,15 @@ export default function NotificationsList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedNotifications, setSelectedNotifications] = useState<string[]>([]);
   const [selectAll, setSelectAll] = useState(false);
+  const formatNotificationDate = (date: string) => {
+    return formatDistanceToNow(new Date(date), { addSuffix: true, locale: fr });
+  };
+  const toggleSelectNotification = (id: string) => {
+    setSelectedNotifications((prev) =>
+      prev.includes(id) ? prev.filter((nid) => nid !== id) : [...prev, id]
+    );
+  };
+  
   useEffect(() => {
     const fetchNotifications = async () => {
       setLoading(true);

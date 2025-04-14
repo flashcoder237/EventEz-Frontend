@@ -76,8 +76,9 @@ function FeaturedEventsSection({ events }) {
                 />
                 ) : (
                   // If no banner image, create a dynamic artistic banner
-                  <div className="w-full h-48 md:h-64 lg:h-80 overflow-hidden">
+                  <div>
                     <DynamicEventBanner 
+              
                       title={activeEvent.title} 
                       category={activeEvent.category?.name} 
                       eventType={activeEvent.event_type} 

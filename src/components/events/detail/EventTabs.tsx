@@ -36,6 +36,8 @@ export default function EventTabs({
 
   // Récupérer l'onglet actif depuis l'URL au chargement de la page
   useEffect(() => {
+    console.log(event);
+    
     const tabParam = searchParams.get('tab');
     if (tabParam && validTabs.includes(tabParam)) {
       setActiveTab(tabParam);
