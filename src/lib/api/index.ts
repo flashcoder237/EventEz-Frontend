@@ -862,49 +862,88 @@ export interface RegistrationStats {
 
 // API des messages
 export const messagesAPI = {
-  getMessages: async () => {
-    const response = await api.get(`${API_URL}/messages/`);
-    return response;
+  // Récupérer toutes les conversations de l'utilisateur
+  getConversations: async (params) => {
+    return api.get('/conversations/', { params });
   },
 
-  sendMessage: async (data: { content: string; conversation?: number }) => {
-    const response = await api.post(`${API_URL}/messages/`, data);
-    return response;
+  // Récupérer une conversation spécifique
+  getConversation: async (id) => {
+    return api.get(`/conversations/${id}/`);
   },
 
-  deleteMessage: async (id: number) => {
-    const response = await api.delete(`${API_URL}/messages/${id}/`);
-    return response;
+  // Créer une nouvelle conversation
+  createConversation: async (conversationData) => {
+    return api.post('/conversations/', conversationData);
   },
 
-  getConversations: async () => {
-    const response = await api.get(`${API_URL}/conversations/`);
-    return response;
+  // Mettre à jour une conversation
+  updateConversation: async (id, conversationData) => {
+    return api.patch(`/conversations/${id}/`, conversationData);
   },
 
-  getConversation: async (id: number) => {
-    const response = await api.get(`${API_URL}/conversations/${id}/`);
-    return response;
+  // Supprimer une conversation
+  deleteConversation: async (id) => {
+    return api.delete(`/conversations/${id}/`);
   },
 
-  createConversation: async (data: { participants: number[] }) => {
-    const response = await api.post(`${API_URL}/conversations/`, data);
-    return response;
+  // Récupérer les messages (avec filtrage par conversation si besoin)
+  getMessages: async (params) => {
+    return api.get('/messages/', { params });
   },
 
-  addParticipant: async (conversationId: number, userId: number) => {
-    const response = await api.post(`${API_URL}/conversations/${conversationId}/add_participant/`, { user_id: userId });
-    return response;
+  // Récupérer un message spécifique
+  getMessage: async (id) => {
+    return api.get(`/messages/${id}/`);
   },
 
+  // Envoyer un nouveau message
+  sendMessage: async (messageData) => {
+    return api.post('/messages/', messageData);
+  },
+
+  // Mettre à jour un message
+  updateMessage: async (id, messageData) => {
+    return api.patch(`/messages/${id}/`, messageData);
+  },
+
+  // Supprimer un message
+  deleteMessage: async (id) => {
+    return api.delete(`/messages/${id}/`);
+  },
+
+  // Marquer un message comme lu
+  markMessageAsRead: async (id) => {
+    return api.post(`/messages/${id}/mark_as_read/`);
+  },
+
+  // Récupérer les paramètres de messagerie de l'utilisateur
   getUserMessagingSettings: async () => {
-    const response = await api.get(`${API_URL}/user-messaging-settings/`);
-    return response;
+    return api.get('/user-messaging-settings/');
   },
 
-  updateUserMessagingSettings: async (data: { messaging_enabled?: boolean; blocked_users?: number[] }) => {
-    const response = await api.patch(`${API_URL}/user-messaging-settings/1/`, data);
-    return response;
+  // Mettre à jour les paramètres de messagerie
+  updateUserMessagingSettings: async (settingsData) => {
+    return api.patch('/user-messaging-settings/1/', settingsData);
+  },
+
+  // Récupérer la liste des utilisateurs (pour créer des conversations)
+  getUsers: async (params) => {
+    return api.get('/users/', { params });
+  },
+
+  // Bloquer un utilisateur
+  blockUser: async (userId) => {
+    const settings = await messagesAPI.getUserMessagingSettings();
+    const blockedUsers = [...(settings.data.blocked_users || []), userId];
+    return messagesAPI.updateUserMessagingSettings({ blocked_users: blockedUsers });
+  },
+
+  // Débloquer un utilisateur
+  unblockUser: async (userId) => {
+    const settings = await messagesAPI.getUserMessagingSettings();
+    const blockedUsers = (settings.data.blocked_users || []).filter(id => id !== userId);
+    return messagesAPI.updateUserMessagingSettings({ blocked_users: blockedUsers });
   }
 };
 

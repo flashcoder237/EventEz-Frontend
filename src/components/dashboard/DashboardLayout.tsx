@@ -54,7 +54,7 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
     { name: 'Créer un événement', href: '/dashboard/events/create', icon: PlusCircle, organizerOnly: true },
     { name: 'Paiements', href: '/dashboard/payments', icon: CreditCard, organizerOnly: true },
     { name: 'Statistiques', href: '/dashboard/analytics', icon: BarChart2, organizerOnly: true },
-    { name: 'Messages', href: '/dashboard/messages', icon: MessageSquare, organizerOnly: true },
+    { name: 'Messages', href: '/dashboard/messages', icon: MessageSquare, organizerOnly: true, openInNewTab: true },
   ];
   
   // Combine navigation items based on user role
@@ -116,6 +116,30 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
                         Organisateur
                       </span>
                     </div>
+                  );
+                }
+                
+                // Check if item should open in a new tab
+                if (item.openInNewTab) {
+                  return (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`group flex items-center px-2 py-2 text-base font-medium rounded-md ${
+                        isActive
+                          ? 'bg-gray-100 text-gray-900'
+                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      }`}
+                    >
+                      <item.icon
+                        className={`mr-4 h-6 w-6 ${
+                          isActive ? 'text-gray-500' : 'text-gray-400 group-hover:text-gray-500'
+                        }`}
+                      />
+                      {item.name}
+                    </Link>
                   );
                 }
                 
@@ -225,6 +249,30 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
                         Organisateur
                       </span>
                     </div>
+                  );
+                }
+                
+                // Check if item should open in a new tab
+                if (item.openInNewTab) {
+                  return (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
+                        isActive
+                          ? 'bg-gray-100 text-gray-900'
+                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      }`}
+                    >
+                      <item.icon
+                        className={`mr-3 h-6 w-6 ${
+                          isActive ? 'text-gray-500' : 'text-gray-400 group-hover:text-gray-500'
+                        }`}
+                      />
+                      {item.name}
+                    </Link>
                   );
                 }
                 

@@ -14,14 +14,15 @@ import {
   Phone, 
   Send,
   CheckCircle,
-  Award
+  Award,
+  LogIn
 } from 'lucide-react';
 import { eventsAPI } from '@/lib/api';
 import { messagesAPI } from '@/lib/api';
 import Link from 'next/link';
 import Image from 'next/image';
 import { formatDate } from '@/lib/utils/dateUtils';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 
 interface EventOrganizerTabProps {
@@ -34,14 +35,30 @@ export default function EventOrganizerTab({ event }: EventOrganizerTabProps) {
   const [contactFormVisible, setContactFormVisible] = useState(false);
   const [contactMessage, setContactMessage] = useState('');
   const [messageSent, setMessageSent] = useState(false);
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [sendingMessage, setSendingMessage] = useState(false);
+  
   const router = useRouter();
+  const pathname = usePathname();
   const { data: session, status } = useSession({
     required: false,
     onUnauthenticated() {
-      // Normal d'être non authentifié sur la page d'inscription
+      // Normal d'être non authentifié sur la page d'événement
     },
   });
 
+  // Vérifier si l'utilisateur est l'organisateur
+  const isCurrentUserOrganizer = session?.user?.id === event.organizer?.id;
+  const isAuthenticated = status === 'authenticated';
+
+  // Récupérer ou créer une conversation à l'ouverture du formulaire
+  useEffect(() => {
+    if (contactFormVisible && isAuthenticated && !isCurrentUserOrganizer) {
+      getOrCreateConversation();
+    }
+  }, [contactFormVisible, isAuthenticated, isCurrentUserOrganizer]);
+
+  // Recherche des événements de l'organisateur
   useEffect(() => {
     const fetchOrganizerEvents = async () => {
       try {
@@ -63,18 +80,78 @@ export default function EventOrganizerTab({ event }: EventOrganizerTabProps) {
     fetchOrganizerEvents();
   }, [event.organizer, event.id]);
 
+  // Fonction pour récupérer ou créer une conversation
+  const getOrCreateConversation = async () => {
+    if (!session?.user?.id || !event.organizer?.id) return;
+    
+    try {
+      // Chercher si une conversation existe déjà
+      const response = await messagesAPI.getConversations();
+      
+      // Vérifier la structure de la réponse
+      const conversationsArray = Array.isArray(response.data) 
+        ? response.data 
+        : (response.data?.results || []);
+      
+      // Chercher une conversation existante entre les deux participants
+      let existingConversation = conversationsArray.find(conv => 
+        conv.participants.includes(session.user.id) && 
+        conv.participants.includes(event.organizer.id)
+      );
+      
+      if (existingConversation) {
+        setConversationId(existingConversation.id);
+      } else {
+        // Créer une nouvelle conversation
+        const newConversation = await messagesAPI.createConversation({
+          participants: [session.user.id, event.organizer.id]
+        });
+        
+        // Vérifier si la réponse a un id direct ou est imbriquée dans data
+        const conversationId = newConversation.data?.id || newConversation.id;
+        setConversationId(conversationId);
+      }
+    } catch (error) {
+      console.error('Erreur lors de la récupération/création de la conversation:', error);
+      
+      // Log détaillé pour le débogage
+      if (error.response) {
+        console.error('Détails de l\'erreur:', error.response.data);
+      }
+      
+      toast.error('Impossible d\'établir une conversation avec l\'organisateur.');
+    }
+  };
+
   const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!session) {
       toast.error('Vous devez être connecté pour envoyer un message.');
       return;
     }
+    
+    if (!contactMessage.trim()) {
+      toast.error('Le message ne peut pas être vide.');
+      return;
+    }
+    
+    if (!conversationId) {
+      toast.error('Impossible d\'établir une conversation. Veuillez réessayer.');
+      return;
+    }
+    
+    setSendingMessage(true);
+    
     try {
       await messagesAPI.sendMessage({
         content: contactMessage,
-        // Optionally, you can include conversation or recipient info here
+        conversation: conversationId,
+        sender: session.user.id
       });
+      
       setMessageSent(true);
+      toast.success('Message envoyé avec succès !');
+      
       setTimeout(() => {
         setContactMessage('');
         setContactFormVisible(false);
@@ -82,9 +159,36 @@ export default function EventOrganizerTab({ event }: EventOrganizerTabProps) {
       }, 2000);
     } catch (error) {
       console.error('Erreur lors de l\'envoi du message:', error);
-      // Optionally, show error notification
+      
+      // Gestion des erreurs spécifiques de validation
+      if (error.response?.data) {
+        const errorData = error.response.data;
+        // Afficher les erreurs de validation spécifiques
+        Object.entries(errorData).forEach(([field, messages]) => {
+          const messageArray = Array.isArray(messages) ? messages : [messages];
+          toast.error(`${field}: ${messageArray.join(', ')}`);
+        });
+      } else {
+        toast.error('Une erreur est survenue lors de l\'envoi du message.');
+      }
+    } finally {
+      setSendingMessage(false);
     }
+  };
 
+  const handleContactOrganizer = () => {
+    if (!isAuthenticated) {
+      // Rediriger vers la page de connexion avec le retour sur cette page
+      router.push(`/login?redirect=${encodeURIComponent(pathname)}`);
+      return;
+    }
+    
+    if (isCurrentUserOrganizer) {
+      toast.error('Vous ne pouvez pas vous envoyer de messages à vous-même.');
+      return;
+    }
+    
+    setContactFormVisible(!contactFormVisible);
   };
 
   const goToOrganizerProfile = () => {
@@ -139,7 +243,7 @@ export default function EventOrganizerTab({ event }: EventOrganizerTabProps) {
           {/* Organizer Description */}
           <div className="mb-6">
             <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-             {event.organizer.organizer_profile.description || 'Pas de description disponible.'}
+             {event.organizer.organizer_profile?.description || 'Pas de description disponible.'}
             </p>
           </div>
           
@@ -159,7 +263,6 @@ export default function EventOrganizerTab({ event }: EventOrganizerTabProps) {
               <Phone className="h-5 w-5 mr-3 text-primary" />
               <span>{event.organizer.phone_number}</span>
             </motion.div>
-            
           </div>
           
           {/* Action Buttons */}
@@ -175,21 +278,78 @@ export default function EventOrganizerTab({ event }: EventOrganizerTabProps) {
               </Button>
             </motion.div>
             
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button 
-                variant="outline" 
-                className="inline-flex items-center"
-                onClick={() => setContactFormVisible(!contactFormVisible)}
-              >
-                <Mail className="mr-2 h-4 w-4" />
-                Contacter
-              </Button>
-            </motion.div>
+            {/* Bouton de contact - adapté selon le statut de l'utilisateur */}
+            {!isCurrentUserOrganizer && (
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button 
+                  variant="outline" 
+                  className="inline-flex items-center"
+                  onClick={handleContactOrganizer}
+                >
+                  {!isAuthenticated ? (
+                    <>
+                      <LogIn className="mr-2 h-4 w-4" />
+                      Se connecter pour contacter
+                    </>
+                  ) : (
+                    <>
+                      <Mail className="mr-2 h-4 w-4" />
+                      Contacter
+                    </>
+                  )}
+                </Button>
+              </motion.div>
+            )}
           </div>
           
-          {/* Contact Form */}
+          {/* Message pour les organisateurs qui ne peuvent pas s'écrire à eux-mêmes */}
+          {isCurrentUserOrganizer && (
+            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-6">
+              <p className="text-blue-700 dark:text-blue-300 text-sm">
+                Vous êtes l'organisateur de cet événement. Vous ne pouvez pas vous envoyer de messages.
+              </p>
+            </div>
+          )}
+          
+          {/* Notification pour les utilisateurs non connectés */}
+          {!isAuthenticated && contactFormVisible && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mt-6 p-6 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl mb-6"
+            >
+              <div className="flex items-start">
+                <div className="flex-shrink-0 mt-0.5">
+                  <LogIn className="h-5 w-5 text-yellow-500" />
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-300">
+                    Connexion requise
+                  </h3>
+                  <div className="mt-2 text-sm text-yellow-700 dark:text-yellow-200">
+                    <p>
+                      Vous devez être connecté pour envoyer un message à l'organisateur. 
+                      Connectez-vous pour continuer.
+                    </p>
+                  </div>
+                  <div className="mt-4">
+                    <Button
+                      onClick={() => router.push(`/login?redirect=${encodeURIComponent(pathname)}`)}
+                      className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white"
+                    >
+                      <LogIn className="mr-2 h-4 w-4" />
+                      Se connecter
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+          
+          {/* Contact Form - visible uniquement pour les utilisateurs authentifiés qui ne sont pas l'organisateur */}
           <AnimatePresence>
-            {contactFormVisible && (
+            {contactFormVisible && isAuthenticated && !isCurrentUserOrganizer && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -218,20 +378,32 @@ export default function EventOrganizerTab({ event }: EventOrganizerTabProps) {
                         rows={4}
                         placeholder="Votre message pour l'organisateur..."
                         required
+                        disabled={sendingMessage}
                       />
                     </div>
                     <div className="flex gap-3">
                       <Button 
                         type="submit" 
                         className="bg-primary hover:bg-primary-600 flex items-center"
+                        disabled={sendingMessage}
                       >
-                        <Send className="mr-2 h-4 w-4" />
-                        Envoyer
+                        {sendingMessage ? (
+                          <>
+                            <span className="inline-block h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                            Envoi...
+                          </>
+                        ) : (
+                          <>
+                            <Send className="mr-2 h-4 w-4" />
+                            Envoyer
+                          </>
+                        )}
                       </Button>
                       <Button 
                         type="button" 
                         variant="outline" 
                         onClick={() => setContactFormVisible(false)}
+                        disabled={sendingMessage}
                       >
                         Annuler
                       </Button>
