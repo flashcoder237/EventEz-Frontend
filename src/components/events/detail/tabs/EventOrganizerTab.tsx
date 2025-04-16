@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Event } from '@/types';
+import { Event } from 'types';
 import { Button } from '@/components/ui/Button';
+import { toast } from 'react-hot-toast';
 import { 
   User, 
   Mail, 
@@ -16,10 +17,12 @@ import {
   Award
 } from 'lucide-react';
 import { eventsAPI } from '@/lib/api';
+import { messagesAPI } from '@/lib/api';
 import Link from 'next/link';
 import Image from 'next/image';
 import { formatDate } from '@/lib/utils/dateUtils';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 
 interface EventOrganizerTabProps {
   event: Event;
@@ -32,6 +35,12 @@ export default function EventOrganizerTab({ event }: EventOrganizerTabProps) {
   const [contactMessage, setContactMessage] = useState('');
   const [messageSent, setMessageSent] = useState(false);
   const router = useRouter();
+  const { data: session, status } = useSession({
+    required: false,
+    onUnauthenticated() {
+      // Normal d'être non authentifié sur la page d'inscription
+    },
+  });
 
   useEffect(() => {
     const fetchOrganizerEvents = async () => {
@@ -40,14 +49,9 @@ export default function EventOrganizerTab({ event }: EventOrganizerTabProps) {
           status: 'validated',
           limit: 5
         });
-      console.log(response);
-      
-        
         const filteredEvents = response.data.results.filter(
           (e: Event) => e.organizer?.organizer_name === event.organizer?.organizer_name && e.id !== event.id
         );
-        
-        
         setOrganizerEvents(filteredEvents.slice(0, 3));
       } catch (error) {
         console.error('Erreur lors du chargement des événements de l\'organisateur:', error);
@@ -59,22 +63,36 @@ export default function EventOrganizerTab({ event }: EventOrganizerTabProps) {
     fetchOrganizerEvents();
   }, [event.organizer, event.id]);
 
-  const handleContactSubmit = (e: React.FormEvent) => {
+  const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setMessageSent(true);
-    setTimeout(() => {
-      setContactMessage('');
-      setContactFormVisible(false);
-      setMessageSent(false);
-    }, 2000);
+    if (!session) {
+      toast.error('Vous devez être connecté pour envoyer un message.');
+      return;
+    }
+    try {
+      await messagesAPI.sendMessage({
+        content: contactMessage,
+        // Optionally, you can include conversation or recipient info here
+      });
+      setMessageSent(true);
+      setTimeout(() => {
+        setContactMessage('');
+        setContactFormVisible(false);
+        setMessageSent(false);
+      }, 2000);
+    } catch (error) {
+      console.error('Erreur lors de l\'envoi du message:', error);
+      // Optionally, show error notification
+    }
+
   };
 
   const goToOrganizerProfile = () => {
-    router.push('/organizers/'+ event.organizer.id);
+    router.push('/organizers/' + event.organizer.id);
   };
 
   const goToOrganizerEvents = () => {
-    router.push('/organizers/'+event.organizer.id);
+    router.push('/organizers/' + event.organizer.id);
   };
 
   return (

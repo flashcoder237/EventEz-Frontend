@@ -18,7 +18,7 @@ export default async function EventsPage() {
   }
   
   return (
-    <DashboardLayout>
+    <DashboardLayout title="Mes événements">
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>

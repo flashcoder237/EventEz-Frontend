@@ -18,7 +18,7 @@ export default async function RegistrationsPage() {
   }
   
   return (
-    <DashboardLayout>
+    <DashboardLayout title="Mes inscriptions">
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Mes inscriptions</h1>

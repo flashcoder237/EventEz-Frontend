@@ -18,7 +18,7 @@ export default async function DashboardPage() {
   }
   
   return (
-    <DashboardLayout>
+    <DashboardLayout title="Tableau de bord">
       <DashboardOverview />
     </DashboardLayout>
   );

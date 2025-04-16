@@ -858,4 +858,54 @@ export interface RegistrationStats {
   average_revenue_per_registration: number;
 }
 
+
+
+// API des messages
+export const messagesAPI = {
+  getMessages: async () => {
+    const response = await api.get(`${API_URL}/messages/`);
+    return response;
+  },
+
+  sendMessage: async (data: { content: string; conversation?: number }) => {
+    const response = await api.post(`${API_URL}/messages/`, data);
+    return response;
+  },
+
+  deleteMessage: async (id: number) => {
+    const response = await api.delete(`${API_URL}/messages/${id}/`);
+    return response;
+  },
+
+  getConversations: async () => {
+    const response = await api.get(`${API_URL}/conversations/`);
+    return response;
+  },
+
+  getConversation: async (id: number) => {
+    const response = await api.get(`${API_URL}/conversations/${id}/`);
+    return response;
+  },
+
+  createConversation: async (data: { participants: number[] }) => {
+    const response = await api.post(`${API_URL}/conversations/`, data);
+    return response;
+  },
+
+  addParticipant: async (conversationId: number, userId: number) => {
+    const response = await api.post(`${API_URL}/conversations/${conversationId}/add_participant/`, { user_id: userId });
+    return response;
+  },
+
+  getUserMessagingSettings: async () => {
+    const response = await api.get(`${API_URL}/user-messaging-settings/`);
+    return response;
+  },
+
+  updateUserMessagingSettings: async (data: { messaging_enabled?: boolean; blocked_users?: number[] }) => {
+    const response = await api.patch(`${API_URL}/user-messaging-settings/1/`, data);
+    return response;
+  }
+};
+
 export default api;
