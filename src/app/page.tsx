@@ -22,6 +22,7 @@ import PartnersSection from '@/components/home/PartnersSection';
 import CTASection from '@/components/home/CTASection';
 import NewsletterSection from '@/components/home/NewsletterSection';
 import ModernSearchSection from '@/components/home/ModernSearchSection';
+import NearestEventsSection from '@/components/home/NearestEventsSection';
 
 // Fonction pour obtenir les données de la page d'accueil
 async function getHomePageData() {
@@ -99,7 +100,9 @@ export default async function HomePage() {
             <CategoriesSection categories={categories} />
           </div>
         )}
-        
+        <div className="px-4 md:px-8 lg:px-16 bg-gray-50">
+            <NearestEventsSection  />
+          </div>
         {/* Popular Events Section with new component */}
         {popularEvents.length > 0 && (
           <div className="px-4 md:px-8 lg:px-16">

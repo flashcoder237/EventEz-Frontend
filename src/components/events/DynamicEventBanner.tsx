@@ -132,24 +132,25 @@ const getOptimalTextColor = (backgroundColor) => {
 
 // Hook personnalisé pour détecter la taille de l'écran
 const useWindowSize = () => {
+  // Initialize with null values (important for SSR)
   const [windowSize, setWindowSize] = useState({
-    width: typeof window !== 'undefined' ? window.innerWidth : 0,
-    height: typeof window !== 'undefined' ? window.innerHeight : 0,
+    width: null,
+    height: null,
   });
 
+  // Only update after component mounts (client-side only)
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-
     const handleResize = () => {
       setWindowSize({
         width: window.innerWidth,
         height: window.innerHeight,
       });
     };
-
+    
+    // Set initial size
+    handleResize();
+    
     window.addEventListener('resize', handleResize);
-    handleResize(); // Appel initial pour configurer l'état
-
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 

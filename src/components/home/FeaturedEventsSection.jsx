@@ -13,6 +13,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import DynamicEventBanner from '@/components/events/DynamicEventBanner';
 
+
 function formatDate(dateString) {
   const date = new Date(dateString);
   return date.toLocaleDateString('fr-FR', { 

@@ -85,34 +85,48 @@ export const authOptions: NextAuthOptions = {
             role: user.role,
             accessToken: user.accessToken,
             refreshToken: user.refreshToken,
-            exp: Date.now() + 60 * 60 * 1000, // Expiration du token d'accès (toujours 1h)
+            exp: Math.floor(Date.now() / 1000) + 60 * 60, // Expiration du token d'accès (toujours 1h)
             sessionExpiry: Date.now() + (duration * 1000), // Expiration de la session complète
             rememberMe: user.rememberMe,
           };
         }
-  
-        // Vérification de l'expiration du token
-        if (token.exp && Date.now() < token.exp) {
-          return token;
+      
+        // Vérification de l'expiration de la session complète
+        if (token.sessionExpiry && Date.now() > token.sessionExpiry) {
+          console.log('Session expired, user must login again');
+          return { ...token, error: 'SessionExpired' };
         }
-  
-        // Le token a expiré, essayons de le rafraîchir
-        console.log('Token expired, attempting to refresh...');
-        try {
-          const response = await axios.post(`${API_URL}/token/refresh/`, {
-            refresh: token.refreshToken
-          });
-  
-          return {
-            ...token,
-            accessToken: response.data.access,
-            exp: Date.now() + 60 * 60 * 1000, // Nouvel accès pour 1h
-            // Conserve la date d'expiration de session existante
-          };
-        } catch (error) {
-          console.error('Erreur lors du rafraîchissement du token:', error);
-          return { ...token, error: 'RefreshAccessTokenError' };
-        }
+      
+        // Vérification de l'expiration du token JWT d'accès
+        if (token.exp && Math.floor(Date.now() / 1000) < token.exp) {
+          return token; // Le token JWT est toujours valide
+        }        
+      
+        // Le token JWT a expiré, essayons de le rafraîchir
+  console.log('Token expired, attempting to refresh...');
+  try {
+    const response = await axios.post(`${API_URL}/token/refresh/`, {
+      refresh: token.refreshToken
+    });
+
+    // Décodage du nouveau token pour obtenir sa nouvelle date d'expiration
+    const base64Payload = response.data.access.split('.')[1];
+    const decodedPayload = JSON.parse(
+      Buffer.from(base64Payload, 'base64').toString('utf-8')
+    );
+    
+    // Mise à jour du token avec le nouveau token d'accès
+    return {
+      ...token,
+      accessToken: response.data.access,
+      // Utiliser l'expiration fournie par le token ou définir 1h par défaut
+      exp: decodedPayload.exp || (Math.floor(Date.now() / 1000) + 60 * 60),
+      // Conserve la date d'expiration de session existante
+    };
+  } catch (error) {
+    console.error('Erreur lors du rafraîchissement du token:', error);
+    return { ...token, error: 'RefreshAccessTokenError' };
+  }
       },
       async session({ session, token }) {
         // Vérification de l'expiration de la session complète

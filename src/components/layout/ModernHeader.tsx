@@ -115,14 +115,15 @@ export default function ModernHeader() {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center">
-            <div className="relative h-10 w-36 mr-2 px-10">
-              <Image 
-                src="/images/logo.png" 
-                alt="EventEz" 
-                fill 
-                className="object-contain"
-                priority
-              />
+            <div className="relative h-10 w-36 mr-2">
+            <Image 
+              src="/images/logo.png" 
+              alt="EventEz" 
+              width={120}
+              height={40}
+              className="mx-2"
+              priority
+            />
             </div>
           </Link>
           

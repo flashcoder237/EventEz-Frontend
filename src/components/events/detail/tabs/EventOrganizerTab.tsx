@@ -82,46 +82,46 @@ export default function EventOrganizerTab({ event }: EventOrganizerTabProps) {
 
   // Fonction pour récupérer ou créer une conversation
   const getOrCreateConversation = async () => {
-    if (!session?.user?.id || !event.organizer?.id) return;
+  if (!session?.user?.id || !event.organizer?.id) return;
+  
+  try {
+    // Chercher si une conversation existe déjà
+    const response = await messagesAPI.getConversations();
     
-    try {
-      // Chercher si une conversation existe déjà
-      const response = await messagesAPI.getConversations();
+    // Vérifier la structure de la réponse
+    const conversationsArray = Array.isArray(response.data) 
+      ? response.data 
+      : (response.data?.results || []);
+    
+    // Chercher une conversation existante entre les deux participants
+    let existingConversation = conversationsArray.find(conv => 
+      conv.participants.includes(session.user.id) && 
+      conv.participants.includes(event.organizer.id)
+    );
+    
+    if (existingConversation) {
+      setConversationId(existingConversation.id);
+    } else {
+      // Créer une nouvelle conversation
+      const newConversation = await messagesAPI.createConversation({
+        participants: [session.user.id, event.organizer.id]
+      });
       
-      // Vérifier la structure de la réponse
-      const conversationsArray = Array.isArray(response.data) 
-        ? response.data 
-        : (response.data?.results || []);
-      
-      // Chercher une conversation existante entre les deux participants
-      let existingConversation = conversationsArray.find(conv => 
-        conv.participants.includes(session.user.id) && 
-        conv.participants.includes(event.organizer.id)
-      );
-      
-      if (existingConversation) {
-        setConversationId(existingConversation.id);
-      } else {
-        // Créer une nouvelle conversation
-        const newConversation = await messagesAPI.createConversation({
-          participants: [session.user.id, event.organizer.id]
-        });
-        
-        // Vérifier si la réponse a un id direct ou est imbriquée dans data
-        const conversationId = newConversation.data?.id || newConversation.id;
-        setConversationId(conversationId);
-      }
-    } catch (error) {
-      console.error('Erreur lors de la récupération/création de la conversation:', error);
-      
-      // Log détaillé pour le débogage
-      if (error.response) {
-        console.error('Détails de l\'erreur:', error.response.data);
-      }
-      
-      toast.error('Impossible d\'établir une conversation avec l\'organisateur.');
+      // Vérifier si la réponse a un id direct ou est imbriquée dans data
+      const conversationId = newConversation.data?.id || newConversation.id;
+      setConversationId(conversationId);
     }
-  };
+  } catch (error) {
+    console.error('Erreur lors de la récupération/création de la conversation:', error);
+    
+    // Log détaillé pour le débogage
+    if (error.response) {
+      console.error('Détails de l\'erreur:', error.response.data);
+    }
+    
+    toast.error('Impossible d\'établir une conversation avec l\'organisateur.');
+  }
+};
 
   const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
