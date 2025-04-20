@@ -144,7 +144,7 @@ export default function EventActions({ event, ticketTypes = [], formFields = [] 
         <motion.div 
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-4 mb-4"
+          className="bg-indigo-50 dark:bg-indigo-900/30 rounded-lg p-4 mb-4"
         >
           <h3 className="font-bold text-primary mb-3 text-center">
             Temps restant pour s'inscrire

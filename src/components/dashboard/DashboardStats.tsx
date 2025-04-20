@@ -128,7 +128,7 @@ export default function DashboardStats() {
             <p className="text-xs text-muted-foreground mt-1">
               <span className="text-green-500">{stats.event_summary.upcoming_events}</span> à venir
               {stats.event_summary.ongoing_events > 0 && (
-                <span> · <span className="text-blue-500">{stats.event_summary.ongoing_events}</span> en cours</span>
+                <span> · <span className="text-indigo-500">{stats.event_summary.ongoing_events}</span> en cours</span>
               )}
             </p>
           </CardContent>
@@ -137,8 +137,8 @@ export default function DashboardStats() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Inscriptions</CardTitle>
-            <div className="p-2 bg-blue-100 rounded-full">
-              <FaUsers className="h-4 w-4 text-blue-500" />
+            <div className="p-2 bg-indigo-100 rounded-full">
+              <FaUsers className="h-4 w-4 text-indigo-500" />
             </div>
           </CardHeader>
           <CardContent>

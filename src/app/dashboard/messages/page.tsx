@@ -704,7 +704,7 @@ const MessagingSystem = () => {
                   </button>
                   <button 
                     onClick={() => toggleConversationArchive(selectedConversation)}
-                    className={`p-2 rounded-full ${selectedConversation.is_archived ? 'text-blue-500' : 'text-gray-500 hover:bg-gray-100'}`}
+                    className={`p-2 rounded-full ${selectedConversation.is_archived ? 'text-indigo-500' : 'text-gray-500 hover:bg-gray-100'}`}
                   >
                     <Archive size={20} />
                   </button>
@@ -868,7 +868,7 @@ const MessagingSystem = () => {
                                 {isCurrentUser && (
                                   <div className="flex items-center">
                                     {message.read_by?.length > 0 
-                                      ? <CheckCheck size={12} className="text-blue-300" /> 
+                                      ? <CheckCheck size={12} className="text-indigo-300" /> 
                                       : <Check size={12} />}
                                   </div>
                                 )}

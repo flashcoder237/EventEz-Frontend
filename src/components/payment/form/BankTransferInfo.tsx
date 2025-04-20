@@ -32,7 +32,7 @@ export default function BankTransferInfo() {
 
   return (
     <motion.div 
-      className="mb-6 rounded-lg border border-blue-100 bg-blue-50 p-5"
+      className="mb-6 rounded-lg border border-indigo-100 bg-indigo-50 p-5"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
@@ -43,23 +43,23 @@ export default function BankTransferInfo() {
         variants={itemVariants}
       >
         <div className="mr-3 mt-1">
-          <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center">
-            <InfoIcon size={18} className="text-blue-700" />
+          <div className="h-8 w-8 bg-indigo-100 rounded-full flex items-center justify-center">
+            <InfoIcon size={18} className="text-indigo-700" />
           </div>
         </div>
         <div>
-          <h3 className="font-medium mb-2 text-blue-800">Informations pour le virement bancaire</h3>
-          <p className="text-sm text-blue-700 mb-4">
+          <h3 className="font-medium mb-2 text-indigo-800">Informations pour le virement bancaire</h3>
+          <p className="text-sm text-indigo-700 mb-4">
             Après avoir confirmé votre commande, vous recevrez les coordonnées bancaires pour effectuer votre virement.
           </p>
-          <p className="text-sm text-blue-700">
+          <p className="text-sm text-indigo-700">
             Veuillez noter que votre inscription sera confirmée uniquement après réception du paiement.
           </p>
         </div>
       </motion.div>
 
       <motion.div 
-        className="mt-5 bg-white rounded-md border border-blue-100 p-4"
+        className="mt-5 bg-white rounded-md border border-indigo-100 p-4"
         variants={itemVariants}
       >
         <h4 className="font-medium text-sm mb-2 text-gray-700">Instructions de paiement</h4>
@@ -72,7 +72,7 @@ export default function BankTransferInfo() {
       </motion.div>
 
       <motion.div 
-        className="mt-4 text-sm text-blue-600 flex items-center"
+        className="mt-4 text-sm text-indigo-600 flex items-center"
         variants={itemVariants}
       >
         <svg 

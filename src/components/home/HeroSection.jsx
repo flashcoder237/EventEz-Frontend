@@ -127,7 +127,7 @@ export default function HomeHeroSection({ featuredEvents = [] }) {
       />
       
       <motion.div 
-        className="absolute bottom-20 left-[20%] w-80 h-80 rounded-full bg-blue-500/20 filter blur-[80px] z-0"
+        className="absolute bottom-20 left-[20%] w-80 h-80 rounded-full bg-indigo-500/20 filter blur-[80px] z-0"
         animate={{
           x: [0, -20, 0],
           y: [0, 20, 0],

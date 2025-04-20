@@ -109,14 +109,14 @@ export default function NotificationDropdown() {
             <div
               key={notification.id}
               className={`px-4 py-3 hover:bg-gray-50 ${
-                !notification.is_read ? 'bg-blue-50' : ''
+                !notification.is_read ? 'bg-indigo-50' : ''
               }`}
             >
               <div className="flex justify-between">
                 <p className="text-sm font-medium text-gray-900">{notification.title}</p>
                 <button
                   onClick={() => markAsRead(notification.id)}
-                  className="text-blue-500 hover:text-blue-700"
+                  className="text-indigo-500 hover:text-indigo-700"
                 >
                   <FaCheck className="h-4 w-4" />
                 </button>
@@ -133,7 +133,7 @@ export default function NotificationDropdown() {
       <div className="py-2 border-t border-gray-200 text-center">
         <Link
           href="/notifications"
-          className="text-xs text-blue-500 hover:text-blue-700 font-medium"
+          className="text-xs text-indigo-500 hover:text-indigo-700 font-medium"
         >
           Voir toutes les notifications
         </Link>

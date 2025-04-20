@@ -284,7 +284,7 @@ export default function LoginPage() {
                   type="button"
                   className="flex items-center justify-center py-2.5 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-200 transition"
                 >
-                  <FaFacebookF className="h-5 w-5 mr-2 text-blue-600" />
+                  <FaFacebookF className="h-5 w-5 mr-2 text-indigo-600" />
                   Facebook
                 </button>
               </div>
@@ -293,7 +293,7 @@ export default function LoginPage() {
             <div className="mt-8 text-center">
               <p className="text-sm text-gray-600">
                 Vous n'avez pas de compte ?{' '}
-                <Link href="/register" className="font-medium text-indigo-600 hover:text-indigo-800 transition">
+                <Link href="/register-organizer" className="font-medium text-indigo-600 hover:text-indigo-800 transition">
                   S'inscrire
                 </Link>
               </p>

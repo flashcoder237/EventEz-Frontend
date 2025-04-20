@@ -76,7 +76,7 @@ export default function EventTableRow({ event, eventDetails }: EventTableRowProp
             href={`/events/${event.id}`}
             title="Voir"
           >
-            <FaEye className="text-blue-600" />
+            <FaEye className="text-indigo-600" />
           </Button>
           
           <Button

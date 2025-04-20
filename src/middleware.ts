@@ -18,7 +18,7 @@ export async function middleware(request: NextRequest) {
     '/about',
     '/contact',
     '/login',
-    '/register'
+    '/register-organizer'
   ];
   
   // Déterminer si c'est une route publique

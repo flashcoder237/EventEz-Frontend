@@ -48,7 +48,7 @@ export default function PaymentMethodSelector({
       name: 'Carte de crédit',
       description: 'Visa, Mastercard, etc.',
       icon: <FaCreditCard className="text-white" />,
-      color: 'bg-blue-600',
+      color: 'bg-indigo-600',
       logo: '/images/payments/credit-cards.png'
     },
     {

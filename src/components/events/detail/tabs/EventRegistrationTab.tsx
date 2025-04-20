@@ -42,10 +42,10 @@ export default function EventRegistrationTab({ formFields }: EventRegistrationTa
             </ul>
           </div>
 
-          <div className="bg-blue-50 rounded-lg p-5 flex items-start">
-            <AlertTriangle className="h-5 w-5 text-blue-600 mt-0.5 mr-2" />
+          <div className="bg-indigo-50 rounded-lg p-5 flex items-start">
+            <AlertTriangle className="h-5 w-5 text-indigo-600 mt-0.5 mr-2" />
             <div>
-              <p className="text-sm text-blue-800">
+              <p className="text-sm text-indigo-800">
                 Veillez à préparer ces informations avant de commencer le processus d'inscription. Vous aurez un délai limité pour compléter votre inscription une fois commencée.
               </p>
             </div>

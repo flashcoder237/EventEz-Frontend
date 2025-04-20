@@ -200,7 +200,7 @@ export default function ForgotPasswordPage() {
             <div className="mt-4 text-center">
               <p className="text-sm text-gray-600">
                 Vous n'avez pas encore de compte ?{' '}
-                <Link href="/register" className="font-medium text-indigo-600 hover:text-indigo-400 transition">
+                <Link href="/register-organizer" className="font-medium text-indigo-600 hover:text-indigo-400 transition">
                   S'inscrire
                 </Link>
               </p>

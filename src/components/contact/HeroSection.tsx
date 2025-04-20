@@ -41,7 +41,7 @@ export default function HeroSection() {
       />
       
       <motion.div 
-        className="absolute bottom-10 left-[30%] w-48 h-48 rounded-full bg-blue-500/20 filter blur-3xl z-0"
+        className="absolute bottom-10 left-[30%] w-48 h-48 rounded-full bg-indigo-500/20 filter blur-3xl z-0"
         animate={{
           x: [0, -20, 0],
           y: [0, 20, 0],

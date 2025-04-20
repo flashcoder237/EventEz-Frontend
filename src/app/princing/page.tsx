@@ -164,7 +164,7 @@ export default function PricingPage() {
       highlighted: false,
       mostPopular: false,
       ctaText: 'Contacter les ventes',
-      color: 'from-blue-600 to-blue-800'
+      color: 'from-indigo-600 to-indigo-800'
     }
   ];
 
@@ -259,7 +259,7 @@ export default function PricingPage() {
         />
         
         <motion.div 
-          className="absolute bottom-10 left-[30%] w-48 h-48 rounded-full bg-blue-500/20 filter blur-3xl z-0"
+          className="absolute bottom-10 left-[30%] w-48 h-48 rounded-full bg-indigo-500/20 filter blur-3xl z-0"
           animate={{
             x: [0, -20, 0],
             y: [0, 20, 0],
@@ -562,7 +562,7 @@ export default function PricingPage() {
                     <span className="font-medium">MTN Mobile</span>
                   </div>
                   <div className="flex items-center">
-                    <div className="p-2 rounded-full bg-blue-100 text-blue-500 flex items-center justify-center mr-1 font-bold text-sm">CB</div>
+                    <div className="p-2 rounded-full bg-indigo-100 text-indigo-500 flex items-center justify-center mr-1 font-bold text-sm">CB</div>
                     <span className="font-medium">Carte bancaire</span>
                   </div>
                   <div className="flex items-center">

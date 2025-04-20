@@ -41,7 +41,7 @@ export default function StatisticsCards({ stats }: StatisticsCardsProps) {
         <CardContent>
           <div className="text-3xl font-bold text-primary">{stats.totalEvents}</div>
           <div className="mt-2 flex flex-wrap text-sm text-gray-600 gap-y-1 gap-x-4">
-            <div><span className="font-medium text-blue-600">{stats.upcomingEvents}</span> à venir</div>
+            <div><span className="font-medium text-indigo-600">{stats.upcomingEvents}</span> à venir</div>
             <div><span className="font-medium text-green-600">{stats.ongoingEvents}</span> en cours</div>
             <div><span className="font-medium text-gray-600">{stats.completedEvents}</span> terminés</div>
           </div>
@@ -56,12 +56,12 @@ export default function StatisticsCards({ stats }: StatisticsCardsProps) {
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-lg font-medium text-gray-700 flex items-center">
-            <FaUsers className="mr-2 text-blue-500" />
+            <FaUsers className="mr-2 text-indigo-500" />
             Inscriptions
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-bold text-blue-500">{stats.totalRegistrations}</div>
+          <div className="text-3xl font-bold text-indigo-500">{stats.totalRegistrations}</div>
           <div className="mt-2 flex flex-wrap text-sm text-gray-600 gap-2">
             {stats.registrationTypes.map((type, index) => (
               <Badge key={index} variant={type.registration_type === 'billetterie' ? 'info' : 'success'}>

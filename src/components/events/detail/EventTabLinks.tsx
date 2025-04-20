@@ -75,7 +75,7 @@ export default function EventTabLinks({
               inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium
               transition-all duration-300 ease-out
               ${activeTab === tab.key 
-                ? 'bg-blue-600 text-white' 
+                ? 'bg-indigo-600 text-white' 
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300'
               }
             `}

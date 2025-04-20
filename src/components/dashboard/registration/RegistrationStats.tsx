@@ -47,7 +47,7 @@ export default function RegistrationStats({ registrations, totalRegistrations }:
         title="Présence"
         value={checkedInCount}
         subtitle={`${checkedInPercentage}% de présence`}
-        valueColor="text-blue-600"
+        valueColor="text-indigo-600"
       />
     </div>
   );

@@ -108,7 +108,7 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
         scale: 0.85, 
         top: '10%',
         color: isFocused 
-          ? 'rgb(59, 130, 246)' // text-blue-500 
+          ? 'rgb(59, 130, 246)' // text-indigo-500 
           : error 
             ? 'rgb(239, 68, 68)' // text-red-500
             : success 
@@ -123,7 +123,7 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           className={cn(
             "group relative rounded-xl transition-all duration-300 ease-out",
             disabled ? "opacity-70" : "hover:shadow-sm",
-            error ? "shadow-red-100" : success ? "shadow-green-100" : "shadow-blue-50"
+            error ? "shadow-red-100" : success ? "shadow-green-100" : "shadow-indigo-50"
           )}
         >
           {/* Background decoration */}
@@ -131,7 +131,7 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
             className={cn(
               "absolute inset-0 rounded-xl transition-all duration-300",
               "opacity-0 pointer-events-none",
-              isFocused && !error && !disabled && "opacity-10 bg-blue-100",
+              isFocused && !error && !disabled && "opacity-10 bg-indigo-100",
               error && "opacity-10 bg-red-100",
               success && "opacity-10 bg-green-100"
             )}
@@ -161,7 +161,7 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
             {icon && (
               <div className={cn(
                 "absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-300",
-                isFocused && !error ? "text-blue-500" : "text-gray-400",
+                isFocused && !error ? "text-indigo-500" : "text-gray-400",
                 error && "text-red-500",
                 success && "text-green-500"
               )}>
@@ -190,14 +190,14 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
                 "pr-12 truncate", // Space for dropdown icon and truncate long text
                 icon ? "pl-12" : "pl-4",
                 isFocused && !error 
-                  ? "border-blue-400 ring-2 ring-blue-100" 
+                  ? "border-indigo-400 ring-2 ring-indigo-100" 
                   : "border-gray-200 dark:border-gray-700",
                 error 
                   ? "border-red-400 ring-2 ring-red-100 focus:border-red-500 focus:ring-red-100" 
                   : success 
                     ? "border-green-400 ring-2 ring-green-100 focus:border-green-500 focus:ring-green-100" 
                     : "",
-                "focus:outline-none focus:border-blue-500 dark:focus:border-blue-400",
+                "focus:outline-none focus:border-indigo-500 dark:focus:border-indigo-400",
                 disabled && "border-gray-100",
                 className
               )}

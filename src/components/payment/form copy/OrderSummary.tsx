@@ -233,7 +233,7 @@ export default function OrderSummary({
             className="bg-gray-50 rounded-lg p-3 flex flex-col items-center border border-gray-100"
             whileHover={{ y: -2, boxShadow: "0 4px 6px rgba(0,0,0,0.05)" }}
           >
-            <CreditCard className="h-5 w-5 text-blue-500 mb-1" />
+            <CreditCard className="h-5 w-5 text-indigo-500 mb-1" />
             <span className="text-xs text-gray-600 text-center">Multiple méthodes</span>
           </motion.div>
           

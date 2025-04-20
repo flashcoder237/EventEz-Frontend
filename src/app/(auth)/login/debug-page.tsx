@@ -89,7 +89,7 @@ export default function DebugLoginPage() {
         </Button>
       </div>
       
-      {status === 'loading' && <p className="text-blue-500">Connexion en cours...</p>}
+      {status === 'loading' && <p className="text-indigo-500">Connexion en cours...</p>}
       
       {status === 'error' && (
         <div className="p-4 bg-red-50 border border-red-200 rounded mb-4">

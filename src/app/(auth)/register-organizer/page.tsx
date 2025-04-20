@@ -229,18 +229,16 @@ export default function RegisterOrganizerPage() {
           {/* Mobile logo */}
           <div className="mb-10 flex justify-center lg:hidden">
             <Link href="/" className="inline-flex items-center">
-              <div className="bg-violet-600 p-2 rounded-lg">
+              <div className="my-4 rounded-lg">
                 <Image
-                  src="/images/logo-icon.png"
+                  src="/images/logo.png"
                   alt="EventEz Logo"
-                  width={32}
-                  height={32}
-                  className="h-8 w-8"
+                  width={50}
+                  height={80}
+                  className="h-10 w-40"
                 />
               </div>
-              <span className="ml-3 text-xl font-semibold text-violet-900">
-                EventEz
-              </span>
+             
             </Link>
           </div>
           

@@ -173,15 +173,15 @@ export default function EventLocationTab({ event }: EventLocationTabProps) {
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mt-6 p-5 bg-blue-50 dark:bg-blue-900/30 rounded-xl"
+            className="mt-6 p-5 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl"
           >
             <div className="flex items-start mb-3">
-              <Info className="mr-3 mt-1 h-5 w-5 text-blue-500 flex-shrink-0" />
+              <Info className="mr-3 mt-1 h-5 w-5 text-indigo-500 flex-shrink-0" />
               <div>
-                <h4 className="font-semibold text-blue-800 dark:text-blue-300 mb-2">
+                <h4 className="font-semibold text-indigo-800 dark:text-indigo-300 mb-2">
                   Conseils pour se rendre sur place
                 </h4>
-                <p className="text-blue-700 dark:text-blue-200 text-sm leading-relaxed">
+                <p className="text-indigo-700 dark:text-indigo-200 text-sm leading-relaxed">
                   {getLocationTips()}
                 </p>
               </div>

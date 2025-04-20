@@ -80,7 +80,7 @@ export default function CtaSection({ animationTriggered }: CtaSectionProps) {
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
                 <Button 
-                  href="/register" 
+                  href="/register-organizer" 
                   variant="default" 
                   className="bg-white text-violet-700 hover:bg-gray-100 shadow-lg hover:shadow-xl transition-shadow px-8 py-4 rounded-full text-lg"
                 >

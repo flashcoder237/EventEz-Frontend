@@ -195,7 +195,7 @@ export default function EventReviewsTab({ feedbacks, event }: EventReviewsTabPro
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-900/50 rounded-xl p-6 mb-8 shadow-sm flex justify-between items-center"
+            className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/30 dark:to-indigo-900/50 rounded-xl p-6 mb-8 shadow-sm flex justify-between items-center"
           >
             <div className="flex items-center">
               <div className="flex items-center mr-6">
@@ -333,7 +333,7 @@ export default function EventReviewsTab({ feedbacks, event }: EventReviewsTabPro
                   id="comment"
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
-                  className="w-full border rounded-lg p-3 dark:bg-gray-900 dark:border-gray-700 focus:ring-2 focus:ring-blue-500/50 transition-all"
+                  className="w-full border rounded-lg p-3 dark:bg-gray-900 dark:border-gray-700 focus:ring-2 focus:ring-indigo-500/50 transition-all"
                   rows={4}
                   placeholder="Partagez votre expérience..."
                   required

@@ -93,8 +93,8 @@ export default async function RegistrationConfirmationPage({
             </div>
             
             {/* Informations importantes */}
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <p className="text-blue-700 text-sm">
+            <div className="bg-indigo-50 p-4 rounded-lg">
+              <p className="text-indigo-700 text-sm">
                 Un email de confirmation contenant tous les détails de votre inscription vous a été envoyé.
                 Conservez précieusement cette référence pour accéder à votre billet.
               </p>

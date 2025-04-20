@@ -183,9 +183,9 @@ export default function ResetPasswordPage({ params }: ResetPasswordPageProps) {
           />
         </div>
         
-        <div className="text-sm text-gray-600 bg-blue-50 border border-blue-200 p-4 rounded-md">
-          <p className="font-medium text-blue-700">Conseils pour un mot de passe sécurisé :</p>
-          <ul className="list-disc list-inside mt-2 space-y-1 text-blue-600/80">
+        <div className="text-sm text-gray-600 bg-indigo-50 border border-indigo-200 p-4 rounded-md">
+          <p className="font-medium text-indigo-700">Conseils pour un mot de passe sécurisé :</p>
+          <ul className="list-disc list-inside mt-2 space-y-1 text-indigo-600/80">
             <li>Au moins 8 caractères</li>
             <li>Inclure au moins une lettre majuscule</li>
             <li>Inclure au moins un chiffre</li>

@@ -20,7 +20,7 @@ export default function Footer() {
                 <li><a href="/" className="text-gray-400 hover:text-white transition">Accueil</a></li>
                 <li><a href="/events" className="text-gray-400 hover:text-white transition">Événements</a></li>
                 <li><a href="/events/categories" className="text-gray-400 hover:text-white transition">Catégories</a></li>
-                <li><a href="/register" className="text-gray-400 hover:text-white transition">Créer un compte</a></li>
+                <li><a href="/register-organizer" className="text-gray-400 hover:text-white transition">Créer un compte</a></li>
               </ul>
             </div>
             

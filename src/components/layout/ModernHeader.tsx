@@ -100,7 +100,7 @@ export default function ModernHeader() {
           Connexion
         </Link>
         <Button 
-          href="/register" 
+          href="/register-organizer" 
           className="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 shadow-lg shadow-violet-500/20 text-white border-0 rounded-full"
         >
           S'inscrire
@@ -316,6 +316,13 @@ export default function ModernHeader() {
                 onClick={closeAllDropdowns}
               >
                 À propos
+              </Link>
+              <Link 
+                href="/princing"
+                className="block py-2 text-gray-700 hover:text-violet-600 font-medium transition-colors"
+                onClick={closeAllDropdowns}
+              >
+                Nos tarifs
               </Link>
               
               <Link 

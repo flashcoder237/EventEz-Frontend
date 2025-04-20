@@ -19,7 +19,7 @@ export default function ContactCards({ animationTriggered }) {
       info: "+237 670 000 000", 
       action: "Appelez-nous", 
       link: "tel:+237670000000",
-      color: "bg-gradient-to-br from-blue-500 to-indigo-600" 
+      color: "bg-gradient-to-br from-indigo-500 to-indigo-600" 
     },
     { 
       icon: <MapPin className="h-6 w-6" />, 
@@ -27,7 +27,7 @@ export default function ContactCards({ animationTriggered }) {
       info: "Yaoundé, Cameroun", 
       action: "Directions", 
       link: "https://maps.google.com",
-      color: "bg-gradient-to-br from-indigo-500 to-blue-600" 
+      color: "bg-gradient-to-br from-indigo-500 to-indigo-600" 
     }
   ];
 

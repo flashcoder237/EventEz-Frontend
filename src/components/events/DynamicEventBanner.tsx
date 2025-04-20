@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import chroma from 'chroma-js';
 
-// Système de thèmes amélioré avec motifs animés
+// Système de thèmes amélioré avec motifs animés et images de fond
 const THEME_CONFIGS = {
   musique: {
     gradient: {
@@ -31,8 +31,8 @@ const THEME_CONFIGS = {
     secondaryColor: '#FFC75F',
     iconBackground: 'rgba(255, 255, 255, 0.08)',
     icon: Music,
+    backgroundImage: '/images/backgrounds/music-bg.jpg',
     svgPatterns: [
-      // Notes de musique et ondes sonores
       `<pattern id="musicPattern" patternUnits="userSpaceOnUse" width="60" height="60" patternTransform="scale(1.5) rotate(0)">
         <path d="M30 20 Q35 10, 40 20 T50 20" stroke="rgba(255,255,255,0.2)" fill="none" />
         <circle cx="15" cy="30" r="3" fill="rgba(255,255,255,0.15)" />
@@ -56,8 +56,8 @@ const THEME_CONFIGS = {
     secondaryColor: '#F6E05E',
     iconBackground: 'rgba(255, 255, 255, 0.08)',
     icon: Code,
+    backgroundImage: '/images/backgrounds/tech-bg.jpg',
     svgPatterns: [
-      // Circuits et éléments technologiques
       `<pattern id="techPattern" patternUnits="userSpaceOnUse" width="80" height="80" patternTransform="scale(1.2) rotate(0)">
         <path d="M0 20 L40 20 L40 0" stroke="rgba(255,255,255,0.1)" fill="none" stroke-width="1.5" />
         <path d="M80 60 L40 60 L40 80" stroke="rgba(255,255,255,0.1)" fill="none" stroke-width="1.5" />
@@ -81,14 +81,38 @@ const THEME_CONFIGS = {
     secondaryColor: '#F7FFF7',
     iconBackground: 'rgba(255, 255, 255, 0.08)',
     icon: Award,
+    backgroundImage: '/images/backgrounds/art-bg.jpg',
     svgPatterns: [
-      // Formes artistiques et pinceaux
       `<pattern id="artPattern" patternUnits="userSpaceOnUse" width="100" height="100" patternTransform="scale(1) rotate(0)">
         <path d="M20 20 Q40 0, 60 20 T100 20" stroke="rgba(255,255,255,0.15)" fill="none" stroke-width="2" />
         <circle cx="80" cy="60" r="5" fill="rgba(255,255,255,0.1)" />
         <circle cx="30" cy="70" r="10" fill="rgba(255,255,255,0.06)" />
         <path d="M70 80 L80 90 L60 90 Z" fill="rgba(255,255,255,0.12)" />
         <rect x="40" y="40" width="20" height="10" rx="5" fill="rgba(255,255,255,0.08)" />
+      </pattern>`
+    ]
+  },
+  litterature: {
+    gradient: {
+      colors: ['#6D5BBA', '#8763B0'],
+      pattern: 'linear-gradient(135deg, #6D5BBA 0%, #8763B0 100%)'
+    },
+    bgPattern: 'radial-gradient(circle at 70% 60%, rgba(255, 255, 255, 0.1) 0%, transparent 35%)',
+    backgroundColor: '#6D5BBA',
+    textColor: '#FFFFFF',
+    accentColor: '#F4D03F',
+    secondaryColor: '#E5E5E5',
+    iconBackground: 'rgba(255, 255, 255, 0.08)',
+    icon: BookOpen,
+    backgroundImage: '/images/backgrounds/literature-bg.jpg',
+    svgPatterns: [
+      `<pattern id="literaturePattern" patternUnits="userSpaceOnUse" width="70" height="70" patternTransform="scale(1.3) rotate(0)">
+        <rect x="10" y="10" width="30" height="40" stroke="rgba(255,255,255,0.1)" fill="none" stroke-width="1" />
+        <path d="M10 10 L10 50 L40 50 L40 10 Z" stroke="rgba(255,255,255,0.08)" fill="none" stroke-width="0.5" />
+        <path d="M15 20 L35 20" stroke="rgba(255,255,255,0.1)" fill="none" stroke-width="0.5" />
+        <path d="M15 25 L35 25" stroke="rgba(255,255,255,0.1)" fill="none" stroke-width="0.5" />
+        <path d="M15 30 L30 30" stroke="rgba(255,255,255,0.1)" fill="none" stroke-width="0.5" />
+        <path d="M45 30 L60 30 L60 60 L45 60 Z" stroke="rgba(255,255,255,0.05)" fill="none" stroke-width="0.5" />
       </pattern>`
     ]
   },
@@ -104,8 +128,8 @@ const THEME_CONFIGS = {
     secondaryColor: '#845EC2',
     iconBackground: 'rgba(255, 255, 255, 0.08)',
     icon: Calendar,
+    backgroundImage: '/images/backgrounds/default-bg.jpg',
     svgPatterns: [
-      // Motif géométrique abstrait
       `<pattern id="defaultPattern" patternUnits="userSpaceOnUse" width="60" height="60" patternTransform="scale(1.5) rotate(0)">
         <circle cx="10" cy="10" r="2" fill="rgba(255,255,255,0.2)" />
         <circle cx="30" cy="10" r="2" fill="rgba(255,255,255,0.15)" />
@@ -166,6 +190,7 @@ interface DynamicEventBannerProps {
   onInteract?: () => void;
   minHeight?: string;
   maxHeight?: string;
+  customBackgroundImage?: string; // Permet de spécifier une image personnalisée
 }
 
 const DynamicEventBanner: React.FC<DynamicEventBannerProps> = ({
@@ -177,11 +202,13 @@ const DynamicEventBanner: React.FC<DynamicEventBannerProps> = ({
   onInteract,
   minHeight = '300px',
   maxHeight = '400px',
+  customBackgroundImage,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [animationKey, setAnimationKey] = useState(0);
   const [contentTruncated, setContentTruncated] = useState(false);
+  const [isImageLoaded, setIsImageLoaded] = useState(false);
   const descriptionRef = useRef<HTMLDivElement>(null);
   const { width: windowWidth } = useWindowSize();
   
@@ -241,9 +268,20 @@ const DynamicEventBanner: React.FC<DynamicEventBannerProps> = ({
     return description;
   };
 
+  // Gestion du chargement d'image d'arrière-plan
+  useEffect(() => {
+    if (customBackgroundImage || theme.backgroundImage) {
+      const img = new Image();
+      img.src = customBackgroundImage || theme.backgroundImage;
+      img.onload = () => setIsImageLoaded(true);
+    } else {
+      setIsImageLoaded(true);
+    }
+  }, [customBackgroundImage, theme.backgroundImage]);
+
   return (
     <motion.div 
-      className={`relative overflow-hidden rounded-lg  cursor-pointer flex flex-col justify-center ${className}`}
+      className={`relative overflow-hidden rounded-lg cursor-pointer flex flex-col justify-center ${className}`}
       style={{
         background: theme.gradient.pattern,
         minHeight: minHeight,
@@ -263,15 +301,39 @@ const DynamicEventBanner: React.FC<DynamicEventBannerProps> = ({
       onHoverEnd={() => setIsHovered(false)}
       onClick={() => onInteract && onInteract()}
     >
+      {/* Image d'arrière-plan */}
+      {(customBackgroundImage || theme.backgroundImage) && (
+        <motion.div 
+          className="absolute inset-0 w-full h-full bg-cover bg-center z-0"
+          style={{ 
+            backgroundImage: `url(${customBackgroundImage || theme.backgroundImage})`,
+            opacity: 0 
+          }}
+          animate={{ 
+            opacity: isImageLoaded ? 0.5 : 0 
+          }}
+          transition={{ duration: 0.8 }}
+        />
+      )}
+      
+      {/* Overlay pour le contraste */}
+      <div 
+        className="absolute inset-0 z-0"
+        style={{ 
+          background: `linear-gradient(to bottom, ${theme.gradient.colors[0]}99, ${theme.gradient.colors[1]}cc)`,
+          mixBlendMode: 'multiply'
+        }}
+      />
+      
       {/* Motif d'arrière-plan */}
       <div 
-        className="absolute inset-0 opacity-60"
+        className="absolute inset-0 opacity-60 z-0"
         style={{ background: theme.bgPattern }}
       />
       
       {/* Ligne décorative en haut */}
       <motion.div 
-        className="absolute top-0 left-0 right-0 h-1"
+        className="absolute top-0 left-0 right-0 h-1 z-10"
         style={{ background: theme.accentColor }}
         initial={{ scaleX: 0 }}
         animate={{ scaleX: 1 }}
@@ -373,9 +435,11 @@ const DynamicEventBanner: React.FC<DynamicEventBannerProps> = ({
                 isExpanded ? 'max-h-none' : 'max-h-16 sm:max-h-20'
               }`}
               style={{ 
-                color: `${theme.textColor}CC`, // Ajout de transparence
+                color: `${theme.textColor}`,
+                textShadow: '0 1px 5px rgba(0,0,0,0.3)',
                 lineHeight: 1.5,
-                transition: 'max-height 0.3s ease-in-out'
+                transition: 'max-height 0.3s ease-in-out',
+                backdropFilter: 'blur(2px)'
               }}
               initial={{ opacity: 0 }}
               animate={{ 
@@ -391,7 +455,10 @@ const DynamicEventBanner: React.FC<DynamicEventBannerProps> = ({
           {contentTruncated && (
             <motion.button
               className="text-xs mt-2 flex items-center mx-auto sm:mx-0"
-              style={{ color: theme.accentColor }}
+              style={{ 
+                color: theme.accentColor,
+                textShadow: '0 1px 3px rgba(0,0,0,0.2)'
+              }}
               onClick={(e) => {
                 e.stopPropagation();
                 setIsExpanded(!isExpanded);
@@ -425,7 +492,13 @@ const DynamicEventBanner: React.FC<DynamicEventBannerProps> = ({
             >
               <div className="flex items-center">
                 <Star fill={theme.secondaryColor} color={theme.secondaryColor} size={isMobile ? 14 : 16} />
-                <span className="ml-2 text-xs font-medium" style={{ color: theme.secondaryColor }}>
+                <span 
+                  className="ml-2 text-xs font-medium" 
+                  style={{ 
+                    color: theme.secondaryColor,
+                    textShadow: '0 1px 3px rgba(0,0,0,0.2)'
+                  }}
+                >
                   Événement à ne pas manquer
                 </span>
               </div>

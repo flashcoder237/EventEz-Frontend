@@ -61,7 +61,7 @@ export default function EventLocationTimeForm({
       <div className="space-y-8">
         <motion.div variants={itemVariants}>
           <h3 className="text-lg font-medium mb-4 flex items-center">
-            <FaClock className="mr-2 text-blue-500" />
+            <FaClock className="mr-2 text-indigo-500" />
             Date et heure
           </h3>
           

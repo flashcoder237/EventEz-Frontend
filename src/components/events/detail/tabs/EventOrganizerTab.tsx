@@ -304,8 +304,8 @@ export default function EventOrganizerTab({ event }: EventOrganizerTabProps) {
           
           {/* Message pour les organisateurs qui ne peuvent pas s'écrire à eux-mêmes */}
           {isCurrentUserOrganizer && (
-            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-6">
-              <p className="text-blue-700 dark:text-blue-300 text-sm">
+            <div className="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-lg mb-6">
+              <p className="text-indigo-700 dark:text-indigo-300 text-sm">
                 Vous êtes l'organisateur de cet événement. Vous ne pouvez pas vous envoyer de messages.
               </p>
             </div>

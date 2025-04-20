@@ -169,10 +169,10 @@ export default function PaymentSuccess({ event, registration }: PaymentSuccessPr
         </div>
         
         {/* Additional information */}
-        <div className="mt-8 bg-blue-50 p-4 rounded-lg flex items-start">
-          <AlertTriangle className="h-5 w-5 text-blue-600 mt-0.5 mr-2 flex-shrink-0" />
+        <div className="mt-8 bg-indigo-50 p-4 rounded-lg flex items-start">
+          <AlertTriangle className="h-5 w-5 text-indigo-600 mt-0.5 mr-2 flex-shrink-0" />
           <div>
-            <p className="text-sm text-blue-800">
+            <p className="text-sm text-indigo-800">
               Vous recevrez également un email de confirmation contenant toutes les informations de votre réservation.
               Veuillez vérifier votre dossier de spam si vous ne le trouvez pas dans votre boîte de réception.
             </p>

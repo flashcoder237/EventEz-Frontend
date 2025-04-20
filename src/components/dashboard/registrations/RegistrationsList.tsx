@@ -177,7 +177,7 @@ export default function RegistrationsList() {
       pending: { bg: 'bg-yellow-100', text: 'text-yellow-800', label: 'En attente' },
       confirmed: { bg: 'bg-green-100', text: 'text-green-800', label: 'Confirmée' },
       cancelled: { bg: 'bg-red-100', text: 'text-red-800', label: 'Annulée' },
-      completed: { bg: 'bg-blue-100', text: 'text-blue-800', label: 'Terminée' }
+      completed: { bg: 'bg-indigo-100', text: 'text-indigo-800', label: 'Terminée' }
     };
 
     const config = statusConfig[status as keyof typeof statusConfig] || 

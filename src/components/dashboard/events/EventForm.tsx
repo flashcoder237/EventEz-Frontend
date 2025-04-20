@@ -829,13 +829,13 @@ export default function EventForm({ eventId, initialData }: { eventId?: string, 
             {eventData.event_type === 'billetterie' ? (
               // Section pour la billetterie
               <div className="space-y-6">
-                <div className="bg-blue-50 border-l-4 border-blue-400 p-4">
+                <div className="bg-indigo-50 border-l-4 border-indigo-400 p-4">
                   <div className="flex">
                     <div className="flex-shrink-0">
-                      <Info className="h-5 w-5 text-blue-400" />
+                      <Info className="h-5 w-5 text-indigo-400" />
                     </div>
                     <div className="ml-3">
-                      <p className="text-sm text-blue-700">
+                      <p className="text-sm text-indigo-700">
                         Créez différents types de billets pour votre événement (standard, VIP, étudiant, etc.)
                       </p>
                     </div>
@@ -966,13 +966,13 @@ export default function EventForm({ eventId, initialData }: { eventId?: string, 
             ) : (
               // Section pour le formulaire d'inscription
               <div className="space-y-6">
-                <div className="bg-blue-50 border-l-4 border-blue-400 p-4">
+                <div className="bg-indigo-50 border-l-4 border-indigo-400 p-4">
                   <div className="flex">
                     <div className="flex-shrink-0">
-                      <Info className="h-5 w-5 text-blue-400" />
+                      <Info className="h-5 w-5 text-indigo-400" />
                     </div>
                     <div className="ml-3">
-                      <p className="text-sm text-blue-700">
+                      <p className="text-sm text-indigo-700">
                         Créez un formulaire personnalisé pour recueillir les informations des participants
                       </p>
                     </div>
@@ -1178,13 +1178,13 @@ export default function EventForm({ eventId, initialData }: { eventId?: string, 
               </div>
             )}
             
-            <div className="bg-blue-50 border-l-4 border-blue-400 p-4">
+            <div className="bg-indigo-50 border-l-4 border-indigo-400 p-4">
               <div className="flex">
                 <div className="flex-shrink-0">
-                  <Info className="h-5 w-5 text-blue-400" />
+                  <Info className="h-5 w-5 text-indigo-400" />
                 </div>
                 <div className="ml-3">
-                  <p className="text-sm text-blue-700">
+                  <p className="text-sm text-indigo-700">
                     Une image de couverture attractive augmente significativement le taux de participation à votre événement.
                   </p>
                 </div>

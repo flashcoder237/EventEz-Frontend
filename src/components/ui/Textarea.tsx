@@ -40,7 +40,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
       default: cn(
         "rounded-xl border-2",
         isFocused && !error && !success
-          ? "border-blue-400 ring-2 ring-blue-100" 
+          ? "border-indigo-400 ring-2 ring-indigo-100" 
           : "border-gray-200 dark:border-gray-700",
         error 
           ? "border-red-400 ring-2 ring-red-100 focus:border-red-500 focus:ring-red-100" 
@@ -51,7 +51,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
       bordered: cn(
         "bg-transparent border-b-2 rounded-none",
         isFocused && !error && !success
-          ? "border-blue-400" 
+          ? "border-indigo-400" 
           : "border-gray-200 dark:border-gray-700",
         error 
           ? "border-red-400" 
@@ -62,7 +62,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
       underline: cn(
         "bg-transparent border-b border-gray-300 dark:border-gray-600 rounded-none",
         isFocused && !error && !success
-          ? "border-blue-400" 
+          ? "border-indigo-400" 
           : "border-gray-200 dark:border-gray-700",
         error 
           ? "border-red-400" 
@@ -85,7 +85,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         scale: 0.85, 
         top: '0%',
         color: isFocused 
-          ? 'rgb(59, 130, 246)' // text-blue-500 
+          ? 'rgb(59, 130, 246)' // text-indigo-500 
           : error 
             ? 'rgb(239, 68, 68)' // text-red-500
             : success 
@@ -101,7 +101,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
             "group relative transition-all duration-300 ease-out",
             variant === 'default' && "rounded-xl",
             disabled ? "opacity-70" : "hover:shadow-sm",
-            error ? "shadow-red-100" : success ? "shadow-green-100" : "shadow-blue-50"
+            error ? "shadow-red-100" : success ? "shadow-green-100" : "shadow-indigo-50"
           )}
         >
           {/* Background decoration */}
@@ -110,7 +110,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
               "absolute inset-0 transition-all duration-300",
               variant === 'default' && "rounded-xl",
               "opacity-0 pointer-events-none",
-              isFocused && !error && !disabled && "opacity-10 bg-blue-100",
+              isFocused && !error && !disabled && "opacity-10 bg-indigo-100",
               error && "opacity-10 bg-red-100",
               success && "opacity-10 bg-green-100"
             )}
@@ -141,7 +141,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
             {icon && (
               <div className={cn(
                 "absolute left-4 top-4 transition-colors duration-300",
-                isFocused && !error ? "text-blue-500" : "text-gray-400",
+                isFocused && !error ? "text-indigo-500" : "text-gray-400",
                 error && "text-red-500",
                 success && "text-green-500"
               )}>

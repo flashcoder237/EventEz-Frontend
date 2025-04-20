@@ -10,7 +10,7 @@ interface TermsAndConditionsProps {
 export function TermsAndConditions({ finalTotal }: TermsAndConditionsProps) {
   return (
     <motion.div 
-      className="mb-6 bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg overflow-hidden"
+      className="mb-6 bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-lg overflow-hidden"
       initial={{ opacity: 0, y: 20, height: 0 }}
       animate={{ opacity: 1, y: 0, height: 'auto' }}
       transition={{ 
@@ -27,10 +27,10 @@ export function TermsAndConditions({ finalTotal }: TermsAndConditionsProps) {
         animate={{ x: 0, opacity: 1 }}
         transition={{ delay: 0.6, duration: 0.3 }}
       >
-        <Info className="h-5 w-5 text-blue-500 mt-0.5 mr-2 flex-shrink-0" />
+        <Info className="h-5 w-5 text-indigo-500 mt-0.5 mr-2 flex-shrink-0" />
         <div>
           <motion.p 
-            className="text-sm text-blue-800 dark:text-blue-300"
+            className="text-sm text-indigo-800 dark:text-indigo-300"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.7, duration: 0.4 }}

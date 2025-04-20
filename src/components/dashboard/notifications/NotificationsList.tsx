@@ -91,7 +91,7 @@ export default function NotificationsList() {
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'event_update':
-        return <Calendar className="h-5 w-5 text-blue-500" />;
+        return <Calendar className="h-5 w-5 text-indigo-500" />;
       case 'registration_confirmation':
         return <CheckCircle className="h-5 w-5 text-green-500" />;
       case 'payment_confirmation':

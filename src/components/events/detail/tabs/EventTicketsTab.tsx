@@ -242,7 +242,7 @@ export default function EventTicketsTab({ ticketTypes, event }: EventTicketsTabP
                     </span>
                   </div>
                   <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
-                    <Info className="mr-2 h-4 w-4 text-blue-500" />
+                    <Info className="mr-2 h-4 w-4 text-indigo-500" />
                     Les billets seront réservés à votre nom
                   </p>
                 </div>
@@ -280,26 +280,26 @@ export default function EventTicketsTab({ ticketTypes, event }: EventTicketsTabP
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="mt-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6"
+          className="mt-8 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg p-6"
         >
           <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">
             Comment acheter des billets
           </h3>
           <ol className="space-y-3 text-sm text-gray-600 dark:text-gray-400">
             <li className="flex items-start">
-              <span className="flex items-center justify-center bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-300 w-6 h-6 rounded-full mr-3 flex-shrink-0 font-medium">1</span>
+              <span className="flex items-center justify-center bg-indigo-100 dark:bg-indigo-800 text-indigo-700 dark:text-indigo-300 w-6 h-6 rounded-full mr-3 flex-shrink-0 font-medium">1</span>
               <span>Sélectionnez le type et la quantité de billets que vous souhaitez acheter.</span>
             </li>
             <li className="flex items-start">
-              <span className="flex items-center justify-center bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-300 w-6 h-6 rounded-full mr-3 flex-shrink-0 font-medium">2</span>
+              <span className="flex items-center justify-center bg-indigo-100 dark:bg-indigo-800 text-indigo-700 dark:text-indigo-300 w-6 h-6 rounded-full mr-3 flex-shrink-0 font-medium">2</span>
               <span>Cliquez sur "Procéder à l'achat" pour continuer vers le paiement.</span>
             </li>
             <li className="flex items-start">
-              <span className="flex items-center justify-center bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-300 w-6 h-6 rounded-full mr-3 flex-shrink-0 font-medium">3</span>
+              <span className="flex items-center justify-center bg-indigo-100 dark:bg-indigo-800 text-indigo-700 dark:text-indigo-300 w-6 h-6 rounded-full mr-3 flex-shrink-0 font-medium">3</span>
               <span>Remplissez les informations nécessaires et choisissez votre mode de paiement.</span>
             </li>
             <li className="flex items-start">
-              <span className="flex items-center justify-center bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-300 w-6 h-6 rounded-full mr-3 flex-shrink-0 font-medium">4</span>
+              <span className="flex items-center justify-center bg-indigo-100 dark:bg-indigo-800 text-indigo-700 dark:text-indigo-300 w-6 h-6 rounded-full mr-3 flex-shrink-0 font-medium">4</span>
               <span>Une fois le paiement confirmé, vous recevrez vos billets par email.</span>
             </li>
           </ol>

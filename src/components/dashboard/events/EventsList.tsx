@@ -141,7 +141,7 @@ export default function EventsList() {
       draft: { bg: 'bg-gray-100', text: 'text-gray-800', label: 'Brouillon' },
       published: { bg: 'bg-yellow-100', text: 'text-yellow-800', label: 'Publié' },
       validated: { bg: 'bg-green-100', text: 'text-green-800', label: 'Validé' },
-      completed: { bg: 'bg-blue-100', text: 'text-blue-800', label: 'Terminé' },
+      completed: { bg: 'bg-indigo-100', text: 'text-indigo-800', label: 'Terminé' },
       cancelled: { bg: 'bg-red-100', text: 'text-red-800', label: 'Annulé' }
     };
 

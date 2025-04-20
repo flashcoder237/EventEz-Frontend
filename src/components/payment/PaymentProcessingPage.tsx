@@ -192,9 +192,9 @@ export default function PaymentProcessingPage({ params, searchParams }: PaymentP
         );
       case 'credit_card':
         return (
-          <div className="bg-blue-50 p-4 rounded-lg text-left mt-6">
-            <h3 className="font-medium text-blue-800 mb-2">Traitement du paiement par carte :</h3>
-            <p className="text-blue-700 text-sm">
+          <div className="bg-indigo-50 p-4 rounded-lg text-left mt-6">
+            <h3 className="font-medium text-indigo-800 mb-2">Traitement du paiement par carte :</h3>
+            <p className="text-indigo-700 text-sm">
               Votre paiement par carte est en cours de traitement. Veuillez patienter pendant que nous sécurisons votre transaction.
             </p>
           </div>

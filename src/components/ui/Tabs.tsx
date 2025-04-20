@@ -110,8 +110,8 @@ const TabsTrigger = React.forwardRef<
       "transition-all duration-300 ease-out",
       "text-gray-500 dark:text-gray-400",
       "hover:text-gray-700 dark:hover:text-gray-200",
-      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50",
-      "data-[state=active]:text-blue-600 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900",
+      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50",
+      "data-[state=active]:text-indigo-600 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900",
       "data-[state=active]:shadow-sm",
       "disabled:pointer-events-none disabled:opacity-50",
       className
@@ -128,7 +128,7 @@ const TabsTrigger = React.forwardRef<
       {props['data-state'] === 'active' && (
         <motion.div
           layoutId="active-tab-indicator"
-          className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"
+          className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600"
           initial={{ opacity: 0, width: 0 }}
           animate={{ opacity: 1, width: '100%' }}
           exit={{ opacity: 0, width: 0 }}
