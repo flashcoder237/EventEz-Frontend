@@ -71,7 +71,7 @@ function FeaturedEventsSection({ events }) {
                   <Image 
                   src={activeEvent.banner_image || "/images/placeholder-image.png"}
                   alt={activeEvent.title}
-                  width={600}
+                  width={800}
                   height={400}
                   className="w-full h-48 md:h-64 lg:h-80 object-cover"
                 />
@@ -161,8 +161,8 @@ function FeaturedEventsSection({ events }) {
                   <Image 
                     src={event.banner_image || "/images/placeholder-image.png"}
                     alt={event.title}
-                    width={100}
-                    height={80}
+                    width={60}
+                    height={48}
                     className="w-20 h-16 object-cover rounded-lg mr-4"
                   />
                   

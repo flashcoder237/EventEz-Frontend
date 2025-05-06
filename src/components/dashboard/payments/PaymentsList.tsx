@@ -217,8 +217,28 @@ export default function PaymentsList() {
   const handleDownloadInvoice = useCallback(async (paymentId: string) => {
     try {
       showNotification('Téléchargement en cours...', 'info');
-      // Ici, implémentez l'appel API pour télécharger la facture
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulation d'un appel API
+
+      const response = await fetch(`/api/payments/invoice/${paymentId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/pdf',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Erreur lors du téléchargement de la facture');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `facture-${paymentId}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
       showNotification('Facture téléchargée avec succès', 'success');
     } catch (error) {
       console.error('Erreur lors du téléchargement de la facture:', error);
