@@ -21,7 +21,7 @@ import {
   Plus,
   Ticket
 } from 'lucide-react';
-import { registrationsAPI, eventsAPI } from '@/lib/api';
+import { registrationsAPI, eventsAPI } from 'lib/api';
 import { Registration, Event } from 'types';
 import { format, formatDistance } from 'date-fns';
 import { fr } from 'date-fns/locale';

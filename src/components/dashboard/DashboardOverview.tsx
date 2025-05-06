@@ -10,14 +10,15 @@ import {
   CreditCard, 
   Eye, 
   CheckCircle, 
-  AlertTriangle 
+  AlertTriangle,
+  Download
 } from 'lucide-react';
 import { eventsAPI, registrationsAPI } from '@/lib/api';
 import { Event, Registration } from '@/types';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
-export default function DashboardOverview() {
+export default function DashboardOverviewEnhanced() {
   const { data: session } = useSession();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -35,16 +36,16 @@ export default function DashboardOverview() {
       try {
         const eventsResponse = await eventsAPI.getMyEvents();
         const events = eventsResponse.data || [];
-        setRecentEvents(events.slice(0, 3));
+        setRecentEvents(events.slice(0, 5)); // Show 5 recent events
         
         const registrationsResponse = await registrationsAPI.getMyRegistrations();
         const registrations = registrationsResponse.data || [];
-        setRecentRegistrations(registrations.slice(0, 3));
+        setRecentRegistrations(registrations.slice(0, 5)); // Show 5 recent registrations
         
         setStats({
           eventsCount: events.length,
           registrationsCount: registrations.length,
-          totalRevenue: events.reduce((total, event) => total + (event.registration_count || 0) * 10, 0), // Exemple simplifié
+          totalRevenue: events.reduce((total, event) => total + (event.registration_count || 0) * 10, 0), // Example simplified
           viewsCount: events.reduce((total, event) => total + (event.view_count || 0), 0),
         });
       } catch (error) {
@@ -59,6 +60,20 @@ export default function DashboardOverview() {
     }
   }, [session]);
 
+  const handleExport = () => {
+    // Example export functionality: export stats as JSON file
+    const dataStr = JSON.stringify(stats, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'dashboard-stats.json';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -69,11 +84,20 @@ export default function DashboardOverview() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Tableau de bord</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Bienvenue sur votre tableau de bord EventEz
-        </p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Tableau de bord amélioré</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            Bienvenue sur votre tableau de bord EventEz avec fonctionnalités étendues
+          </p>
+        </div>
+        <button
+          onClick={handleExport}
+          className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+        >
+          <Download className="mr-2 h-5 w-5" />
+          Exporter les statistiques
+        </button>
       </div>
 
       {/* Statistiques */}

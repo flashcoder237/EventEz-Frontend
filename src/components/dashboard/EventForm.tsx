@@ -12,9 +12,9 @@ import { Select } from '../ui/Select';
 import { Button } from '../ui/Button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/Tabs';
 import { Badge } from '../ui/Badge';
-import { eventsAPI } from '@/lib/api';
+import { eventsAPI,ticketTypesAPI } from '@/lib/api';
 import { formatDate } from '@/lib/utils';
-import { FaCalendarAlt, FaMapMarkerAlt, FaImage, FaTrash, FaTimes, FaPlus } from 'react-icons/fa';
+import { FaCalendarAlt, FaMapMarkerAlt, FaImage, FaTrash, FaTimes, FaPlus,FaClipboardList,FaTicketAlt    } from 'react-icons/fa';
 
 interface EventFormProps {
 event?: Event;
@@ -71,11 +71,117 @@ const [error, setError] = useState<string | null>(null);
 
 // Effets secondaires
 useEffect(() => {
-// Initialiser les champs de formulaire ou les types de billets si on est en mode édition
-if (mode === 'edit' && event) {
-// TODO: Charger les champs de formulaire ou les types de billets depuis l'API
-}
+  // Initialiser les champs de formulaire ou les types de billets si on est en mode édition
+  if (mode === 'edit' && event) {
+    // Charger les types de billets depuis l'API
+    const fetchTicketTypes = async () => {
+      try {
+        const response = await ticketTypesAPI.getTicketTypes(event.id);
+        setTicketTypes(response.data);
+      } catch (error) {
+        console.error('Erreur lors du chargement des types de billets:', error);
+      }
+    };
+
+    // Charger les champs de formulaire personnalisés depuis l'API
+    const fetchFormFields = async () => {
+      try {
+        const response = await eventsAPI.getFormFields(event.id);
+        setFormFields(response.data);
+      } catch (error) {
+        console.error('Erreur lors du chargement des champs de formulaire:', error);
+      }
+    };
+
+    fetchTicketTypes();
+    fetchFormFields();
+  }
 }, [mode, event]);
+
+// Soumettre le formulaire
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  if (!validateForm()) return;
+
+  setIsSubmitting(true);
+  setError(null);
+
+  try {
+    // Construire l'objet d'événement
+    const eventData = {
+      title,
+      description,
+      short_description: shortDescription,
+      event_type: eventType,
+      category: parseInt(categoryId),
+      tags: selectedTags,
+      start_date: `${startDate}T${startTime}:00`,
+      end_date: `${endDate}T${endTime}:00`,
+      registration_deadline:
+        registrationDeadlineDate && registrationDeadlineTime
+          ? `${registrationDeadlineDate}T${registrationDeadlineTime}:00`
+          : null,
+      location_name: locationName,
+      location_address: locationAddress,
+      location_city: locationCity,
+      location_country: locationCountry,
+    };
+
+    let eventId;
+
+    if (mode === 'create') {
+      // Créer l'événement
+      const response = await eventsAPI.createEvent(eventData);
+      eventId = response.data.id;
+    } else {
+      // Mettre à jour l'événement
+      await eventsAPI.updateEvent(event!.id, eventData);
+      eventId = event!.id;
+    }
+
+    // Télécharger l'image de bannière si nécessaire
+    if (bannerImage) {
+      const formData = new FormData();
+      formData.append('banner_image', bannerImage);
+
+      await eventsAPI.updateEvent(eventId, formData);
+    }
+
+    // Ajouter les types de billets ou les champs de formulaire
+    if (eventType === 'billetterie') {
+      // Mettre à jour les types de billets via l'API
+      for (const ticket of ticketTypes) {
+        if (ticket.id.toString().startsWith('temp-')) {
+          // Nouveau type de billet
+          await eventsAPI.createTicketType(eventId, ticket);
+        } else {
+          // Mise à jour d'un type de billet existant
+          await eventsAPI.updateTicketType(ticket.id, ticket);
+        }
+      }
+    } else {
+      // Mettre à jour les champs de formulaire via l'API
+      for (const field of formFields) {
+        if (field.id.toString().startsWith('temp-')) {
+          // Nouveau champ de formulaire
+          await eventsAPI.createFormField(eventId, field);
+        } else {
+          // Mise à jour d'un champ de formulaire existant
+          await eventsAPI.updateFormField(field.id, field);
+        }
+      }
+    }
+
+    // Rediriger vers la page de l'événement
+    router.push(`/dashboard`);
+  } catch (error: any) {
+    console.error('Error submitting event:', error);
+    setError(error.response?.data?.detail || 'Une erreur est survenue lors de la soumission du formulaire');
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
 // Gérer le changement de l'image de bannière
 const handleBannerImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -221,70 +327,7 @@ return true;
 };
 
 // Soumettre le formulaire
-const handleSubmit = async (e: React.FormEvent) => {
-e.preventDefault();
-
-if (!validateForm()) return;
-
-setIsSubmitting(true);
-setError(null);
-
-try {
-// Construire l'objet d'événement
-const eventData = {
-title,
-description,
-short_description: shortDescription,
-event_type: eventType,
-category: parseInt(categoryId),
-tags: selectedTags,
-start_date: `${startDate}T${startTime}:00`,
-end_date: `${endDate}T${endTime}:00`,
-registration_deadline: registrationDeadlineDate && registrationDeadlineTime 
-? `${registrationDeadlineDate}T${registrationDeadlineTime}:00` 
-: null,
-location_name: locationName,
-location_address: locationAddress,
-location_city: locationCity,
-location_country: locationCountry
-};
-
-let eventId;
-
-if (mode === 'create') {
-// Créer l'événement
-const response = await eventsAPI.createEvent(eventData);
-eventId = response.data.id;
-} else {
-// Mettre à jour l'événement
-await eventsAPI.updateEvent(event!.id, eventData);
-eventId = event!.id;
-}
-
-// Télécharger l'image de bannière si nécessaire
-if (bannerImage) {
-const formData = new FormData();
-formData.append('banner_image', bannerImage);
-
-await eventsAPI.updateEvent(eventId, formData);
-}
-
-// Ajouter les types de billets ou les champs de formulaire
-if (eventType === 'billetterie') {
-// TODO: Ajouter les types de billets via l'API
-} else {
-// TODO: Ajouter les champs de formulaire via l'API
-}
-
-// Rediriger vers la page de l'événement
-router.push(`/dashboard`);
-} catch (error: any) {
-console.error('Error submitting event:', error);
-setError(error.response?.data?.detail || 'Une erreur est survenue lors de la soumission du formulaire');
-} finally {
-setIsSubmitting(false);
-}
-};
+// Remove duplicate handleSubmit function to fix error
 
 return (
 <div className="bg-white rounded-lg shadow-md overflow-hidden">

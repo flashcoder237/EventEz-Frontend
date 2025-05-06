@@ -15,14 +15,13 @@ import {
   CartesianGrid, 
   Tooltip, 
   Legend, 
-  ResponsiveContainer ,
+  ResponsiveContainer 
 } from 'recharts';
 import { 
   Calendar, 
   Users, 
   CreditCard, 
   Filter,
-  Eye ,
   Download
 } from 'lucide-react';
 import { analyticsAPI, eventsAPI } from '@/lib/api';

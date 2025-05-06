@@ -49,8 +49,11 @@ async function getEventsData(searchParams: SearchParams) {
 }
 
 export default async function EventsPage({ searchParams }: { searchParams: SearchParams }) {
+  // Await searchParams before usage
+  const awaitedSearchParams = await searchParams;
+
   // Obtenir les données côté serveur
-  const { events, totalEvents, categories } = await getEventsData(searchParams);
+  const { events, totalEvents, categories } = await getEventsData(awaitedSearchParams);
   
   
   // Options de tri
@@ -62,7 +65,7 @@ export default async function EventsPage({ searchParams }: { searchParams: Searc
     { value: '-registration_count', label: 'Par popularité' }
   ];
   
-  const currentSort = searchParams.ordering || 'start_date';
+  const currentSort = awaitedSearchParams.ordering || 'start_date';
   
   // Créer un client ID pour le côté client
   const clientFilterId = Math.random().toString(36).substring(7);
@@ -89,7 +92,7 @@ export default async function EventsPage({ searchParams }: { searchParams: Searc
         categories={categories}
         sortOptions={sortOptions}
         currentSort={currentSort}
-        searchParams={searchParams}
+        searchParams={awaitedSearchParams}
         totalEvents={totalEvents}
       />
         
@@ -98,7 +101,7 @@ export default async function EventsPage({ searchParams }: { searchParams: Searc
           <InfiniteScrollEvents 
             initialEvents={events} 
             totalEvents={totalEvents}
-            searchParams={searchParams}
+            searchParams={awaitedSearchParams}
           />
         </Suspense>
       </div>

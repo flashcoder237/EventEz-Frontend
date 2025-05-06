@@ -1,20 +1,19 @@
-import { motion } from 'framer-motion';
+import React from 'react';
 import { AlertCircle } from 'lucide-react';
 
 interface ErrorMessageProps {
-  message: string;
+  message: string | null;
 }
 
-export default function ErrorMessage({ message }: ErrorMessageProps) {
+const ErrorMessage: React.FC<ErrorMessageProps> = ({ message }) => {
+  if (!message) return null;
+
   return (
-    <motion.div 
-      className="mb-6 bg-red-50 border border-red-200 rounded-md p-4 flex items-start"
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-    >
-      <AlertCircle className="text-red-500 mr-3 mt-0.5 flex-shrink-0" />
-      <p className="text-red-700">{message}</p>
-    </motion.div>
+    <div className="bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 flex items-center" role="alert">
+      <AlertCircle className="mr-2 h-5 w-5" />
+      <span className="block sm:inline">{message}</span>
+    </div>
   );
-}
+};
+
+export default ErrorMessage;
