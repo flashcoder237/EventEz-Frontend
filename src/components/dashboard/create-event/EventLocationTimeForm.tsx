@@ -54,7 +54,7 @@ export default function EventLocationTimeForm({
         className="text-xl font-semibold flex items-center"
         variants={itemVariants}
       >
-        <FaMapMarkerAlt className="mr-2 text-primary" />
+        <FaMapMarkerAlt className="mr-2 text-violet" />
         Lieu et horaires
       </motion.h2>
       

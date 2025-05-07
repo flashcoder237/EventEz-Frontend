@@ -94,11 +94,11 @@ function FeaturedEventsSection({ events }) {
                 
                 <div className="p-4 md:p-6 bg-white">
                   <div className="flex justify-between items-center mb-3">
-                    <span className="text-sm text-primary font-medium">
+                    <span className="text-sm text-violet font-medium">
                       {activeEvent.category?.name || 'Événement'}
                     </span>
                     <div className="flex items-center text-gray-500 text-sm">
-                      <Calendar className="h-4 w-4 mr-2 text-primary" />
+                      <Calendar className="h-4 w-4 mr-2 text-violet" />
                       {formatDate(activeEvent.start_date)}
                     </div>
                   </div>
@@ -109,13 +109,13 @@ function FeaturedEventsSection({ events }) {
                   
                   <div className="flex justify-between items-center">
                     <div className="flex items-center text-gray-600">
-                      <MapPin className="h-4 w-4 mr-2 text-primary" />
+                      <MapPin className="h-4 w-4 mr-2 text-violet" />
                       <span className="text-sm">{activeEvent.location_city}</span>
                     </div>
                     
                     <Link 
                       href={`/events/${activeEvent.id}`}
-                      className="flex items-center text-primary hover:underline"
+                      className="flex items-center text-violet hover:underline"
                     >
                       Détails
                       <ChevronRight className="h-4 w-4 ml-1" />
@@ -153,7 +153,7 @@ function FeaturedEventsSection({ events }) {
                 className={`
                   cursor-pointer rounded-xl p-4 transition-all duration-300
                   ${activeEventIndex === index 
-                    ? 'bg-primary/10 border border-primary/20' 
+                    ? 'bg-violet/10 border border-violet/20' 
                     : 'bg-white hover:bg-gray-100'}
                 `}
               >
@@ -173,11 +173,11 @@ function FeaturedEventsSection({ events }) {
                     
                     <div className="flex justify-between text-sm text-gray-600">
                       <div className="flex items-center">
-                        <MapPin className="h-4 w-4 mr-2 text-primary" />
+                        <MapPin className="h-4 w-4 mr-2 text-violet" />
                         {event.location_city}
                       </div>
                       <div className="flex items-center">
-                        <Calendar className="h-4 w-4 mr-2 text-primary" />
+                        <Calendar className="h-4 w-4 mr-2 text-violet" />
                         {formatDate(event.start_date)}
                       </div>
                     </div>
@@ -189,7 +189,7 @@ function FeaturedEventsSection({ events }) {
             <div className="text-center mt-6">
               <Link 
                 href="/events?featured=true"
-                className="text-primary hover:underline flex items-center justify-center"
+                className="text-violet hover:underline flex items-center justify-center"
               >
                 Voir tous les événements
                 <ChevronRight className="h-4 w-4 ml-1" />
@@ -205,7 +205,7 @@ function FeaturedEventsSection({ events }) {
                 className={`
                   h-2 w-2 rounded-full transition-all duration-300
                   ${activeEventIndex === index 
-                    ? 'bg-primary w-6' 
+                    ? 'bg-violet w-6' 
                     : 'bg-gray-300'}
                 `}
               />

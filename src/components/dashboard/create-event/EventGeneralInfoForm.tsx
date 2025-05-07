@@ -78,7 +78,7 @@ export default function EventGeneralInfoForm({
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <FaInfoCircle className="mr-2 text-primary" />
+        <FaInfoCircle className="mr-2 text-violet" />
         Informations générales
       </motion.h2>
       
@@ -190,7 +190,7 @@ export default function EventGeneralInfoForm({
                 onClick={() => toggleTag(tag.id)}
                 className={`rounded-full px-3 py-1 text-sm font-medium transition-colors ${
                   eventData.selected_tags.includes(tag.id)
-                    ? 'bg-primary text-white'
+                    ? 'bg-violet text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
                 whileHover={{ scale: 1.05 }}

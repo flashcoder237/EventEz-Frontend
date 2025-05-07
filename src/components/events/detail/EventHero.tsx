@@ -50,21 +50,21 @@ export function EventHero({ event }: EventHeroProps) {
         {/* Grille d'informations - ajustée pour mieux s'adapter aux mobiles */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-4">
           <div className="flex items-start gap-2">
-            <Calendar className="h-4 w-4 mt-0.5 flex-shrink-0 text-primary-600" />
+            <Calendar className="h-4 w-4 mt-0.5 flex-shrink-0 text-violet-600" />
             <span className="text-sm text-gray-700">{formatDate(event.start_date, 'long')}</span>
           </div>
           
           <div className="flex items-start gap-2">
-            <Clock className="h-4 w-4 mt-0.5 flex-shrink-0 text-primary-600" />
+            <Clock className="h-4 w-4 mt-0.5 flex-shrink-0 text-violet-600" />
             <span className="text-sm text-gray-700">{startTime} - {endTime}</span>
           </div>  
           <div className="flex items-start gap-2">
-            <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0 text-primary-600" />
+            <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0 text-violet-600" />
             <span className="text-sm text-gray-700 break-words">{event.location_name}, {event.location_city}</span>
           </div>
           
           <div className="flex items-start gap-2">
-            <Users className="h-4 w-4 mt-0.5 flex-shrink-0 text-primary-600" />
+            <Users className="h-4 w-4 mt-0.5 flex-shrink-0 text-violet-600" />
             <span className="text-sm text-gray-700">
               {event.registration_count} inscrit{event.registration_count !== 1 ? 's' : ''}
             </span>

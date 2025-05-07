@@ -51,9 +51,9 @@ export default function SortSelect({
   // Determine sort icon based on current sort value
   const getSortIcon = (value: string) => {
     if (currentValue === value) {
-      return <ArrowUp className="h-4 w-4 text-primary" />;
+      return <ArrowUp className="h-4 w-4 text-violet" />;
     } else if (currentValue === `-${value}`) {
-      return <ArrowDown className="h-4 w-4 text-primary" />;
+      return <ArrowDown className="h-4 w-4 text-violet" />;
     }
     return <ArrowUpDown className="h-4 w-4 text-gray-400" />;
   };
@@ -64,7 +64,7 @@ export default function SortSelect({
       <select 
         value={currentValue}
         onChange={(e) => handleSortChange(e.target.value)}
-        className="p-2 border border-gray-300 rounded-md text-sm focus:ring-primary focus:border-primary"
+        className="p-2 border border-gray-300 rounded-md text-sm focus:ring-violet focus:border-violet"
       >
         {options.map((option) => (
           <option key={option.value} value={option.value}>

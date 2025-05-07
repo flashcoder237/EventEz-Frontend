@@ -76,8 +76,8 @@ useEffect(() => {
     // Charger les types de billets depuis l'API
     const fetchTicketTypes = async () => {
       try {
-        const response = await ticketTypesAPI.getTicketTypes(event.id);
-        setTicketTypes(response.data);
+        const response = await ticketTypesAPI.getTicketTypes({ event: event.id });
+        setTicketTypes(response.data.results || response.data);
       } catch (error) {
         console.error('Erreur lors du chargement des types de billets:', error);
       }
@@ -87,14 +87,16 @@ useEffect(() => {
     const fetchFormFields = async () => {
       try {
         const response = await eventsAPI.getFormFields(event.id);
-        setFormFields(response.data);
+        setFormFields(response.data.results || response.data);
       } catch (error) {
         console.error('Erreur lors du chargement des champs de formulaire:', error);
       }
     };
 
     fetchTicketTypes();
-    fetchFormFields();
+    if(eventType !== "billetterie"){
+      fetchFormFields();
+    }
   }
 }, [mode, event]);
 
@@ -109,6 +111,13 @@ const handleSubmit = async (e: React.FormEvent) => {
 
   try {
     // Construire l'objet d'événement
+    // Fix date-time format to ISO 8601 with timezone (Z)
+    const toISOStringWithTimezone = (dateStr: string, timeStr: string) => {
+      if (!dateStr || !timeStr) return null;
+      const date = new Date(`${dateStr}T${timeStr}`);
+      return date.toISOString();
+    };
+
     const eventData = {
       title,
       description,
@@ -116,12 +125,9 @@ const handleSubmit = async (e: React.FormEvent) => {
       event_type: eventType,
       category: parseInt(categoryId),
       tags: selectedTags,
-      start_date: `${startDate}T${startTime}:00`,
-      end_date: `${endDate}T${endTime}:00`,
-      registration_deadline:
-        registrationDeadlineDate && registrationDeadlineTime
-          ? `${registrationDeadlineDate}T${registrationDeadlineTime}:00`
-          : null,
+      start_date: toISOStringWithTimezone(startDate, startTime),
+      end_date: toISOStringWithTimezone(endDate, endTime),
+      registration_deadline: toISOStringWithTimezone(registrationDeadlineDate, registrationDeadlineTime),
       location_name: locationName,
       location_address: locationAddress,
       location_city: locationCity,
@@ -157,7 +163,7 @@ const handleSubmit = async (e: React.FormEvent) => {
           await eventsAPI.createTicketType(eventId, ticket);
         } else {
           // Mise à jour d'un type de billet existant
-          await eventsAPI.updateTicketType(ticket.id, ticket);
+          await ticketTypesAPI.updateTicketType(ticket.id, ticket);
         }
       }
     } else {
@@ -416,7 +422,7 @@ Formulaire d'inscription
         onClick={() => handleTagToggle(tag.id)}
         className={`rounded-full px-3 py-1 text-sm font-medium ${
           selectedTags.includes(tag.id)
-            ? 'bg-primary text-white'
+            ? 'bg-violet-500 text-white'
             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
         }`}
       >
@@ -762,7 +768,7 @@ Formulaire d'inscription
               id={`required-${index}`}
               checked={field.required}
               onChange={(e) => updateFormField(index, 'required', e.target.checked)}
-              className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+              className="h-4 w-4 text-violet focus:ring-violet border-gray-300 rounded"
             />
             <label
               htmlFor={`required-${index}`}

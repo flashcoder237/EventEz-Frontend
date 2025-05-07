@@ -125,7 +125,7 @@ export default function DashboardSidebar() {
   const MobileMenuButton = (
     <button 
       onClick={() => setIsMobileSidebarOpen(true)}
-      className="md:hidden fixed z-50 bottom-4 right-4 p-3 bg-primary text-white rounded-full shadow-lg"
+      className="md:hidden fixed z-50 bottom-4 right-4 p-3 bg-violet text-white rounded-full shadow-lg"
       aria-label="Ouvrir le menu"
     >
       <Menu className="h-6 w-6" />
@@ -180,7 +180,7 @@ export default function DashboardSidebar() {
           className={cn(
             "flex flex-col items-center justify-center py-2 px-1",
             isActive(item) 
-              ? "text-primary"
+              ? "text-violet"
               : "text-gray-500 dark:text-gray-400"
           )}
         >
@@ -188,7 +188,7 @@ export default function DashboardSidebar() {
             {React.cloneElement(item.icon as React.ReactElement, {
               className: cn(
                 "h-5 w-5",
-                isActive(item) ? "text-primary" : "text-gray-500 dark:text-gray-400"
+                isActive(item) ? "text-violet" : "text-gray-500 dark:text-gray-400"
               )
             })}
           </span>
@@ -220,14 +220,14 @@ function SidebarContent({ isActive, menuItems }) {
               className={cn(
                 "flex items-center justify-between px-3 py-2 rounded-lg transition-colors group",
                 isActive(item) 
-                  ? "bg-primary text-white" 
+                  ? "bg-violet text-white" 
                   : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
               )}
             >
               <div className="flex items-center">
                 <span className={cn(
                   "mr-3",
-                  isActive(item) ? "text-white" : "text-gray-500 group-hover:text-primary dark:text-gray-400"
+                  isActive(item) ? "text-white" : "text-gray-500 group-hover:text-violet dark:text-gray-400"
                 )}>
                   {item.icon}
                 </span>

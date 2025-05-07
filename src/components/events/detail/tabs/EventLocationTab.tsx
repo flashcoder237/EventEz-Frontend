@@ -82,7 +82,7 @@ export default function EventLocationTab({ event }: EventLocationTabProps) {
         initial={{ x: -20, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
       >
-        <MapPin className="mr-4 text-primary" size={36} />
+        <MapPin className="mr-4 text-violet" size={36} />
         Lieu de l'événement
       </motion.h2>
       

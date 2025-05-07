@@ -71,7 +71,7 @@ export default function EventSocialShare({ eventTitle }: EventSocialShareProps) 
       className="bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700 shadow-sm p-6"
     >
       <div className="flex items-center mb-4">
-        <Share2 className="h-6 w-6 mr-3 text-primary" />
+        <Share2 className="h-6 w-6 mr-3 text-violet" />
         <h3 className="font-bold text-lg text-gray-800 dark:text-gray-200">
           Partager l'événement
         </h3>

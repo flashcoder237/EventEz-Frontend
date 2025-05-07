@@ -6,22 +6,22 @@ const StatsSection: React.FC = () => {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           <div className="text-center">
-            <div className="text-4xl md:text-5xl font-bold text-primary mb-2">10K+</div>
+            <div className="text-4xl md:text-5xl font-bold text-violet mb-2">10K+</div>
             <p className="text-gray-600 font-medium">Événements organisés</p>
           </div>
           
           <div className="text-center">
-            <div className="text-4xl md:text-5xl font-bold text-primary mb-2">500+</div>
+            <div className="text-4xl md:text-5xl font-bold text-violet mb-2">500+</div>
             <p className="text-gray-600 font-medium">Organisateurs actifs</p>
           </div>
           
           <div className="text-center">
-            <div className="text-4xl md:text-5xl font-bold text-primary mb-2">98%</div>
+            <div className="text-4xl md:text-5xl font-bold text-violet mb-2">98%</div>
             <p className="text-gray-600 font-medium">Taux de satisfaction</p>
           </div>
           
           <div className="text-center">
-            <div className="text-4xl md:text-5xl font-bold text-primary mb-2">100K+</div>
+            <div className="text-4xl md:text-5xl font-bold text-violet mb-2">100K+</div>
             <p className="text-gray-600 font-medium">Participants</p>
           </div>
         </div>

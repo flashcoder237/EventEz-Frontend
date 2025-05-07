@@ -34,7 +34,7 @@ export const authOptions: NextAuthOptions = {
               }
             });
             
-            if (data && data.access && data.refresh) {
+            if (data && data.access) {
               const base64Payload = data.access.split('.')[1];
               const decodedPayload = JSON.parse(
                 Buffer.from(base64Payload, 'base64').toString('utf-8')
@@ -46,7 +46,7 @@ export const authOptions: NextAuthOptions = {
                 name: decodedPayload.username || 'Utilisateur',
                 role: decodedPayload.role || 'user',
                 accessToken: data.access,
-                refreshToken: data.refresh,
+                // refreshToken is no longer in response body
                 rememberMe: credentials.rememberMe === 'true',
               };
             }
@@ -83,11 +83,11 @@ export const authOptions: NextAuthOptions = {
             email: user.email,
             name: user.name,
             role: user.role,
-            accessToken: user.accessToken,
-            refreshToken: user.refreshToken,
-            exp: Math.floor(Date.now() / 1000) + 60 * 60, // Expiration du token d'accès (toujours 1h)
-            sessionExpiry: Date.now() + (duration * 1000), // Expiration de la session complète
-            rememberMe: user.rememberMe,
+          accessToken: user.accessToken,
+          // refreshToken removed
+          exp: Math.floor(Date.now() / 1000) + 60 * 60, // Expiration du token d'accès (toujours 1h)
+          sessionExpiry: Date.now() + (duration * 1000), // Expiration de la session complète
+          rememberMe: user.rememberMe,
           };
         }
       
@@ -142,7 +142,7 @@ export const authOptions: NextAuthOptions = {
         }
         
         session.accessToken = token.accessToken as string;
-        session.refreshToken = token.refreshToken as string;
+        // refreshToken removed from session
         session.error = token.error as string | undefined;
         session.rememberMe = token.rememberMe as boolean;
         

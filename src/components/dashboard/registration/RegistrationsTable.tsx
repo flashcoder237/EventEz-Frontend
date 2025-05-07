@@ -70,7 +70,7 @@ export default function RegistrationsTable({
                 <div className="flex items-center">
                   <input
                     type="checkbox"
-                    className="rounded border-gray-300 text-primary focus:ring-primary"
+                    className="rounded border-gray-300 text-violet focus:ring-violet"
                     checked={
                       filteredRegistrations.length > 0 &&
                       selectedRegistrations.length === filteredRegistrations.length
@@ -161,7 +161,7 @@ function RegistrationRow({ registration, isSelected, onToggleSelect, getStatusBa
         <div className="flex items-center">
           <input
             type="checkbox"
-            className="rounded border-gray-300 text-primary focus:ring-primary"
+            className="rounded border-gray-300 text-violet focus:ring-violet"
             checked={isSelected}
             onChange={onToggleSelect}
           />
@@ -207,7 +207,7 @@ function RegistrationRow({ registration, isSelected, onToggleSelect, getStatusBa
         <div className="flex space-x-2">
           <Link 
             href={`/dashboard/registrations/${registration.id}`} 
-            className="text-primary hover:text-primary-dark"
+            className="text-violet hover:text-violet-dark"
           >
             Détails
           </Link>

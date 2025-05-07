@@ -30,7 +30,7 @@ export default function ViewSelector({ onChange, currentView }: ViewSelectorProp
   return (
     <div className="flex items-center bg-white rounded-md border shadow-sm">
       <button
-        className={`p-2 ${currentView === 'grid' ? 'bg-gray-100 text-primary' : 'text-gray-500'}`}
+        className={`p-2 ${currentView === 'grid' ? 'bg-gray-100 text-violet' : 'text-gray-500'}`}
         onClick={() => handleViewChange('grid')}
         title="Vue en grille"
       >
@@ -38,7 +38,7 @@ export default function ViewSelector({ onChange, currentView }: ViewSelectorProp
       </button>
       
       <button
-        className={`p-2 ${currentView === 'list' ? 'bg-gray-100 text-primary' : 'text-gray-500'}`}
+        className={`p-2 ${currentView === 'list' ? 'bg-gray-100 text-violet' : 'text-gray-500'}`}
         onClick={() => handleViewChange('list')}
         title="Vue en liste"
       >
@@ -46,7 +46,7 @@ export default function ViewSelector({ onChange, currentView }: ViewSelectorProp
       </button>
       
       <button
-        className={`p-2 ${currentView === 'calendar' ? 'bg-gray-100 text-primary' : 'text-gray-500'}`}
+        className={`p-2 ${currentView === 'calendar' ? 'bg-gray-100 text-violet' : 'text-gray-500'}`}
         onClick={() => handleViewChange('calendar')}
         title="Vue calendrier"
       >

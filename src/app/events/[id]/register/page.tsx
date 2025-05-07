@@ -19,7 +19,7 @@ export async function generateMetadata({
     
     return {
       title: `Inscription - ${event.title}`,
-      description: event.short_description || event.description.substring(0, 160)
+      description: event.short_description || (event.description ? event.description.substring(0, 160) : '')
     };
   } catch (error) {
     console.error('Erreur lors du chargement des métadonnées:', error);

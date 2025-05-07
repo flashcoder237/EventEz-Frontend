@@ -112,7 +112,7 @@ export default function EventList() {
             <button
               className={`px-4 py-3 text-sm font-medium ${
                 activeTab === 'all'
-                  ? 'border-b-2 border-primary text-primary'
+                  ? 'border-b-2 border-violet text-violet'
                   : 'text-gray-500 hover:text-gray-700'
               }`}
               onClick={() => setActiveTab('all')}
@@ -122,7 +122,7 @@ export default function EventList() {
             <button
               className={`px-4 py-3 text-sm font-medium ${
                 activeTab === 'upcoming'
-                  ? 'border-b-2 border-primary text-primary'
+                  ? 'border-b-2 border-violet text-violet'
                   : 'text-gray-500 hover:text-gray-700'
               }`}
               onClick={() => setActiveTab('upcoming')}
@@ -132,7 +132,7 @@ export default function EventList() {
             <button
               className={`px-4 py-3 text-sm font-medium ${
                 activeTab === 'past'
-                  ? 'border-b-2 border-primary text-primary'
+                  ? 'border-b-2 border-violet text-violet'
                   : 'text-gray-500 hover:text-gray-700'
               }`}
               onClick={() => setActiveTab('past')}
@@ -174,8 +174,8 @@ export default function EventList() {
                           className="rounded-md object-cover"
                         />
                       ) : (
-                        <div className="h-16 w-16 rounded-md bg-primary/20 flex items-center justify-center">
-                          <FaCalendarAlt className="h-6 w-6 text-primary/40" />
+                        <div className="h-16 w-16 rounded-md bg-violet/20 flex items-center justify-center">
+                          <FaCalendarAlt className="h-6 w-6 text-violet/40" />
                         </div>
                       )}
                     </div>

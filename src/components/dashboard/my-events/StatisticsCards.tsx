@@ -34,12 +34,12 @@ export default function StatisticsCards({ stats }: StatisticsCardsProps) {
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-lg font-medium text-gray-700 flex items-center">
-            <FaCalendarAlt className="mr-2 text-primary" />
+            <FaCalendarAlt className="mr-2 text-violet" />
             Événements
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-bold text-primary">{stats.totalEvents}</div>
+          <div className="text-3xl font-bold text-violet">{stats.totalEvents}</div>
           <div className="mt-2 flex flex-wrap text-sm text-gray-600 gap-y-1 gap-x-4">
             <div><span className="font-medium text-indigo-600">{stats.upcomingEvents}</span> à venir</div>
             <div><span className="font-medium text-green-600">{stats.ongoingEvents}</span> en cours</div>

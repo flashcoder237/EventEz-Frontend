@@ -219,7 +219,7 @@ export default function PaymentProcessingPage({ params, searchParams }: PaymentP
                   {searchParams.method === 'mtn_money' || searchParams.method === 'orange_money' ? (
                     <Phone className={`h-10 w-10 ${searchParams.method === 'mtn_money' ? 'text-yellow-500' : 'text-orange-500'}`} />
                   ) : (
-                    <Loader className="h-10 w-10 text-primary animate-spin" />
+                    <Loader className="h-10 w-10 text-violet animate-spin" />
                   )}
                 </div>
                 <div 
@@ -228,7 +228,7 @@ export default function PaymentProcessingPage({ params, searchParams }: PaymentP
                       ? 'border-t-yellow-500' 
                       : searchParams.method === 'orange_money'
                         ? 'border-t-orange-500'
-                        : 'border-t-primary'
+                        : 'border-t-violet'
                   }`}
                   style={{ 
                     transform: `rotate(${progress * 3.6}deg)`,
@@ -337,7 +337,7 @@ export default function PaymentProcessingPage({ params, searchParams }: PaymentP
             </p>
             
             <div className="animate-pulse">
-              <Loader className="mx-auto h-6 w-6 text-primary animate-spin" />
+              <Loader className="mx-auto h-6 w-6 text-violet animate-spin" />
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                 Redirection en cours...
               </p>

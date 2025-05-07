@@ -188,7 +188,7 @@ export default function InfiniteScrollEvents({
             <Button
               onClick={showMoreEvents}
               disabled={loading}
-              className="w-48 flex items-center justify-center bg-primary"
+              className="w-48 flex items-center justify-center bg-violet"
             >
               {loading ? (
                 <span className="flex items-center">
@@ -218,7 +218,7 @@ export default function InfiniteScrollEvents({
       {showScrollTop && (
         <button
           onClick={scrollToTop}
-          className="fixed bottom-6 right-6 bg-primary text-white rounded-full p-3 shadow-lg hover:bg-primary-dark transition-all duration-300 z-50"
+          className="fixed bottom-6 right-6 bg-violet text-white rounded-full p-3 shadow-lg hover:bg-violet-dark transition-all duration-300 z-50"
           aria-label="Retour en haut"
         >
           <ArrowUp className="h-6 w-6" />

@@ -44,7 +44,7 @@ export default function ClientSideFilterWrapper({
       <div className="flex justify-end mb-4 ">
         <button 
           onClick={toggleFilterFloating}
-          className="text-sm text-gray-600 flex items-center hover:text-primary transition-colors text-white"
+          className="text-sm text-gray-600 flex items-center hover:text-violet transition-colors text-white"
         >
           {isFilterFloating ? 'Désactiver' : 'Activer'} filtres flottants
         </button>

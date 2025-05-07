@@ -19,22 +19,7 @@ export default async function EventsPage() {
   
   return (
     <DashboardLayout title="Mes événements">
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Mes événements</h1>
-            <p className="mt-1 text-sm text-gray-500">
-              Gérez tous vos événements
-            </p>
-          </div>
-          <a
-            href="/dashboard/events/create"
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
-          >
-            Créer un événement
-          </a>
-        </div>
-        
+      <div className="space-y-6">  
         <EventsList />
       </div>
     </DashboardLayout>

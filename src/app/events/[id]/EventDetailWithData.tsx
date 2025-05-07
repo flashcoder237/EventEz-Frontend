@@ -68,7 +68,7 @@ export default function EventDetailWithData({
   if (loading && (ticketTypes.length === 0 && formFields.length === 0)) {
     return (
       <div className="flex justify-center items-center py-8">
-        <FaSpinner className="animate-spin text-primary h-8 w-8 mr-2" />
+        <FaSpinner className="animate-spin text-violet h-8 w-8 mr-2" />
         <span>Chargement des détails...</span>
       </div>
     );

@@ -25,7 +25,7 @@ export default function LoadingSpinner({
     <div className={cn("flex flex-col items-center justify-center py-6", className)}>
       <div
         className={cn(
-          "animate-spin rounded-full border-solid border-primary border-t-transparent",
+          "animate-spin rounded-full border-solid border-violet border-t-transparent",
           sizeClasses[size]
         )}
       />

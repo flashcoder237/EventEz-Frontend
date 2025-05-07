@@ -72,7 +72,7 @@ export default function EventMediaPublishForm({
         className="text-xl font-semibold flex items-center"
         variants={itemVariants}
       >
-        <FaImage className="mr-2 text-primary" />
+        <FaImage className="mr-2 text-violet" />
         Médias et publication
       </motion.h2>
       
@@ -82,7 +82,7 @@ export default function EventMediaPublishForm({
       >
         <h3 className="text-lg font-medium mb-4">Image de bannière</h3>
         
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 transition-all hover:border-primary hover:bg-gray-50">
+        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 transition-all hover:border-violet hover:bg-gray-50">
           {eventData.banner_image_preview ? (
             <div className="space-y-4">
               <motion.div 
@@ -243,7 +243,7 @@ export default function EventMediaPublishForm({
           <Button 
             type="submit"
             disabled={isSubmitting}
-            className={`relative overflow-hidden ${isSubmitting ? 'bg-primary/80' : ''}`}
+            className={`relative overflow-hidden ${isSubmitting ? 'bg-violet/80' : ''}`}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >

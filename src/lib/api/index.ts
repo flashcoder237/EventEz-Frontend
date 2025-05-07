@@ -80,7 +80,7 @@ api.interceptors.response.use(
       try {
         const session = await getSession();
         
-        if (!session?.refreshToken) {
+      if (!session?.refreshToken) {
           // Si pas de refresh token, déconnecter l'utilisateur
           // Invalidate old refresh tokens if a new one is issued
 
@@ -91,10 +91,8 @@ api.interceptors.response.use(
         }
         
         // Tentative de rafraîchissement du token
-        const response = await axios.post(`${API_URL}/token/refresh/`, {
-          // Ensure that only one refresh request is sent at a time
-
-          refresh: session.refreshToken
+        const response = await axios.post(`${API_URL}/token/refresh/`, null, {
+          withCredentials: true,
         });
         
         if (response.data.access) {

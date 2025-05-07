@@ -251,7 +251,7 @@ export default function EventsListEnhanced() {
                           </Link>
                         </h4>
                         <p className="text-xs text-gray-500 mt-1 line-clamp-2">
-                          {event.short_description || event.description.substring(0, 100) + '...'}
+                          {event.short_description || (event.description ? event.description.substring(0, 100) : '') + '...'}
                         </p>
                       </div>
                       <div className="flex-shrink-0 ml-2">

@@ -344,7 +344,7 @@ export default function EventReviewsTab({ feedbacks, event }: EventReviewsTabPro
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="bg-primary hover:bg-primary-600 transition-colors"
+                  className="bg-violet hover:bg-violet-600 transition-colors"
                 >
                   {loading 
                     ? 'Envoi en cours...' 
@@ -406,8 +406,8 @@ export default function EventReviewsTab({ feedbacks, event }: EventReviewsTabPro
               >
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex items-center">
-                    <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center mr-4">
-                      <User className="h-6 w-6 text-primary" />
+                    <div className="h-12 w-12 bg-violet/10 rounded-full flex items-center justify-center mr-4">
+                      <User className="h-6 w-6 text-violet" />
                     </div>
                     <div>
                       <p className="font-semibold text-gray-800 dark:text-gray-200 flex items-center">
@@ -448,7 +448,7 @@ export default function EventReviewsTab({ feedbacks, event }: EventReviewsTabPro
                           onClick={() => handleEditReview(feedback)}
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
-                          className="text-gray-400 hover:text-primary mr-2"
+                          className="text-gray-400 hover:text-violet mr-2"
                           title="Modifier"
                         >
                           <Edit className="h-5 w-5" />

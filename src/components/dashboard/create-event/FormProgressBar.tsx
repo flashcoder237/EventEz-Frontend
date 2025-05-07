@@ -16,7 +16,7 @@ export default function FormProgressBar({ currentStep, totalSteps }: FormProgres
       </div>
       <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
         <motion.div 
-          className="h-2 bg-primary rounded-full"
+          className="h-2 bg-violet rounded-full"
           initial={{ width: 0 }}
           animate={{ width: `${percentage}%` }}
           transition={{ duration: 0.5, ease: "easeInOut" }}

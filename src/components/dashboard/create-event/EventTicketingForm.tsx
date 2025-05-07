@@ -101,8 +101,8 @@ export default function EventTicketingForm({
         transition={{ duration: 0.5 }}
       >
         {eventData.event_type === 'billetterie' 
-          ? <FaTicketAlt className="mr-2 text-primary" /> 
-          : <FaClipboardList className="mr-2 text-primary" />
+          ? <FaTicketAlt className="mr-2 text-violet" /> 
+          : <FaClipboardList className="mr-2 text-violet" />
         }
         {eventData.event_type === 'billetterie' ? 'Billetterie' : 'Formulaire d\'inscription'}
       </motion.h2>

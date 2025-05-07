@@ -109,7 +109,7 @@ export default function EventListView({ events, loading = false }: EventListView
                 <div>
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-800 hover:text-primary transition-colors">
+                      <h3 className="text-lg font-semibold text-gray-800 hover:text-violet transition-colors">
                         {event.title}
                       </h3>
                       
@@ -123,22 +123,22 @@ export default function EventListView({ events, loading = false }: EventListView
                   
                   <div className="mt-3 grid grid-cols-2 gap-2">
                     <div className="flex items-center text-xs text-gray-500">
-                      <Calendar className="h-3 w-3 mr-1 text-primary/70" />
+                      <Calendar className="h-3 w-3 mr-1 text-violet/70" />
                       <span>{formatDate(event.start_date)}</span>
                     </div>
                     
                     <div className="flex items-center text-xs text-gray-500">
-                      <MapPin className="h-3 w-3 mr-1 text-primary/70" />
+                      <MapPin className="h-3 w-3 mr-1 text-violet/70" />
                       <span className="truncate">{event.location_city}</span>
                     </div>
                     
                     <div className="flex items-center text-xs text-gray-500">
-                      <Clock className="h-3 w-3 mr-1 text-primary/70" />
+                      <Clock className="h-3 w-3 mr-1 text-violet/70" />
                       <span>{new Date(event.start_date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
                     </div>
                     
                     <div className="flex items-center text-xs text-gray-500">
-                      <Users className="h-3 w-3 mr-1 text-primary/70" />
+                      <Users className="h-3 w-3 mr-1 text-violet/70" />
                       <span>{event.registration_count} inscrit{event.registration_count !== 1 ? 's' : ''}</span>
                     </div>
                   </div>
@@ -151,7 +151,7 @@ export default function EventListView({ events, loading = false }: EventListView
                   </div>
                   
                   {event.event_type === 'billetterie' && event.ticket_price_range && (
-                    <div className="text-sm font-semibold text-primary">
+                    <div className="text-sm font-semibold text-violet">
                       {event.ticket_price_range}
                     </div>
                   )}

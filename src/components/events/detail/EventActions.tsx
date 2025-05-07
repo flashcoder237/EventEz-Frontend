@@ -45,6 +45,19 @@ export default function EventActions({ event, ticketTypes = [], formFields = [] 
   
   const isBilletterie = event.event_type === 'billetterie';
   const isExpired = useMemo(() => new Date(event.end_date) < currentTime, [event.end_date, currentTime]);
+  const [ticketPriceRange, setTicketPriceRange] = useState({ min: 0, max: 0 });
+
+  useEffect(() => {
+    if (ticketTypes.length > 0) {
+      const prices = ticketTypes.map(t => t.price);
+      const min = Math.min(...prices);
+      const max = Math.max(...prices);
+      setTicketPriceRange({ min, max });   
+    } else {
+      setTicketPriceRange({ min: 0, max: 0 });
+    }
+  }, []);
+
   
   // Fonction pour calculer le temps restant
   const calculateTimeRemaining = useCallback(() => {
@@ -146,7 +159,7 @@ export default function EventActions({ event, ticketTypes = [], formFields = [] 
           animate={{ opacity: 1, scale: 1 }}
           className="bg-indigo-50 dark:bg-indigo-900/30 rounded-lg p-4 mb-4"
         >
-          <h3 className="font-bold text-primary mb-3 text-center">
+          <h3 className="font-bold text-violet mb-3 text-center">
             Temps restant pour s'inscrire
           </h3>
           <div className="flex items-center justify-center gap-2 md:gap-4">
@@ -239,7 +252,7 @@ export default function EventActions({ event, ticketTypes = [], formFields = [] 
             <span className="text-gray-700 dark:text-gray-300 font-medium">Prix</span>
             <span className="font-bold text-gray-900 dark:text-gray-100">
               {isBilletterie 
-                ? (event.ticket_price_range || 'Gratuit')
+                ? ((ticketPriceRange.min !== 0 &&  ticketPriceRange.max!==0) ? `${ticketPriceRange.min} - ${ticketPriceRange.max} (FCFA)` : 'Gratuit')
                 : 'Gratuit'
               }
             </span>
@@ -325,14 +338,14 @@ export default function EventActions({ event, ticketTypes = [], formFields = [] 
         className="bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700 shadow-sm p-6"
       >
         <h3 className="font-bold text-lg mb-4 flex items-center">
-          <Info className="h-5 w-5 mr-2 text-primary" />
+          <Info className="h-5 w-5 mr-2 text-violet" />
           Informations importantes
         </h3>
         
         <div className="space-y-4">
           {/* Date and Time */}
           <div className="flex items-start">
-            <Calendar className="h-6 w-6 text-primary mr-3 mt-0.5" />
+            <Calendar className="h-6 w-6 text-violet mr-3 mt-0.5" />
             <div>
               <p className="font-medium text-gray-800 dark:text-gray-200">Date et heure</p>
               <p className="text-gray-600 dark:text-gray-400 text-sm">
@@ -346,7 +359,7 @@ export default function EventActions({ event, ticketTypes = [], formFields = [] 
           
           {/* Location */}
           <div className="flex items-start">
-            <MapPin className="h-6 w-6 text-primary mr-3 mt-0.5" />
+            <MapPin className="h-6 w-6 text-violet mr-3 mt-0.5" />
             <div>
               <p className="font-medium text-gray-800 dark:text-gray-200">Lieu</p>
               <p className="text-gray-600 dark:text-gray-400 text-sm">{event.location_name}</p>
@@ -356,7 +369,7 @@ export default function EventActions({ event, ticketTypes = [], formFields = [] 
                 href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center text-primary text-xs mt-1 hover:underline"
+                className="inline-flex items-center text-violet text-xs mt-1 hover:underline"
                 whileHover={{ scale: 1.05 }}
               >
                 <Globe className="h-4 w-4 mr-1" />
@@ -368,7 +381,7 @@ export default function EventActions({ event, ticketTypes = [], formFields = [] 
           {/* Registration Deadline */}
           {event.registration_deadline && (
             <div className="flex items-start">
-              <Clock className="h-6 w-6 text-primary mr-3 mt-0.5" />
+              <Clock className="h-6 w-6 text-violet mr-3 mt-0.5" />
               <div>
                 <p className="font-medium text-gray-800 dark:text-gray-200">Date limite d'inscription</p>
                 <p className="text-gray-600 dark:text-gray-400 text-sm">
@@ -380,7 +393,7 @@ export default function EventActions({ event, ticketTypes = [], formFields = [] 
           
           {/* Participation */}
           <div className="flex items-start">
-            <Users className="h-6 w-6 text-primary mr-3 mt-0.5" />
+            <Users className="h-6 w-6 text-violet mr-3 mt-0.5" />
             <div>
               <p className="font-medium text-gray-800 dark:text-gray-200">Participation</p>
               <p className="text-gray-600 dark:text-gray-400 text-sm">

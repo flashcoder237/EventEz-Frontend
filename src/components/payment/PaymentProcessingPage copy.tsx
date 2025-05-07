@@ -209,10 +209,10 @@ export default function PaymentProcessingPage({ params, searchParams }: PaymentP
             <div className="flex justify-center mb-6">
               <div className="relative">
                 <div className="w-20 h-20 border-4 border-gray-200 dark:border-gray-700 rounded-full flex items-center justify-center">
-                  <Loader className="h-10 w-10 text-primary animate-spin" />
+                  <Loader className="h-10 w-10 text-violet animate-spin" />
                 </div>
                 <div 
-                  className="absolute inset-0 rounded-full border-4 border-transparent border-t-primary"
+                  className="absolute inset-0 rounded-full border-4 border-transparent border-t-violet"
                   style={{ 
                     transform: `rotate(${progress * 3.6}deg)`,
                     transition: 'transform 0.3s ease-out'
@@ -271,7 +271,7 @@ export default function PaymentProcessingPage({ params, searchParams }: PaymentP
             </p>
             
             <div className="animate-pulse">
-              <Loader className="mx-auto h-6 w-6 text-primary animate-spin" />
+              <Loader className="mx-auto h-6 w-6 text-violet animate-spin" />
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                 Redirection en cours...
               </p>

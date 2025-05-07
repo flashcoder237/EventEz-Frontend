@@ -15,7 +15,7 @@ const NewsletterSection: React.FC = () => {
             <input 
               type="email" 
               placeholder="Votre adresse email"
-              className="flex-1 h-12 px-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
+              className="flex-1 h-12 px-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet"
               required
             />
             <Button type="submit" className="h-12 whitespace-nowrap">

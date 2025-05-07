@@ -90,7 +90,7 @@ export default function EventTicketsTab({ ticketTypes, event }: EventTicketsTabP
         initial={{ x: -20, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
       >
-        <Ticket className="mr-4 text-primary" size={36} />
+        <Ticket className="mr-4 text-violet" size={36} />
         Billets disponibles
       </motion.h2>
       
@@ -136,7 +136,7 @@ export default function EventTicketsTab({ ticketTypes, event }: EventTicketsTabP
                   
                   <div className="flex flex-wrap items-center gap-4 mb-4">
                     <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                      <Calendar className="h-4 w-4 mr-2 text-primary" />
+                      <Calendar className="h-4 w-4 mr-2 text-violet" />
                       Jusqu'au {formatDate(ticket.sales_end, 'short')}
                     </div>
                     
@@ -155,7 +155,7 @@ export default function EventTicketsTab({ ticketTypes, event }: EventTicketsTabP
                 </div>
                 
                 <div className="flex flex-col items-end">
-                  <div className="text-2xl font-bold text-primary mb-4">
+                  <div className="text-2xl font-bold text-violet mb-4">
                     {ticket.price > 0 
                       ? formatCurrency(ticket.price) 
                       : 'Gratuit'}
@@ -236,7 +236,7 @@ export default function EventTicketsTab({ ticketTypes, event }: EventTicketsTabP
               >
                 <div>
                   <div className="flex items-center text-gray-700 dark:text-gray-300 mb-2">
-                    <ShoppingCart className="mr-2 text-primary" />
+                    <ShoppingCart className="mr-2 text-violet" />
                     <span className="font-semibold">
                       {totalSelectedTickets} billet{totalSelectedTickets > 1 ? 's' : ''} sélectionné{totalSelectedTickets > 1 ? 's' : ''}
                     </span>
@@ -247,7 +247,7 @@ export default function EventTicketsTab({ ticketTypes, event }: EventTicketsTabP
                   </p>
                 </div>
                 <div className="flex flex-col items-end">
-                  <div className="text-2xl font-bold text-primary mb-2">
+                  <div className="text-2xl font-bold text-violet mb-2">
                     {formatCurrency(totalPrice)}
                   </div>
                   <Button 

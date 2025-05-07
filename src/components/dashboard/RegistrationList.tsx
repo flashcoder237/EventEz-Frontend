@@ -202,7 +202,7 @@ export default function RegistrationList({ eventId, limit = 10 }: RegistrationLi
                   <div className="flex justify-end space-x-2">
                     <Link 
                       href={`/dashboard/registration/${registration.id}`}
-                      className="text-primary-600 hover:text-primary-900"
+                      className="text-violet-600 hover:text-violet-900"
                     >
                       Détails
                     </Link>

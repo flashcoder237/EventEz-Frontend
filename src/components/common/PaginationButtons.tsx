@@ -123,7 +123,7 @@ export default function PaginationButtons({
               className={`
                 px-4 py-2 rounded-md 
                 ${currentPage === page 
-                  ? 'bg-primary text-white' 
+                  ? 'bg-violet text-white' 
                   : 'hover:bg-gray-100 text-gray-700'}
               `}
             >

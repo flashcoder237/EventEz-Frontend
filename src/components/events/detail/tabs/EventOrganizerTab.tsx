@@ -211,7 +211,7 @@ export default function EventOrganizerTab({ event }: EventOrganizerTabProps) {
         initial={{ x: -20, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
       >
-        <Award className="mr-4 text-primary" size={36} />
+        <Award className="mr-4 text-violet" size={36} />
         À propos de l'organisateur
       </motion.h2>
       
@@ -224,11 +224,11 @@ export default function EventOrganizerTab({ event }: EventOrganizerTabProps) {
           {/* Organizer Header */}
           <div className="flex items-center mb-6">
             <motion.div 
-              className="h-20 w-20 bg-primary/10 rounded-full flex items-center justify-center mr-6"
+              className="h-20 w-20 bg-violet/10 rounded-full flex items-center justify-center mr-6"
               whileHover={{ rotate: 360 }}
               transition={{ duration: 0.5 }}
             >
-              <User className="h-10 w-10 text-primary" />
+              <User className="h-10 w-10 text-violet" />
             </motion.div>
             <div>
               <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
@@ -253,14 +253,14 @@ export default function EventOrganizerTab({ event }: EventOrganizerTabProps) {
               className="flex items-center text-sm text-gray-600 dark:text-gray-400"
               whileHover={{ x: 5 }}
             >
-              <Mail className="h-5 w-5 mr-3 text-primary" />
+              <Mail className="h-5 w-5 mr-3 text-violet" />
               <span>{event.organizer.email}</span>
             </motion.div>
             <motion.div 
               className="flex items-center text-sm text-gray-600 dark:text-gray-400"
               whileHover={{ x: 5 }}
             >
-              <Phone className="h-5 w-5 mr-3 text-primary" />
+              <Phone className="h-5 w-5 mr-3 text-violet" />
               <span>{event.organizer.phone_number}</span>
             </motion.div>
           </div>
@@ -374,7 +374,7 @@ export default function EventOrganizerTab({ event }: EventOrganizerTabProps) {
                       <textarea 
                         value={contactMessage}
                         onChange={(e) => setContactMessage(e.target.value)}
-                        className="w-full p-3 border rounded-lg dark:bg-gray-800 dark:border-gray-600 focus:ring-2 focus:ring-primary/50"
+                        className="w-full p-3 border rounded-lg dark:bg-gray-800 dark:border-gray-600 focus:ring-2 focus:ring-violet/50"
                         rows={4}
                         placeholder="Votre message pour l'organisateur..."
                         required
@@ -384,7 +384,7 @@ export default function EventOrganizerTab({ event }: EventOrganizerTabProps) {
                     <div className="flex gap-3">
                       <Button 
                         type="submit" 
-                        className="bg-primary hover:bg-primary-600 flex items-center"
+                        className="bg-violet hover:bg-violet-600 flex items-center"
                         disabled={sendingMessage}
                       >
                         {sendingMessage ? (
@@ -456,7 +456,7 @@ export default function EventOrganizerTab({ event }: EventOrganizerTabProps) {
               >
                 <Link 
                   href={`/events/${otherEvent.id}`}
-                  className="block p-4 border rounded-lg hover:border-primary hover:shadow-sm transition-all bg-white dark:bg-gray-800 dark:border-gray-700"
+                  className="block p-4 border rounded-lg hover:border-violet hover:shadow-sm transition-all bg-white dark:bg-gray-800 dark:border-gray-700"
                 >
                   <div className="flex items-start gap-4">
                     <div className="flex-shrink-0 w-20 h-16 relative rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
@@ -474,7 +474,7 @@ export default function EventOrganizerTab({ event }: EventOrganizerTabProps) {
                       )}
                     </div>
                     <div>
-                      <h4 className="font-semibold text-primary hover:text-primary-dark transition-colors">
+                      <h4 className="font-semibold text-violet hover:text-violet-dark transition-colors">
                         {otherEvent.title}
                       </h4>
                       <div className="text-sm text-gray-600 dark:text-gray-400 flex items-center mt-1">

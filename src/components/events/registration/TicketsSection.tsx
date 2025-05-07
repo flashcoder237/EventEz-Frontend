@@ -195,7 +195,7 @@ export function TicketsSection({
                   >
                     <span className="font-semibold text-gray-800 dark:text-gray-200">Total</span>
                     <motion.span 
-                      className="font-bold text-lg text-primary"
+                      className="font-bold text-lg text-violet"
                       initial={{ scale: 0.9 }}
                       animate={{ scale: 1 }}
                       transition={{ 

@@ -67,7 +67,7 @@ export default function PaymentFormWrapper({ eventId, registrationId }: PaymentF
   if (loading) {
     return (
       <div className="flex justify-center items-center py-16">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-violet"></div>
       </div>
     );
   }
@@ -79,7 +79,7 @@ export default function PaymentFormWrapper({ eventId, registrationId }: PaymentF
         <p className="text-red-700">{error}</p>
         <button 
           onClick={() => router.push(`/events/${eventId}`)}
-          className="mt-4 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark"
+          className="mt-4 bg-violet text-white px-4 py-2 rounded-lg hover:bg-violet-dark"
         >
           Retourner à l'événement
         </button>
@@ -94,7 +94,7 @@ export default function PaymentFormWrapper({ eventId, registrationId }: PaymentF
         <p className="text-yellow-700">Les détails de l'événement ou de l'inscription n'ont pas pu être chargés.</p>
         <button 
           onClick={() => router.push(`/events/${eventId}`)}
-          className="mt-4 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark"
+          className="mt-4 bg-violet text-white px-4 py-2 rounded-lg hover:bg-violet-dark"
         >
           Retourner à l'événement
         </button>

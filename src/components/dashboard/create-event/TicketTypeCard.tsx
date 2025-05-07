@@ -28,7 +28,7 @@ export default function TicketTypeCard({
     >
       {/* Décoration visuelle */}
       <div className="absolute inset-0 opacity-5 pointer-events-none">
-        <div className="absolute top-0 right-0 w-40 h-40 bg-primary rounded-full -mr-20 -mt-20"></div>
+        <div className="absolute top-0 right-0 w-40 h-40 bg-violet rounded-full -mr-20 -mt-20"></div>
         <div className="absolute bottom-0 left-0 w-40 h-40 bg-indigo-500 rounded-full -ml-20 -mb-20"></div>
       </div>
       

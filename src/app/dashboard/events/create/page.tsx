@@ -20,12 +20,7 @@ export default async function CreateEventPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Créer un événement</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Remplissez le formulaire ci-dessous pour créer un nouvel événement
-          </p>
-        </div>
+        
         
         <EventForm />
       </div>

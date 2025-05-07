@@ -142,7 +142,7 @@ export default function EventSimilar({ currentEvent }: EventSimilarProps) {
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h4 className="text-sm font-medium text-gray-900 dark:text-gray-200 truncate group-hover:text-primary transition-colors">
+                  <h4 className="text-sm font-medium text-gray-900 dark:text-gray-200 truncate group-hover:text-violet transition-colors">
                     {event.title}
                   </h4>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -152,7 +152,7 @@ export default function EventSimilar({ currentEvent }: EventSimilarProps) {
                     {event.location_city}
                   </p>
                 </div>
-                <ChevronRight className="h-4 w-4 text-gray-400 dark:text-gray-600 group-hover:text-primary transition-colors" />
+                <ChevronRight className="h-4 w-4 text-gray-400 dark:text-gray-600 group-hover:text-violet transition-colors" />
               </Link>
             </motion.div>
           ))}

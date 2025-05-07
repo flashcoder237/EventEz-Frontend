@@ -119,8 +119,8 @@ export default function DashboardStats() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Événements totaux</CardTitle>
-            <div className="p-2 bg-primary/10 rounded-full">
-              <FaCalendarAlt className="h-4 w-4 text-primary" />
+            <div className="p-2 bg-violet/10 rounded-full">
+              <FaCalendarAlt className="h-4 w-4 text-violet" />
             </div>
           </CardHeader>
           <CardContent>

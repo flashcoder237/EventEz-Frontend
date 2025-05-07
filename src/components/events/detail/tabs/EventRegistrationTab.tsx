@@ -29,7 +29,7 @@ export default function EventRegistrationTab({ formFields }: EventRegistrationTa
             <ul className="space-y-3">
               {formFields.map(field => (
                 <li key={field.id} className="flex items-start">
-                  <CheckCircle className={`h-5 w-5 mr-2 ${field.required ? 'text-primary' : 'text-gray-400'}`} />
+                  <CheckCircle className={`h-5 w-5 mr-2 ${field.required ? 'text-violet' : 'text-gray-400'}`} />
                   <div>
                     <span className="font-medium">{field.label}</span>
                     {field.required && <span className="text-red-500 ml-1">*</span>}

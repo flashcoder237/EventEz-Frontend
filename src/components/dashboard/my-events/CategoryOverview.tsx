@@ -21,7 +21,7 @@ export default function CategoryOverview({ categoryData, totalEvents }: Category
             </div>
             <div className="relative w-full h-2 bg-gray-200 rounded-full overflow-hidden">
               <div 
-                className="absolute top-0 left-0 h-full bg-primary" 
+                className="absolute top-0 left-0 h-full bg-violet" 
                 style={{ width: `${(category.count / totalEvents) * 100}%` }}
               ></div>
             </div>
